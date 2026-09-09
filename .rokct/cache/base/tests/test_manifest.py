@@ -72,9 +72,57 @@ KERNEL_TENANT_HOST_CONTROL = os.path.join(KERNEL, "tenant-host-control.ts")
 TENANT_HOST_CONTROL_TESTS = os.path.join(HERE, "tenant-host-control.test.mts")
 SITE_METADATA_LIB = os.path.join(SDK_ROOT, "templates", "app", "lib", "site-metadata.ts")
 SITE_METADATA_ICONS_TESTS = os.path.join(HERE, "site-metadata-icons.test.mts")
+HEADER_MENU_REGISTRY = os.path.join(LANDING, "header-menu.ts")
+HEADER = os.path.join(SDK_ROOT, "templates", "components", "custom", "header.tsx")
+HEADER_BRAND_TESTS = os.path.join(HERE, "header-brand.test.mts")
 
 # The kernel writes `from './x'`; node's ESM loader wants `from './x.ts'`.
 RELATIVE_IMPORT_RE = re.compile(r"(from\s+')(\./[a-z0-9-]+)(')")
+
+BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.S)
+LINE_COMMENT_RE = re.compile(r"^\s*//.*$", re.M)
+
+# The shells' tsconfig, as far as a staged file needs it: strict and
+# isolatedModules are the two that catch a missing type import.
+TSC_STAGE_CONFIG = {
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": ["esnext", "dom"],
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "strict": True,
+        "isolatedModules": True,
+        "noEmit": True,
+        "skipLibCheck": True,
+        "types": [],
+    },
+    "include": ["*.ts"],
+}
+
+# What the stage stands in for `next` and node: the shapes the file uses.
+TSC_STAGE_STUBS = """
+declare module "next" {
+  export interface Metadata {
+    metadataBase?: URL | null;
+    title?: string | { default: string; template?: string } | { absolute: string };
+    description?: string;
+    applicationName?: string;
+    keywords?: string[];
+    alternates?: { canonical?: string };
+    openGraph?: Record<string, unknown>;
+    twitter?: Record<string, unknown>;
+    icons?: string | { icon?: unknown; apple?: unknown; shortcut?: unknown };
+    [key: string]: unknown;
+  }
+}
+declare module "node:fs" {
+  export function existsSync(path: string): boolean;
+}
+declare module "node:path" {
+  export function join(...parts: string[]): string;
+}
+declare const process: { env: Record<string, string | undefined>; cwd(): string };
+"""
 
 
 def load_manifest():
@@ -330,6 +378,70 @@ class TestManifest(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
         self.assertRegex(run.stdout, re.compile(r"^# fail 0$", re.M), run.stdout)
 
+    def test_site_metadata_imports_every_kernel_name_it_uses(self):
+        """1.21.0: `resolveDisplayHost` takes a `HeaderReader`, but 1.20.0's
+        import from the kernel brought only the three functions; the
+        `export { ... type HeaderReader }` re-export at the bottom does not
+        put the name in scope, so `next build` in a shell without
+        ignoreBuildErrors failed with TS2304. Every name the re-export
+        forwards that the file's own code also uses must be imported."""
+        lib = read(SITE_METADATA_LIB)
+        imported = re.search(
+            r'^import \{([^}]*)\} from "@/app/services/base/tenant-hosts";', lib, re.M
+        )
+        self.assertIsNotNone(imported, "no import from the kernel's tenant-hosts")
+        forwarded = re.search(
+            r'^export \{([^}]*)\} from "@/app/services/base/tenant-hosts";', lib, re.M
+        )
+        self.assertIsNotNone(forwarded, "no re-export from the kernel's tenant-hosts")
+        names_in = {n.replace("type ", "").strip() for n in imported.group(1).split(",") if n.strip()}
+        names_out = {n.replace("type ", "").strip() for n in forwarded.group(1).split(",") if n.strip()}
+        body = lib.replace(imported.group(0), "").replace(forwarded.group(0), "")
+        body = LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", body))
+        self.assertIn("HeaderReader", names_in)
+        for name in sorted(names_out):
+            if re.search(rf"\b{re.escape(name)}\b", body):
+                with self.subTest(name=name):
+                    self.assertIn(name, names_in, f"{name} is used in site-metadata.ts but not imported")
+
+    def test_site_metadata_type_checks_under_tsc(self):
+        """The same miss, caught the way a shell build catches it: tsc over a
+        staged app/lib/site-metadata.ts, strict and isolatedModules as the
+        shells' tsconfig is, with the kernel's tenant-hosts.ts and the
+        landing registry beside it and `next`/`node:*` stubbed to their
+        shapes. Runs when a TypeScript compiler is reachable - `ROKCT_TSC`
+        (a path to tsc), else `tsc` on PATH - and skips otherwise, so the
+        stdlib-only run above still guards the import."""
+        tsc = os.environ.get("ROKCT_TSC") or shutil.which("tsc")
+        if not tsc or not os.path.exists(tsc):
+            raise unittest.SkipTest("no tsc reachable (set ROKCT_TSC to a tsc binary)")
+        with tempfile.TemporaryDirectory() as tmp:
+            shutil.copy(KERNEL_TENANT_HOSTS, os.path.join(tmp, "tenant-hosts.ts"))
+            staged = read(SITE_METADATA_LIB).replace(
+                'from "@/app/services/base/tenant-hosts"', 'from "./tenant-hosts"'
+            ).replace(
+                'from "@/components/custom/landing/site-metadata"', 'from "./landing-site-metadata"'
+            )
+            self.assertNotIn('from "@/', staged, "site-metadata.ts imports something the stage does not cover")
+            with open(os.path.join(tmp, "site-metadata.ts"), "w", encoding="utf-8") as f:
+                f.write(staged)
+            registry = read(os.path.join(LANDING, "site-metadata.ts")).replace(
+                'from "@/app/config/platform"', 'from "./platform"'
+            )
+            self.assertNotIn('from "@/', registry)
+            with open(os.path.join(tmp, "landing-site-metadata.ts"), "w", encoding="utf-8") as f:
+                f.write(registry)
+            with open(os.path.join(tmp, "platform.ts"), "w", encoding="utf-8") as f:
+                f.write('export const PLATFORM_NAME = "Shell";\n')
+            with open(os.path.join(tmp, "stubs.d.ts"), "w", encoding="utf-8") as f:
+                f.write(TSC_STAGE_STUBS)
+            with open(os.path.join(tmp, "tsconfig.json"), "w", encoding="utf-8") as f:
+                json.dump(TSC_STAGE_CONFIG, f)
+            run = subprocess.run(
+                [tsc, "-p", tmp], capture_output=True, text=True, timeout=300, cwd=tmp,
+            )
+        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+
     def test_host_layout_is_a_declared_prerequisite(self):
         self.assertIn("app/layout.tsx", self.manifest["requires"])
         note = self.manifest["_comment"].get("app/layout.tsx", "")
@@ -385,6 +497,67 @@ class TestRegistryMarkers(unittest.TestCase):
         route = read(os.path.join(SDK_ROOT, "templates", "app", "opengraph-image.tsx"))
         self.assertIn("copy.still", route)
         self.assertIn("copy.stillAnchor", route)
+
+    def test_header_menu_declares_the_brand(self):
+        """1.21.0 (Ray, 2026-09-09: "let home sdk declare if it needs logo
+        there or not"): the registry carries the declaration, the header
+        renders through it, and neither ever draws the generated tile."""
+        src = read(HEADER_MENU_REGISTRY)
+        self.assertIn('export type HeaderBrandLogo = "auto" | "none" | (string & {});', src)
+        self.assertIn("export interface HeaderBrand {", src)
+        self.assertIn("  brand?: HeaderBrand;", src)
+        self.assertIn("export function resolveHeaderBrand(", src)
+        self.assertIn("export async function loadHeaderBrand(): Promise<ResolvedHeaderBrand>", src)
+        header = read(HEADER)
+        self.assertIn("loadHeaderBrand", header)
+        self.assertIn("<HeaderBrand />", header)
+        self.assertIn("<BrandLogo width={32} height={32} />", header)
+        self.assertIn('<Branding className="text-xl" />', header)
+        code = LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", header))
+        self.assertNotIn("/brand-icon", code)
+        self.assertNotIn("GENERATED_BRAND_ICON", code)
+        # The header is a client bundle; app/lib/site-metadata.ts reaches
+        # for node:fs and must stay out of it.
+        self.assertNotIn("@/app/lib/site-metadata", header)
+
+    def test_header_brand_behaviour_under_node(self):
+        """resolveHeaderBrand and loadHeaderBrand executed: "none" draws no
+        image, a path draws that src, "auto" with no real icon draws the
+        host's mark (no src, never /brand-icon), "auto" with a registered
+        copy.icon draws that src."""
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "node (22.6+) is needed to execute header-menu.ts")
+        with tempfile.TemporaryDirectory() as tmp:
+            staged = read(HEADER_MENU_REGISTRY).replace(
+                'from "@/components/custom/landing/landing-config"', 'from "./landing-config.ts"'
+            ).replace(
+                'from "@/components/custom/landing/site-metadata"', 'from "./landing-site-metadata.ts"'
+            )
+            self.assertNotIn('from "@/', staged, "header-menu.ts imports something the stage does not cover")
+            with open(os.path.join(tmp, "header-menu.ts"), "w", encoding="utf-8") as f:
+                f.write(staged)
+            with open(os.path.join(tmp, "landing-config.ts"), "w", encoding="utf-8") as f:
+                f.write("export type LandingNavBadge = 'new' | 'soon';\n"
+                        "export interface LandingNavItem { id: string; label: string; badge?: LandingNavBadge }\n")
+            with open(os.path.join(tmp, "landing-site-metadata.ts"), "w", encoding="utf-8") as f:
+                f.write(
+                    "let icon: string | undefined;\n"
+                    "export function setRegisteredIcon(value: string | undefined) { icon = value; }\n"
+                    "export async function loadSiteMetadata() {\n"
+                    '  return { title: "Shell", siteName: "Shell", description: "", tagline: "", icon };\n'
+                    "}\n"
+                )
+            shutil.copy(HEADER_BRAND_TESTS, os.path.join(tmp, "header-brand.test.mts"))
+            run = subprocess.run(
+                [node, "--experimental-strip-types", "--no-warnings", "--test",
+                 os.path.join(tmp, "header-brand.test.mts")],
+                capture_output=True, text=True, timeout=120, cwd=tmp,
+            )
+        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+        self.assertRegex(run.stdout, re.compile(r"^# fail 0$", re.M), run.stdout)
+        passed = re.search(r"^# pass (\d+)$", run.stdout, re.M)
+        self.assertIsNotNone(passed, run.stdout)
+        self.assertGreaterEqual(int(passed.group(1)), 12)
 
     def test_header_menu_declares_the_mega_panel_fields(self):
         # base_sdk 1.18.0: the groups open as ONE panel under the first

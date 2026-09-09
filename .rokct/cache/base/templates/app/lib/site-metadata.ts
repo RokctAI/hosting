@@ -65,6 +65,7 @@
 import type { Metadata } from "next";
 
 import {
+  type HeaderReader,
   isPublicHost,
   normaliseHost,
   requestHost,

@@ -50,8 +50,14 @@ next-env.d.ts
 /app/(auth)/auth.config.ts
 /app/(auth)/auth.ts
 /app/(auth)/forgot-password/page.tsx
+/app/(auth)/login/login-view.tsx
 /app/(auth)/login/page.tsx
+/app/(auth)/register-link.ts
+/app/(auth)/register-provision-default.ts
+/app/(auth)/register-provision.ts
 /app/(auth)/register/page.tsx
+/app/(auth)/register/register-view.tsx
+/app/(auth)/tenant-host.ts
 /app/(auth)/tenant-link-database.ts
 /app/(auth)/tenant-link-single.ts
 /app/(auth)/tenant-link.ts
@@ -108,6 +114,7 @@ next-env.d.ts
 /components/admin/GenericReport.tsx
 /components/custom/app-sidebar.tsx
 /components/custom/auth-form.tsx
+/components/custom/auth/register-registry.ts
 /components/custom/beta-toggle.tsx
 /components/custom/footer-chrome.tsx
 /components/custom/header-menu.tsx

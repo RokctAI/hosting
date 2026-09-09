@@ -1,5 +1,78 @@
 # Changelog
 
+## 1.21.0
+
+* The home SDK declares what the header's brand slot draws. Ray,
+  2026-09-09: "i saw supacharge got a s logo in header, let home sdk
+  declare if it needs logo there or not. supacharge text is the logo
+  right now until i design an icon". The "S" is supacharge-web's own
+  `components/custom/brand-logo.tsx` (a `requires` file), an asset-free
+  placeholder that draws the platform's first letter on a dark square,
+  which the header has rendered beside the wordmark since 1.14.0 shipped
+  it (`<BrandLogo width={32} height={32} />`); base had no way for a home
+  SDK to say the slot should be empty, and no way to put a real icon there
+  without a host edit.
+  * `components/custom/landing/header-menu.ts`: `HeaderMenu` gains
+    `brand?: HeaderBrand` - `{ logo?: "auto" | "none" | <path>;
+    wordmark?: boolean }` - in the registry a home SDK already answers,
+    under the same first-entry rule. `"none"` draws no image (the
+    wordmark, the host's `branding.tsx`, IS the logo); a path
+    (`/images/logo.svg`, or an absolute URL) draws that image at 32px; and
+    `"auto"` (the default, and what a menu that declares nothing gets)
+    draws a REAL icon only: the copy's registered `icon` from
+    `site-metadata.ts` when there is one, else the host shell's own
+    `brand-logo.tsx` - the mark every shell drew before this field
+    existed. The generated `/brand-icon` letter tile (1.17.0) is for the
+    browser tab and the share card only and is NEVER drawn in the header,
+    not even when a declaration or a registered `icon` names it (it falls
+    through to the "auto" rule). `wordmark: false` drops the wordmark for
+    a shell whose image already spells its name. `resolveHeaderBrand(brand,
+    copy)` is the pure rule, `headerBrandNeedsCopy()` says when the copy
+    is consulted (only "auto"), `isGeneratedBrandIcon()` names the refused
+    tile and `loadHeaderBrand()` loads the menu, then the copy only when
+    needed, and never throws.
+  * `components/custom/header.tsx` renders the brand link through
+    `next/dynamic` the way `hero.tsx` renders the form: the declaration is
+    resolved once per module and server-rendered with the bar, so the
+    first paint already carries the declared mark and the "S" never
+    flashes before it goes. With nothing registered in either registry
+    there is no loader and the slot is the host's mark and wordmark as
+    before. The header never imports `app/lib/site-metadata.ts` (it
+    reaches for `node:fs`); the tile path is restated in the registry.
+    Every prop of `Header` is unchanged.
+  * rokct.ai: agent_sdk's menu declares no `brand` and its copy registers
+    no `icon`, so the header draws rokctai_frontend's own `brand-logo.tsx`
+    (`/images/logo.svg` with its dark variant) exactly as before - no
+    agent_sdk change is needed to keep the logo. supacharge.app: lms_sdk
+    1.13.0 declares `brand: { logo: "none" }` and the header is the
+    wordmark alone.
+  * `tests/test_manifest.py` asserts the declaration and the header's
+    use of it, and stages `header-menu.ts` under node (22.6+,
+    type-stripping) to execute `tests/header-brand.test.mts`: "none" draws
+    no image, a path draws that src, "auto" with no real icon draws the
+    host's mark with no src and never `/brand-icon`, "auto" with a
+    registered `copy.icon` draws that src, the tile is refused however it
+    is named, and a menu that fails to load is skipped.
+* Fixed: `app/lib/site-metadata.ts` imports the `HeaderReader` type it
+  uses (shell builds without `ignoreBuildErrors` failed on 1.20.0).
+  1.20.0 moved the host predicate into the kernel and imported
+  `isPublicHost`, `normaliseHost` and `requestHost` from
+  `@/app/services/base/tenant-hosts`, but `resolveDisplayHost`'s
+  signature still names `HeaderReader`, and the
+  `export { ... type HeaderReader }` re-export at the bottom of the file
+  does not put that name in scope: `next build` on a composed shell
+  stopped at `site-metadata.ts(157,12): TS2304: Cannot find name
+  'HeaderReader'` (found by the hosting shell build). The import now
+  carries `type HeaderReader`.
+  * `tests/test_manifest.py` guards the class of miss two ways: a
+    stdlib check that every name the file re-exports from the kernel
+    and also uses in its own code is imported, and a real `tsc` pass
+    (strict, isolatedModules - the shells' tsconfig) over a staged copy
+    of the file with the kernel's `tenant-hosts.ts`, the landing
+    registry and `next`/`node:*` stubs beside it, run whenever a
+    compiler is reachable (`ROKCT_TSC=<path to tsc>`, else `tsc` on
+    PATH) and skipped otherwise.
+
 ## 1.20.0
 
 * The host switch: the kernel answers WHICH TENANT a request host belongs
