@@ -55,10 +55,10 @@
       "git": "https://github.com/RokctAI/hardware",
       "path": "../hardware/hosting/nextjs",
       "ref": "main",
-      "commit": "ccb7219637af3a0264c16c35d6acf1fdade1c867",
-      "version": "1.0.0",
+      "commit": "5ba465835ccbd713e1703c504b6b33d80749c093",
+      "version": "1.0.1",
       "install_py_sha256": "a2f6b895733cacd18dac6f63228bb5537e4ac6ea20c33009a211db2984b4e25f",
-      "content_sha256": "674695987583ad98586b75ba2fc656a422c7f8a2f17c4450ecbe343f81867e32"
+      "content_sha256": "e710c035a914cb14c1db69310744a3323023a37ce9109af1516373c6ac2e1b6f"
     }
   ]
 }

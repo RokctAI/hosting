@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.1
+
+* `hosting-header-menu.ts` declares `brand: { logo: "none" }` (base_sdk
+  1.21.0's `HeaderMenu.brand`): the home SDK declares whether the header
+  shows a logo (Ray, 2026-09-09), and hosting has no icon yet, so the header
+  draws no image and the wordmark alone is the logo. `wordmark` stays at its
+  default.
+* base_sdk floor raised to 1.21.0, the version that added the field; against
+  an older base the compose fails to type-check. `install.py` is unchanged.
+
 ## 1.0.0
 
 * First release: the Next.js half of the hosting product, the home SDK of
