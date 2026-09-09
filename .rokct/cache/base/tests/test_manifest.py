@@ -1,0 +1,504 @@
+# Copyright (c) 2026 ROKCT INTELLIGENCE (PTY) LTD
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+"""Contract tests for base/nextjs's manifest and its one-marker registries.
+
+Run from the repository root:
+
+    python3 -m unittest discover -s base/nextjs/tests -v
+
+The Next.js half of the kernel reaches a host by file copy (manifest.json
+`installs`) and a home SDK contributes to it by one-line injection at a
+`// @rokct-sdk-<name>-start` marker (sdk_installer_base.update_integrations),
+so the two things that must never silently break are: every install source
+exists, and every registry carries exactly ONE marker pair. Stdlib only.
+"""
+
+import json
+import os
+import re
+import shutil
+import subprocess
+import tempfile
+import unittest
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+SDK_ROOT = os.path.abspath(os.path.join(HERE, os.pardir))
+MANIFEST = os.path.join(SDK_ROOT, "manifest.json")
+LANDING = os.path.join(SDK_ROOT, "templates", "components", "custom", "landing")
+
+MARKER_RE = re.compile(r"^\s*// @rokct-sdk-([a-z0-9-]+?)-(start|end)\s*$", re.M)
+
+# The registries a home SDK injects into, each carrying exactly one marker
+# whose name is the file's own. A new registry is added here AND to
+# manifest.json installs; the tests below tie the two together.
+REGISTRIES = {
+    "hero-sections.ts": "hero-sections",
+    "page-sections.ts": "page-sections",
+    "hero-copy.ts": "hero-copy",
+    "hero-form.ts": "hero-form",
+    "plans-query.ts": "plans-query",
+    "header-menu.ts": "header-menu",
+    "site-metadata.ts": "site-metadata",
+}
+
+# base_sdk 1.15.0: the link-preview shell, installed as a set.
+SITE_METADATA_INSTALLS = {
+    "templates/components/custom/landing/site-metadata.ts": "components/custom/landing/site-metadata.ts",
+    "templates/app/lib/site-metadata.ts": "app/lib/site-metadata.ts",
+    "templates/app/opengraph-image.tsx": "app/opengraph-image.tsx",
+    "templates/app/twitter-image.tsx": "app/twitter-image.tsx",
+}
+
+# base_sdk 1.17.0: the fallback favicon, the first letter of the domain in
+# the shell's primary colour.
+BRAND_ICON_INSTALL = ("templates/app/brand-icon/route.tsx", "app/brand-icon/route.tsx")
+
+# The kernel's services surface, installed as a directory (ADR-005).
+KERNEL = os.path.join(SDK_ROOT, "src", "services")
+KERNEL_TENANT_HOSTS = os.path.join(KERNEL, "tenant-hosts.ts")
+KERNEL_TENANT_HOST_CONTROL = os.path.join(KERNEL, "tenant-host-control.ts")
+TENANT_HOST_CONTROL_TESTS = os.path.join(HERE, "tenant-host-control.test.mts")
+SITE_METADATA_LIB = os.path.join(SDK_ROOT, "templates", "app", "lib", "site-metadata.ts")
+SITE_METADATA_ICONS_TESTS = os.path.join(HERE, "site-metadata-icons.test.mts")
+
+# The kernel writes `from './x'`; node's ESM loader wants `from './x.ts'`.
+RELATIVE_IMPORT_RE = re.compile(r"(from\s+')(\./[a-z0-9-]+)(')")
+
+
+def load_manifest():
+    with open(MANIFEST, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def read(path):
+    with open(path, encoding="utf-8") as f:
+        return f.read()
+
+
+class TestManifest(unittest.TestCase):
+    def setUp(self):
+        self.manifest = load_manifest()
+
+    def test_identity_and_version(self):
+        self.assertEqual(self.manifest["name"], "base_sdk")
+        self.assertRegex(self.manifest["version"], r"^\d+\.\d+\.\d+$")
+
+    def test_every_install_source_exists(self):
+        for entry in self.manifest["installs"]:
+            src = os.path.join(SDK_ROOT, entry["from"])
+            self.assertTrue(os.path.exists(src), f"missing install source {entry['from']}")
+
+    def test_install_targets_are_unique(self):
+        targets = [e["to"] for e in self.manifest["installs"]]
+        self.assertEqual(len(targets), len(set(targets)), "duplicate install target")
+
+    def test_requires_are_not_installed(self):
+        targets = {e["to"] for e in self.manifest["installs"]}
+        for req in self.manifest["requires"]:
+            self.assertNotIn(req, targets, f"{req} is both required and installed")
+
+    def test_every_registry_is_installed(self):
+        by_from = {e["from"]: e["to"] for e in self.manifest["installs"]}
+        for fname in REGISTRIES:
+            rel = f"templates/components/custom/landing/{fname}"
+            self.assertIn(rel, by_from, f"registry {fname} is not in installs")
+            self.assertEqual(by_from[rel], f"components/custom/landing/{fname}")
+
+    def test_site_metadata_shell_is_installed(self):
+        by_from = {e["from"]: e["to"] for e in self.manifest["installs"]}
+        for src, dst in SITE_METADATA_INSTALLS.items():
+            self.assertIn(src, by_from, f"{src} is not in installs")
+            self.assertEqual(by_from[src], dst)
+
+    def test_brand_icon_route_is_installed(self):
+        # base_sdk 1.17.0: the generated favicon tile is SDK-owned and
+        # overwritable, so it ships through installs like the og routes.
+        by_from = {e["from"]: e["to"] for e in self.manifest["installs"]}
+        src, dst = BRAND_ICON_INSTALL
+        self.assertIn(src, by_from, f"{src} is not in installs")
+        self.assertEqual(by_from[src], dst)
+        self.assertNotIn(dst, self.manifest["requires"])
+        route = read(os.path.join(SDK_ROOT, src))
+        self.assertIn("export async function GET(", route)
+        self.assertIn('export const runtime = "nodejs";', route)
+        self.assertIn("public, max-age=86400", route)
+
+    def test_brand_icon_letter_takes_the_primary_colour(self):
+        # Ray, 2026-09-09: "that letter should take color of primary
+        # color" - the registered themeColor first, else the host's
+        # --primary token, never a hard-coded brand.
+        route = read(os.path.join(SDK_ROOT, BRAND_ICON_INSTALL[0]))
+        self.assertIn("copy.themeColor", route)
+        self.assertIn("--primary", route)
+        self.assertIn("app/globals.css", route)
+
+    def test_brand_icon_primary_is_found_in_any_root_block(self):
+        # base_sdk 1.19.1: rokctai_frontend's app/globals.css opens with a
+        # `:root` of unrelated variables and keeps `--primary: 48 96% 53%`
+        # in a SECOND `:root` under `@layer base`; 1.17.0 read only the
+        # first `:root {` and drew a white R. Ray, 2026-09-09: the letter
+        # takes the primary colour. Every `:root` block is scanned in
+        # order and the first one that declares `--primary` wins.
+        route = read(os.path.join(SDK_ROOT, BRAND_ICON_INSTALL[0]))
+        self.assertIn("function rootBlocksOf(css: string)", route)
+        self.assertIn("for (const { selector, body } of rootBlocksOf(css))", route)
+        self.assertIn("text.matchAll(ROOT_SELECTOR_RE)", route)
+        # The old shape - one search, one slice to the first `}` - is gone.
+        self.assertNotIn('const close = css.indexOf("}", open);', route)
+        # Executed for real: the three pure helpers are lifted out of the
+        # route verbatim (they import nothing) and run under node, which
+        # strips the type annotations itself (22.6+).
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "node (22.6+) is needed to execute rootPrimaryOf")
+        start = route.index("/** A `:root` selector head")
+        end = route.index("let cachedGlobalsPrimary")
+        helpers = route[start:end]
+        cases = {
+            # rokctai_frontend: theme tokens in the second :root, under @layer base.
+            "later_layer": (
+                ":root { --foreground-rgb: 0, 0, 0; }\n"
+                "@media (prefers-color-scheme: dark) { :root { --foreground-rgb: 255, 255, 255; } }\n"
+                "@layer base { :root { --background: 0 0% 100%; --primary: 48 96% 53%;"
+                " --primary-foreground: 0 0% 0%; } .dark { --primary: 0 0% 98%; } }\n",
+                "48 96% 53%",
+            ),
+            # supacharge-web: the first :root already carries it, unchanged.
+            "first_block": (
+                "@layer base { :root { --primary: 24 100% 50%; } .dark { --primary: 0 0% 98%; } }\n",
+                "24 100% 50%",
+            ),
+            # A .dark override of :root is not the theme's primary.
+            "dark_root_skipped": (
+                ":root.dark { --primary: 0 0% 98%; }\n.dark :root { --primary: 0 0% 90%; }\n"
+                ":root { --primary: #ff6600; }\n",
+                "#ff6600",
+            ),
+            # Only .dark blocks define it: nothing, so the route falls back.
+            "only_dark": (".dark { --primary: 0 0% 98%; }\n:root { --background: 0 0% 100%; }\n", None),
+            # A brace inside a comment does not unbalance the scan.
+            "comment_brace": (
+                ":root { /* { */ --foreground-rgb: 0, 0, 0; }\n@layer base { :root { --primary: 24 100% 50%; } }\n",
+                "24 100% 50%",
+            ),
+            # --primary-foreground is not --primary.
+            "foreground_only": (":root { --primary-foreground: 0 0% 0%; }\n", None),
+        }
+        script = (
+            helpers
+            + "\nconst cases: Record<string, string> = "
+            + json.dumps({k: v[0] for k, v in cases.items()})
+            + ";\nconst out: Record<string, string | null> = {};\n"
+            + "for (const [k, css] of Object.entries(cases)) out[k] = rootPrimaryOf(css);\n"
+            + "console.log(JSON.stringify(out));\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "root-primary.mts")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(script)
+            run = subprocess.run(
+                [node, "--experimental-strip-types", "--no-warnings", path],
+                capture_output=True, text=True, timeout=60,
+            )
+        self.assertEqual(run.returncode, 0, run.stderr)
+        got = json.loads(run.stdout.strip().splitlines()[-1])
+        for name, (_, want) in cases.items():
+            with self.subTest(case=name):
+                self.assertEqual(got[name], want)
+
+    def test_kernel_services_are_installed_as_a_directory(self):
+        by_from = {e["from"]: e["to"] for e in self.manifest["installs"]}
+        self.assertEqual(by_from.get("src/services"), "app/services/base")
+        self.assertTrue(os.path.exists(KERNEL_TENANT_HOST_CONTROL))
+
+    def test_tenant_host_control_contract(self):
+        # base_sdk 1.20.0: the control site answers which tenant a request
+        # host belongs to. Guest, cached both ways, never thrown, never
+        # asked for a non-public host or the shell's own, and edge-safe so
+        # auth_sdk's middleware can call it.
+        src = read(KERNEL_TENANT_HOST_CONTROL)
+        self.assertIn(
+            "export const TENANT_HOST_RESOLVE_METHOD =\n  'control.control.api.subscription.resolve_site_by_host';",
+            src,
+        )
+        self.assertIn("export const TENANT_SITE_HEADER = 'x-rokct-tenant-site';", src)
+        self.assertIn("export const TENANT_HOST_POSITIVE_TTL_MS = 5 * 60 * 1000;", src)
+        self.assertIn("export const TENANT_HOST_NEGATIVE_TTL_MS = 60 * 1000;", src)
+        for env in ("ROKCT_TENANT_HOST_TTL_MS", "ROKCT_TENANT_HOST_NEGATIVE_TTL_MS",
+                    "ROKCT_TENANT_HOST_TIMEOUT_MS", "ROKCT_TENANT_HOST_LOOKUP",
+                    "NEXT_PUBLIC_SITE_URL"):
+            self.assertIn(f"'{env}'", src, f"{env} is not read")
+        self.assertIn("export async function resolveTenantSiteForRequest(", src)
+        self.assertIn("export async function resolveTenantSiteByHost(", src)
+        self.assertIn("export function registerControlTenantHostResolver(): boolean", src)
+        self.assertIn("if (!isPublicHost(name)) return null;", src)
+        # Edge-safe: only the pure kernel modules, no session, no next/headers.
+        imports = re.findall(r"^(?:import .*|\}) from '([^']+)';$", src, re.M)
+        self.assertEqual(sorted(set(imports)), ["./gateway-constants", "./telemetry", "./tenant-hosts"])
+        self.assertNotIn("next/headers", src)
+        self.assertNotIn("./session", src)
+        self.assertNotIn("Authorization", src)
+        # The gateway registers it at load, so resolveTenantBaseUrl's
+        # per-host step keeps working with no host wiring.
+        gateway = read(os.path.join(KERNEL, "platform-gateway.ts"))
+        self.assertIn("import { registerControlTenantHostResolver } from './tenant-host-control';", gateway)
+        self.assertIn("\nregisterControlTenantHostResolver();\n", gateway)
+        index = read(os.path.join(KERNEL, "index.ts"))
+        self.assertIn("} from './tenant-host-control';", index)
+        for name in ("resolveTenantSiteForRequest", "TENANT_SITE_HEADER", "requestHost", "isPublicHost"):
+            self.assertIn(f"  {name},", index, f"index.ts does not export {name}")
+
+    def test_tenant_host_control_behaviour_under_node(self):
+        # Executed for real: the kernel's services are staged into a temp
+        # dir with their relative imports given the `.ts` node's loader
+        # wants, and tests/tenant-host-control.test.mts runs against them
+        # under node's own test runner (22.6+, type stripping).
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "node (22.6+) is needed to execute tenant-host-control")
+        with tempfile.TemporaryDirectory() as tmp:
+            for fname in os.listdir(KERNEL):
+                if not fname.endswith(".ts"):
+                    continue
+                staged = RELATIVE_IMPORT_RE.sub(r"\1\2.ts\3", read(os.path.join(KERNEL, fname)))
+                with open(os.path.join(tmp, fname), "w", encoding="utf-8") as f:
+                    f.write(staged)
+            shutil.copy(TENANT_HOST_CONTROL_TESTS, os.path.join(tmp, "tenant-host-control.test.mts"))
+            run = subprocess.run(
+                [node, "--experimental-strip-types", "--no-warnings", "--test",
+                 os.path.join(tmp, "tenant-host-control.test.mts")],
+                capture_output=True, text=True, timeout=120,
+            )
+        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+        self.assertRegex(run.stdout, re.compile(r"^# fail 0$", re.M), run.stdout)
+        passed = re.search(r"^# pass (\d+)$", run.stdout, re.M)
+        self.assertIsNotNone(passed, run.stdout)
+        self.assertGreaterEqual(int(passed.group(1)), 16)
+
+    def test_page_metadata_carries_no_icons(self):
+        # base_sdk 1.20.0 (Ray, 2026-09-09: "rokct got a letter favicon and
+        # lost its own image"): Next replaces `icons` per segment wholesale,
+        # so a page that emitted the generated set overrode the root
+        # layout's own override. Only the layout scope resolves icons.
+        lib = read(SITE_METADATA_LIB)
+        self.assertIn(
+            'options.scope === "page" || overrides?.icons !== undefined\n      ? undefined\n      : await resolveIcons(copy);',
+            lib,
+        )
+        self.assertNotIn("overrides?.icons === undefined ? await resolveIcons(copy) : undefined", lib)
+        self.assertIn("Known limitation: hostIconExists() is a runtime check", lib)
+        # Executed for real: the lib is staged next to the kernel with its
+        # registry import stubbed (one copy, no icon) and run under node.
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "node (22.6+) is needed to execute buildPageMetadata")
+        with tempfile.TemporaryDirectory() as tmp:
+            for fname in os.listdir(KERNEL):
+                if fname.endswith(".ts"):
+                    staged = RELATIVE_IMPORT_RE.sub(r"\1\2.ts\3", read(os.path.join(KERNEL, fname)))
+                    with open(os.path.join(tmp, fname), "w", encoding="utf-8") as f:
+                        f.write(staged)
+            staged = lib.replace(
+                'from "@/app/services/base/tenant-hosts"', 'from "./tenant-hosts.ts"'
+            ).replace(
+                'from "@/components/custom/landing/site-metadata"', 'from "./landing-site-metadata.ts"'
+            )
+            self.assertNotIn('from "@/', staged, "site-metadata.ts imports something the stage does not cover")
+            with open(os.path.join(tmp, "site-metadata.ts"), "w", encoding="utf-8") as f:
+                f.write(staged)
+            with open(os.path.join(tmp, "landing-site-metadata.ts"), "w", encoding="utf-8") as f:
+                f.write(
+                    "export async function loadSiteMetadata() {\n"
+                    '  return { title: "Shell", siteName: "Shell", url: "https://shell.platform-shell.co" };\n'
+                    "}\n"
+                )
+            shutil.copy(SITE_METADATA_ICONS_TESTS, os.path.join(tmp, "site-metadata-icons.test.mts"))
+            run = subprocess.run(
+                [node, "--experimental-strip-types", "--no-warnings", "--test",
+                 os.path.join(tmp, "site-metadata-icons.test.mts")],
+                capture_output=True, text=True, timeout=120, cwd=tmp,
+            )
+        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+        self.assertRegex(run.stdout, re.compile(r"^# fail 0$", re.M), run.stdout)
+
+    def test_host_layout_is_a_declared_prerequisite(self):
+        self.assertIn("app/layout.tsx", self.manifest["requires"])
+        note = self.manifest["_comment"].get("app/layout.tsx", "")
+        self.assertIn("buildSiteMetadata", note)
+        self.assertIn("@rokct-sdk-site-metadata-start", note)
+
+    def test_changelog_leads_with_the_manifest_version(self):
+        changelog = read(os.path.join(SDK_ROOT, "CHANGELOG.md"))
+        heads = re.findall(r"^## (\d+\.\d+\.\d+)$", changelog, re.M)
+        self.assertTrue(heads, "CHANGELOG.md has no version heading")
+        self.assertEqual(heads[0], self.manifest["version"])
+
+
+class TestRegistryMarkers(unittest.TestCase):
+    def markers(self, fname):
+        return MARKER_RE.findall(read(os.path.join(LANDING, fname)))
+
+    def test_each_registry_has_exactly_one_marker_pair(self):
+        for fname, name in REGISTRIES.items():
+            with self.subTest(registry=fname):
+                found = self.markers(fname)
+                self.assertEqual(
+                    found,
+                    [(name, "start"), (name, "end")],
+                    f"{fname} must carry exactly one // @rokct-sdk-{name}-start/-end pair",
+                )
+
+    def test_no_registry_carries_another_registrys_marker(self):
+        for fname, name in REGISTRIES.items():
+            with self.subTest(registry=fname):
+                others = {n for n, _ in self.markers(fname)} - {name}
+                self.assertFalse(others, f"{fname} also carries markers {sorted(others)}")
+
+    def test_site_metadata_marker_sits_inside_the_array_literal(self):
+        src = read(os.path.join(LANDING, "site-metadata.ts"))
+        start = src.index("// @rokct-sdk-site-metadata-start")
+        end = src.index("// @rokct-sdk-site-metadata-end")
+        opened = src.rindex("export const SITE_METADATA: SiteMetadataEntry[] = [", 0, start)
+        closed = src.index("];", end)
+        self.assertLess(opened, start)
+        self.assertLess(start, end)
+        self.assertLess(end, closed)
+        self.assertEqual(src.count("@rokct-sdk-site-metadata-start"), 1)
+        self.assertEqual(src.count("@rokct-sdk-site-metadata-end"), 1)
+
+    def test_site_metadata_declares_the_tour_still(self):
+        # base_sdk 1.16.0: the generated card draws a registered still of the
+        # app in a phone frame; the registry declares the two fields and the
+        # route reads them.
+        src = read(os.path.join(LANDING, "site-metadata.ts"))
+        self.assertIn("still?: string;", src)
+        self.assertIn('stillAnchor?: "top" | "bottom";', src)
+        route = read(os.path.join(SDK_ROOT, "templates", "app", "opengraph-image.tsx"))
+        self.assertIn("copy.still", route)
+        self.assertIn("copy.stillAnchor", route)
+
+    def test_header_menu_declares_the_mega_panel_fields(self):
+        # base_sdk 1.18.0: the groups open as ONE panel under the first
+        # group's label; an item may carry a blurb and a named icon, and the
+        # header resolves the icon from a closed set.
+        src = read(os.path.join(LANDING, "header-menu.ts"))
+        self.assertIn("export type HeaderMenuIcon =", src)
+        self.assertIn("description?: string;", src)
+        self.assertIn("icon?: HeaderMenuIcon;", src)
+        for icon in ("box", "globe", "smartphone", "message-square", "zap", "wrench", "file-text", "chrome"):
+            self.assertIn(f'| "{icon}"', src)
+        # Both resolvers carry the two fields onto HeaderMenuItem.
+        self.assertEqual(src.count("description: link.description,"), 1)
+        self.assertEqual(src.count("description: entry.description,"), 1)
+        partials = read(os.path.join(SDK_ROOT, "templates", "components", "custom", "header-menu.tsx"))
+        self.assertIn("function DesktopMegaMenu(", partials)
+        self.assertIn("const MENU_ICONS: Record<HeaderMenuIcon, LucideIcon>", partials)
+        self.assertIn("{groups.length > 0 && <DesktopMegaMenu groups={groups} />}", partials)
+        self.assertNotIn("function DesktopGroup(", partials)
+        for hard_coded in ("yellow-", "zinc-", "gray-", "#0a0a0a"):
+            self.assertNotIn(hard_coded, partials, f"header-menu.tsx paints a hard-coded colour: {hard_coded}")
+
+    def test_header_menu_action_carries_an_icon(self):
+        # base_sdk 1.20.0 (Ray, 2026-09-09: rokct "lost its chrome icon"):
+        # an action may name a glyph from the same closed set as an item,
+        # drawn before the label in both layouts; "chrome" is lucide's own
+        # mark. An action without one renders the label alone, as before.
+        src = read(os.path.join(LANDING, "header-menu.ts"))
+        action = src[src.index("export interface HeaderMenuAction {"):]
+        action = action[:action.index("}")]
+        self.assertIn("icon?: HeaderMenuIcon;", action)
+        # A link, the resolved item and now an action each name an icon.
+        self.assertEqual(src.count("icon?: HeaderMenuIcon;"), 3)
+        self.assertIn('| "chrome";', src)
+        partials = read(os.path.join(SDK_ROOT, "templates", "components", "custom", "header-menu.tsx"))
+        self.assertIn("  chrome: Chrome,", partials)
+        self.assertRegex(partials, r"import \{[^}]*\bChrome\b[^}]*\} from \"lucide-react\";")
+        actions = partials[partials.index("export function HeaderMenuActions("):partials.index("export interface HeaderMenuRowProps")]
+        # With an icon it is drawn before the label; without one the guard
+        # leaves the label alone - one content node used by both the
+        # external <a> and the internal <Link>.
+        self.assertIn("const Icon = action.icon ? MENU_ICONS[action.icon] : null;", actions)
+        self.assertIn('{Icon && <Icon aria-hidden="true" className="h-5 w-5 shrink-0" />}', actions)
+        self.assertLess(actions.index("{Icon && <Icon"), actions.index("<span>{action.label}</span>"))
+        self.assertEqual(actions.count("{content}"), 2)
+        self.assertNotIn("{action.label}\n", actions)
+        # No CDN or third-party asset for the mark.
+        self.assertNotIn("http", actions)
+
+    def test_site_metadata_declares_the_icon(self):
+        # base_sdk 1.17.0: a home SDK may register a real icon and the
+        # letter's colour; with none, and no host icon file, the shell
+        # links the generated tile.
+        src = read(os.path.join(LANDING, "site-metadata.ts"))
+        self.assertIn("icon?: string;", src)
+        self.assertIn("themeColor?: string;", src)
+
+    def test_display_host_prefers_the_request_host(self):
+        # base_sdk 1.19.0: the favicon letter and the card's host line
+        # follow the REQUEST host first (a white-label / custom domain
+        # gets its own), falling back to the configured site url only for
+        # a non-public host - local, loopback, a preview deployment.
+        lib = read(os.path.join(SDK_ROOT, "templates", "app", "lib", "site-metadata.ts"))
+        self.assertIn("export function resolveDisplayHost(", lib)
+        # base_sdk 1.20.0: the predicate itself (normaliseHost, isPublicHost,
+        # requestHost and the two lists) lives in the kernel, pure and
+        # edge-safe, so middleware shares it; the lib re-exports it so the
+        # 1.19.0 surface is unchanged.
+        kernel = read(KERNEL_TENANT_HOSTS)
+        self.assertIn("headers.get('x-forwarded-host')", kernel)
+        self.assertIn("headers.get('host')", kernel)
+        self.assertIn('from "@/app/services/base/tenant-hosts";', lib)
+        for name in ("NON_PUBLIC_HOSTS", "NON_PUBLIC_HOST_SUFFIXES", "isPublicHost",
+                     "normaliseHost", "requestHost", "type HeaderReader"):
+            self.assertIn(f"  {name},", lib, f"site-metadata.ts no longer re-exports {name}")
+        self.assertNotIn("export function isPublicHost(", lib)
+        self.assertNotIn("export function normaliseHost(", lib)
+        # The request host is checked first; the configured site only after.
+        self.assertLess(lib.index("if (isPublicHost(fromRequest)) return fromRequest;"),
+                        lib.index("return siteHost(copy) ||"))
+        for non_public in ("localhost", "127.0.0.1", "[::1]", "0.0.0.0"):
+            self.assertIn(f"'{non_public}'", kernel, f"{non_public} is not excluded")
+        for suffix in (".vercel.app", ".local", ".internal"):
+            self.assertIn(f"'{suffix}'", kernel, f"{suffix} is not excluded")
+        # Both consumers go through the one helper, so the tile's letter and
+        # the card's host line never disagree.
+        route = read(os.path.join(SDK_ROOT, BRAND_ICON_INSTALL[0]))
+        self.assertIn("resolveDisplayHost(copy, request.headers)", route)
+        self.assertNotIn("resolveSiteUrl", route)
+        card = read(os.path.join(SDK_ROOT, "templates", "app", "opengraph-image.tsx"))
+        self.assertIn("resolveDisplayHost(copy, h)", card)
+        self.assertNotIn("function displayHost(", card)
+
+    def test_metadata_shell_falls_back_to_the_brand_icon(self):
+        lib = read(os.path.join(SDK_ROOT, "templates", "app", "lib", "site-metadata.ts"))
+        self.assertIn('export const GENERATED_BRAND_ICON = "/brand-icon";', lib)
+        self.assertIn("copy.icon", lib)
+        self.assertIn("existsSync", lib)
+        self.assertIn('typeof window !== "undefined"', lib)
+        for host_file in ("app/favicon.ico", "app/icon.png", "app/icon.svg",
+                          "app/icon.ico", "app/apple-icon.png", "public/favicon.ico"):
+            self.assertIn(f'"{host_file}"', lib, f"{host_file} is not a checked host icon")
+
+    def test_site_metadata_exports_its_contract(self):
+        src = read(os.path.join(LANDING, "site-metadata.ts"))
+        for needle in (
+            "export interface SiteMetadataCopy",
+            "export interface SiteMetadataEntry",
+            "export const SITE_METADATA: SiteMetadataEntry[]",
+            "export async function loadSiteMetadata(): Promise<SiteMetadataCopy>",
+            'import { PLATFORM_NAME } from "@/app/config/platform"',
+        ):
+            self.assertIn(needle, src)
+
+
+if __name__ == "__main__":
+    unittest.main()
