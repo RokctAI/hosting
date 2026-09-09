@@ -1,0 +1,311 @@
+name: Build (Smart)
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+  # Pre-merge signal (Vercel previews are off, #10). The pipeline's release
+  # job and every other side-effecting job in shared-workflows skip on
+  # pull_request, so a PR run is lint + security + node build + compose
+  # canary only; nothing is tagged or published until the merge lands on
+  # main. Same paths-ignore as push so a docs-only PR is not built either.
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+  repository_dispatch:
+    types: [schema_updated]
+  workflow_dispatch:
+    inputs:
+      backfill_ai_notes_cutoff_version:
+        type: string
+        default: ""
+        description: "Regenerate AI release notes starting from this version (use 'all' for full history)"
+      node-version:
+        type: string
+        default: '24'
+      version_format:
+        type: string
+        default: '##.##.##'
+        description: "Format for version bumping (e.g. ##.##.## or ##.##.#)"
+
+permissions: write-all
+
+jobs:
+  # --- 1. DETECT PROJECT TYPE ---
+  # Mirrors RokctAI/rokctai_frontend's build.yml so both Next.js shells stay
+  # on one shape. This repo has no pubspec.yaml, so `detect` always resolves
+  # to 'node'; it is kept rather than hardcoded so the two files stay
+  # diffable against each other.
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      is_flutter: ${{ steps.check.outputs.is_flutter }}
+      is_node: ${{ steps.check.outputs.is_node }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Project Type
+        id: check
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+             echo "Flutter project detected."
+             echo "is_flutter=true" >> "$GITHUB_OUTPUT"
+             echo "is_node=false" >> "$GITHUB_OUTPUT"
+          elif [ -f "package.json" ]; then
+             echo "Node.js project detected."
+             echo "is_flutter=false" >> "$GITHUB_OUTPUT"
+             echo "is_node=true" >> "$GITHUB_OUTPUT"
+          else
+             echo "Unknown project type. Skipping builds."
+             echo "is_flutter=false" >> "$GITHUB_OUTPUT"
+             echo "is_node=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # --- 1.4. COMPOSE CHECK (registry-template compose canary) ---
+  # This shell is the hosting product's storefront shell. Per the unified
+  # composer contract (The-Rokct-Protocol #253), the shell stays THIN: it
+  # commits only the one-line .rokct/config/app_type naming a product
+  # template in the protocol's registry
+  # (core/utils/frappe/composer/<app_type>.json); the Next.js composer
+  # materializes composer.json from that template and composes the
+  # template's `sdks` list. Nothing composed is ever committed back — the
+  # bare shell stays bare on main.
+  #
+  # This job is a validation canary only: it proves the registry compose
+  # succeeds against protocol main. It SELF-SKIPS (exit 0, loud log line)
+  # whenever any prerequisite is absent — no app_type marker, protocol not
+  # reachable, the registry contract not yet on protocol main, the named
+  # template missing / carrying no enabled `sdks` (then app_type is a plain
+  # role marker per the contract), or no MONOREPO_PAT to read the private
+  # SDK repos with. It does not gate the pipeline job, so the build/release
+  # path is unaffected in every case.
+  #
+  # Note the canary answers a NARROWER question than the pipeline's node CI
+  # (universal-node-ci.yml), which composes and then BUILDS the composed
+  # tree. Compose succeeding here while that build fails is the signal that
+  # the composed SDKs need a host prerequisite this shell does not provide.
+  compose-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Compose from registry template (self-skipping)
+        env:
+          MONOREPO_PAT: ${{ secrets.MONOREPO_PAT }}
+        run: |
+          set -euo pipefail
+
+          # Gate 1: the shell must carry the app_type marker.
+          if [ ! -f ".rokct/config/app_type" ]; then
+            echo "No .rokct/config/app_type marker - not a composed shell. Skipping compose check."
+            exit 0
+          fi
+          APP_TYPE=$(tr -d '\r\n[:space:]' < .rokct/config/app_type | tr '[:upper:]' '[:lower:]')
+          echo "app_type marker: '${APP_TYPE}'"
+
+          # Gate 2: a protocol checkout (composer code + template registry).
+          PROTOCOL_DIR="${RUNNER_TEMP}/The-Rokct-Protocol"
+          if ! git clone --depth 1 "https://x-access-token:${MONOREPO_PAT:-}@github.com/RokctAI/The-Rokct-Protocol.git" "$PROTOCOL_DIR" 2>/dev/null; then
+            echo "::warning::Could not clone The-Rokct-Protocol (missing MONOREPO_PAT?). Skipping compose check."
+            exit 0
+          fi
+
+          # Gate 3: the registry contract (protocol PR #253) must be on
+          # protocol main. Before it lands, composing from a template is not
+          # possible - skip.
+          if ! grep -q "def resolve_composer_config" "$PROTOCOL_DIR/core/utils/nextjs/sdk_composer.py" 2>/dev/null; then
+            echo "Registry-template contract not on protocol main yet (The-Rokct-Protocol #253). Skipping compose check."
+            exit 0
+          fi
+
+          # Gate 4: the marker must name a registry template with at least
+          # one enabled `sdks` entry; otherwise it is a plain role marker
+          # (shared-namespace contract) and there is nothing to compose here.
+          TEMPLATE="$PROTOCOL_DIR/core/utils/frappe/composer/${APP_TYPE}.json"
+          if [ ! -f "$TEMPLATE" ] || ! python3 -c "import json,sys; t=json.load(open(sys.argv[1])); sys.exit(0 if any(s.get('enabled') for s in t.get('sdks', [])) else 1)" "$TEMPLATE"; then
+            echo "Registry template '${APP_TYPE}' absent or has no enabled sdks - app_type acts as a plain role marker. Skipping compose check."
+            exit 0
+          fi
+
+          # Gate 5: the SDK repos the template points at are private, so the
+          # composer's clone needs MONOREPO_PAT. Without it the compose would
+          # fail on repo access rather than on anything this repo controls,
+          # so self-skip in the same spirit as the gates above. (The protocol
+          # repo itself is public, so Gate 2 does not catch this.)
+          if [ -z "${MONOREPO_PAT:-}" ]; then
+            echo "::warning::MONOREPO_PAT is not set; the private SDK repos are unreadable. Skipping compose check."
+            exit 0
+          fi
+
+          echo "Composing '${APP_TYPE}' from the registry template..."
+          # install.py files import sdk_installer_base from the host's .rokct/.
+          cp "$PROTOCOL_DIR/core/utils/nextjs/sdk_installer_base.py" .rokct/sdk_installer_base.py
+          export ROKCT_PROTOCOL_DIR="$PROTOCOL_DIR"
+          # This repo's package manager is npm; we install merged deps below.
+          export ROKCT_SKIP_NPM_INSTALL=1
+          python3 "$PROTOCOL_DIR/core/utils/nextjs/sdk_composer.py"
+
+          echo "Compose OK. Verifying merged dependencies install..."
+          npm install --no-audit --no-fund
+
+          echo "--- composed change summary (nothing is committed) ---"
+          # Capture once; piping git into head would SIGPIPE git (exit 141
+          # under pipefail) as soon as head stops reading after 40 lines.
+          STATUS=$(git status --porcelain)
+          head -40 <<< "$STATUS"
+          if [ -n "$STATUS" ]; then COUNT=$(wc -l <<< "$STATUS"); else COUNT=0; fi
+          echo "...total changed/untracked paths: $COUNT"
+
+  # --- 1.5. OFFLINE COMPOSE (what Vercel actually runs) ---
+  # The deploy lane, reproduced exactly: Vercel installs dependencies, then
+  # runs vercel.json's buildCommand — `bash scripts/compose.sh && npm run
+  # build` — against the SDK cache committed under .rokct/cache/. No
+  # MONOREPO_PAT is passed to this job on purpose: if the offline compose
+  # ever needed the network or a token, this job goes red while the
+  # compose-check canary above (which clones) would still pass.
+  #
+  # It also carries the zero-drift gate for this shell. The fleet's
+  # clean-head workflow only runs for project_type 'flutter'
+  # (universal-pipeline.yml), so a Node shell that composes at deploy time
+  # has nowhere else to assert that a fresh compose reproduces the committed
+  # tree: every path an installer writes is either gitignored (the generated
+  # block at the end of .gitignore) or identical to what is committed, so
+  # `git status` must be empty afterwards.
+  compose-offline:
+    name: Compose Offline + Build (Vercel parity)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      # Same order Vercel uses: install from the committed lockfile first,
+      # then compose, then build.
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Compose from the committed cache (no network, no token)
+        run: |
+          set -euo pipefail
+          env -u POSTGRES_URL -u POSTGRES_URL_NON_POOLING -u AUTH_SECRET \
+              -u ROKCT_BASE_URL -u NEXT_PUBLIC_ROKCT_BASE_URL \
+              -u MONOREPO_PAT -u GH_TOKEN -u GITHUB_TOKEN \
+              bash scripts/compose.sh
+
+      - name: Zero-drift check (a compose must reproduce HEAD)
+        run: |
+          set -euo pipefail
+          DRIFT="$(git status --porcelain)"
+          if [ -n "$DRIFT" ]; then
+            echo "::error::A compose changed the committed tree. Every installer destination must be either gitignored (the block at the end of .gitignore, regenerated by scripts/compose.sh refresh) or committed byte-identical."
+            echo "$DRIFT"
+            {
+              echo "## Zero-drift check — FAILED"
+              echo ""
+              echo '```'
+              echo "$DRIFT"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "HEAD is clean: composing from the committed cache changed nothing tracked."
+
+      # Vercel parity means the BUILD ENVIRONMENT matches too, not just the
+      # command. This step used to inject
+      # `POSTGRES_URL: postgres://placeholder:...@localhost:5432/placeholder`
+      # because auth_sdk's db/index.ts constructed its postgres client at
+      # import time and `next build` loads that module while collecting page
+      # data for /api/auth/[...nextauth]. That placeholder is exactly what
+      # made this job miss the failure it exists to catch: POSTGRES_URL is a
+      # RUNTIME value that Vercel does not put in the build environment, so
+      # the job went green on a variable production never has and
+      # supacharge-web's deploy died on `Failed to collect page data for
+      # /api/auth/[...nextauth]` (its main @ 15767d3); this shell keeps the
+      # same parity rule from its first composed commit.
+      #
+      # Nothing is injected now, and the runtime-only variables are actively
+      # unset so a value leaking in from the runner, a repo/org variable or a
+      # future `env:` block cannot quietly restore the blind spot. A build
+      # that needs any of these is a build that would fail on Vercel, and this
+      # job must go red for it:
+      #
+      #   POSTGRES_URL / POSTGRES_URL_NON_POOLING  auth_sdk's drizzle client;
+      #                                            runtime + `npm run
+      #                                            db:migrate` only, and this
+      #                                            shell's build script does
+      #                                            not migrate.
+      #   AUTH_SECRET                              NextAuth signing key; read
+      #                                            per-request at runtime.
+      #   ROKCT_BASE_URL / NEXT_PUBLIC_ROKCT_BASE_URL
+      #                                            platform gateway origin;
+      #                                            every call through it is
+      #                                            request-scoped.
+      #   MONOREPO_PAT / GH_TOKEN / GITHUB_TOKEN   never present on Vercel;
+      #                                            an offline compose must not
+      #                                            reach the network at all.
+      #
+      # `env -u` is used rather than `env: VAR: ""` because an empty string is
+      # still a set variable, and code that only checks presence would read it
+      # as configured.
+      - name: Build the composed tree (no runtime env, exactly like Vercel)
+        run: |
+          set -euo pipefail
+          env -u POSTGRES_URL -u POSTGRES_URL_NON_POOLING -u AUTH_SECRET \
+              -u ROKCT_BASE_URL -u NEXT_PUBLIC_ROKCT_BASE_URL \
+              -u MONOREPO_PAT -u GH_TOKEN -u GITHUB_TOKEN \
+              npm run build 2>&1 | tee build.log
+
+      - name: Assert the composed routes are there
+        run: |
+          set -euo pipefail
+          MISSING=0
+          for ROUTE in "/landing" "/login" "/admin" "/manager"; do
+            if grep -qE "^[^A-Za-z]*(○|ƒ|●)? ?${ROUTE}\s*$" build.log; then
+              echo "route present: ${ROUTE}"
+            else
+              echo "::error::${ROUTE} is missing from the build's route table."
+              MISSING=1
+            fi
+          done
+          COUNT=$(awk '/^Route \(app\)/{f=1;next} f&&/^$/{exit} f' build.log | grep -cE "(^|[[:space:]])/" || true)
+          echo "routes in the table: ${COUNT}"
+          {
+            echo "## Composed build"
+            echo ""
+            echo "Routes: ${COUNT}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$MISSING"
+
+  # --- 2. UNIFIED PIPELINE (Smart) ---
+  # Same reusable pipeline every other shell calls. package-manager is 'npm'
+  # here because this repo's committed lockfile is package-lock.json (the
+  # rokctai_frontend shell passes 'pnpm' for its pnpm-lock.yaml).
+  pipeline:
+    needs: [detect]
+    uses: RokctAI/shared-workflows/.github/workflows/universal-pipeline.yml@main
+    with:
+      backfill_ai_notes_cutoff_version: ${{ inputs.backfill_ai_notes_cutoff_version }}
+      project_type: ${{ needs.detect.outputs.is_flutter == 'true' && 'flutter' || (needs.detect.outputs.is_node == 'true' && 'node' || 'frappe') }}
+      # Quality Gate Toggles
+      run_security: true
+      run_lint: true
+      run_ci: true
+      # Deployment Configuration (Immediate release on Main)
+      release_strategy: 'immediate'
+      # Environment configuration
+      node-version: ${{ inputs.node-version || '24' }}
+      version_format: ${{ inputs.version_format || '##.##.##' }}
+      # This repo ships package-lock.json, not pnpm-lock.yaml.
+      package-manager: 'npm'
+    secrets: inherit

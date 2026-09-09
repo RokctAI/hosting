@@ -1,0 +1,104 @@
+{
+  "name": "hosting_sdk",
+  "version": "1.0.0",
+  "installs": [
+    {
+      "from": "templates/app/page.tsx",
+      "to": "app/page.tsx"
+    },
+    {
+      "from": "templates/components/custom/landing/hosting-page-sections.ts",
+      "to": "components/custom/landing/hosting-page-sections.ts"
+    },
+    {
+      "from": "templates/components/custom/hosting-features-section.tsx",
+      "to": "components/custom/hosting-features-section.tsx"
+    },
+    {
+      "from": "templates/components/custom/hosting-pricing-section.tsx",
+      "to": "components/custom/hosting-pricing-section.tsx"
+    },
+    {
+      "from": "templates/components/custom/landing/hosting-hero-copy.ts",
+      "to": "components/custom/landing/hosting-hero-copy.ts"
+    },
+    {
+      "from": "templates/components/custom/landing/hosting-hero-form.tsx",
+      "to": "components/custom/landing/hosting-hero-form.tsx"
+    },
+    {
+      "from": "templates/components/custom/landing/hosting-header-menu.ts",
+      "to": "components/custom/landing/hosting-header-menu.ts"
+    },
+    {
+      "from": "templates/components/custom/landing/hosting-site-metadata.ts",
+      "to": "components/custom/landing/hosting-site-metadata.ts"
+    },
+    {
+      "from": "templates/components/custom/landing/hosting-plans-query.ts",
+      "to": "components/custom/landing/hosting-plans-query.ts"
+    }
+  ],
+  "dependencies": {},
+  "devDependencies": {},
+  "integrations": [
+    {
+      "target": "components/custom/landing/hero-copy.ts",
+      "placeholder": "// @rokct-sdk-hero-copy-start",
+      "replacement": "  { id: \"hosting-hero-copy\", load: () => import(\"@/components/custom/landing/hosting-hero-copy\") },"
+    },
+    {
+      "target": "components/custom/landing/hero-form.ts",
+      "placeholder": "// @rokct-sdk-hero-form-start",
+      "replacement": "  { id: \"hosting-hero-form\", load: () => import(\"@/components/custom/landing/hosting-hero-form\") },"
+    },
+    {
+      "target": "components/custom/landing/page-sections.ts",
+      "placeholder": "// @rokct-sdk-page-sections-start",
+      "replacement": "  { id: \"hosting-features-section\", load: () => import(\"@/components/custom/hosting-features-section\") },"
+    },
+    {
+      "target": "components/custom/landing/page-sections.ts",
+      "placeholder": "// @rokct-sdk-page-sections-start",
+      "replacement": "  { id: \"hosting-pricing-section\", load: () => import(\"@/components/custom/hosting-pricing-section\") },"
+    },
+    {
+      "target": "components/custom/landing/header-menu.ts",
+      "placeholder": "// @rokct-sdk-header-menu-start",
+      "replacement": "  { id: \"hosting-header-menu\", load: () => import(\"@/components/custom/landing/hosting-header-menu\") },"
+    },
+    {
+      "target": "components/custom/landing/site-metadata.ts",
+      "placeholder": "// @rokct-sdk-site-metadata-start",
+      "replacement": "  { id: \"hosting-site-metadata\", load: () => import(\"@/components/custom/landing/hosting-site-metadata\") },"
+    },
+    {
+      "target": "components/custom/landing/plans-query.ts",
+      "placeholder": "// @rokct-sdk-plans-query-start",
+      "replacement": "  { id: \"hosting-plans\", load: () => import(\"@/components/custom/landing/hosting-plans-query\") },"
+    }
+  ],
+  "requires": [
+    "app/actions/base/landing.ts",
+    "app/landing/page.tsx",
+    "components/custom/landing/header-menu.ts",
+    "components/custom/landing/hero-copy.ts",
+    "components/custom/landing/hero-form.ts",
+    "components/custom/landing/landing-config.ts",
+    "components/custom/landing/page-sections.ts",
+    "components/custom/landing/plans-query.ts",
+    "components/custom/landing/site-metadata.ts"
+  ],
+  "_comment": {
+    "about": "The Next.js half of the hosting product (hosting/frappe is the Frappe half: the six Hosting Subscription Plan seed records and their Items). Ray, 2026-09-09: hosting is \"a seperate frontend for rokctapp, but it points to control site. just hosting focused and filter subscriptions to show only hosting related\" - and rokctapp's own storefront filters those same plans out (agent_sdk 1.10.0). hosting/docs/spec.md: rpanel stays a standalone product, so this SDK is a STOREFRONT on the control site and nothing more - no control panel, no signed-in home. It is the hosting shell's home SDK (core/utils/frappe/composer/hosting.json flags it home_sdk: true, beside telemetry_sdk, base_sdk and auth_sdk; no agent_sdk, whose integrations are unconditional and flip the shell AI-first), so it owns app/page.tsx (every visitor is redirected to base_sdk's composed landing at /landing; there is no signed-in home to send anyone to) and fills every seam base_sdk's landing host offers with ONE registered module each: components/custom/landing/hosting-hero-copy.ts at // @rokct-sdk-hero-copy-start (base_sdk >= 1.6.0's hero-copy.ts; the three things every plan is sized by cycle as the headline, the trust line states the two facts all six plans share), hosting-hero-form.tsx at // @rokct-sdk-hero-form-start (base_sdk >= 1.7.0's hero-form.ts; two calls to action and no input, as lms-hero-form.tsx: the sign-up and the pricing section - the base hero draws no call to action of its own without a registered body), hosting-features-section.tsx and hosting-pricing-section.tsx at // @rokct-sdk-page-sections-start (base_sdk >= 1.11.0's page-sections.ts; the pricing section declares meta.renders over the prefetched rows so the section and its Pricing nav stop drop together when the control site returns none), hosting-header-menu.ts at // @rokct-sdk-header-menu-start (base_sdk >= 1.14.0's header-menu.ts; two anchors, features and pricing, resolved against the page's live nav; no groups, and no actions because base's header already draws Log in and Sign up), hosting-site-metadata.ts at // @rokct-sdk-site-metadata-start (base_sdk >= 1.15.0's site-metadata.ts; declares its own SiteMetadataCopy-shaped interface rather than importing base's, as lms and agent do; no icon, so base_sdk >= 1.17.0's generated letter favicon applies), and hosting-plans-query.ts at // @rokct-sdk-plans-query-start (base_sdk >= 1.9.0's plans-query.ts; LANDING_CONFIG.plansQuery with ONE filter laid over its payload, [\"plan_category\", \"=\", \"Hosting\"], the inclusive mirror of agent-plans-query.ts; no plan id or name anywhere in the filter). Their copy is components/custom/landing/hosting-page-sections.ts and the hero and metadata modules; every claim is a fact from hosting/frappe/src/fixtures (plan tiers, website/database/storage sizes, the feature lines, the 14-day trial, USD, monthly and yearly billing) or hosting/frappe/README.md, and nothing a source does not carry is said. Colours route through the shell's theme tokens (bg-primary, text-primary-foreground, the zinc surfaces), never a literal brand colour. The base_sdk floor is 1.19.0: the home_sdk composer (protocol #390) injects only the home SDK's line at the single-answer markers (header-menu, hero-form, plans-query, site-metadata) and base 1.19.0 is the version that shipped with it on the rokctai_frontend refresh; every registry this SDK targets exists from 1.15.0 (1.17.0 for the generated favicon this SDK relies on by shipping no icon). base_sdk composes first, auth_sdk before this SDK because the landing's sign-up and login links are its routes.",
+    "app/actions/base/landing.ts": "installed by base_sdk >= 1.5.0 (LandingPlan, the plan row type hosting-pricing-section.tsx reads)",
+    "components/custom/landing/landing-config.ts": "installed by base_sdk >= 1.9.0 (LANDING_CONFIG.plansQuery and LandingPlansQuery for hosting-plans-query.ts; planSignupUrl for hosting-pricing-section.tsx)",
+    "components/custom/landing/hero-copy.ts": "installed by base_sdk >= 1.6.0 (the hero copy registry the hosting-hero-copy integration targets; HeroCopy for hosting-hero-copy.ts)",
+    "components/custom/landing/hero-form.ts": "installed by base_sdk >= 1.7.0 (the hero body registry the hosting-hero-form integration targets; HeroFormProps for hosting-hero-form.tsx)",
+    "components/custom/landing/page-sections.ts": "installed by base_sdk >= 1.11.0 (the registry the two section integrations target; PageSectionMeta/PageSectionProps for the section templates; >= 1.11.0 because hosting-pricing-section.tsx declares PageSectionMeta.renders)",
+    "components/custom/landing/header-menu.ts": "installed by base_sdk >= 1.14.0 (HeaderMenu, the shape hosting-header-menu.ts fills, and the registry its integrations line targets; the header that renders it ships in the same version)",
+    "components/custom/landing/site-metadata.ts": "installed by base_sdk >= 1.15.0 (the site-metadata registry the hosting-site-metadata integration targets; hosting-site-metadata.ts imports nothing from it, so against an older base the installer only skips the line)",
+    "components/custom/landing/plans-query.ts": "installed by base_sdk >= 1.9.0 (the plans-query registry the hosting-plans integration targets)",
+    "app/landing/page.tsx": "installed by base_sdk >= 1.5.0 (the composed landing app/page.tsx redirects every visitor to)"
+  }
+}
