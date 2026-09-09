@@ -4,6 +4,15 @@ __pycache__/
 node_modules/
 dist/
 build/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.vercel/
+.env.local
+.env*.local
 .env
 .venv/
 .DS_Store
@@ -11,3 +20,22 @@ build/
 # Protocol working state — installed by .rokct/initiate.py, not committed.
 .rokct/skills/
 .rokct/tmp/
+
+# The vendored SDK cache is COMMITTED — with `git add -f`, because it is
+# deliberately listed here. Vercel composes from it at build time
+# (vercel.json buildCommand -> scripts/compose.sh) with no token, no clone
+# and no network, so it has to be in the commit. The ignore rule exists for
+# one reason: the fleet linter's auto-fix runs
+# `prettier --write . --ignore-path .gitignore` and commits the result, and
+# reformatting a vendored template would change the cache content
+# .rokct/lock.json pins — the next build would refuse to compose. That pass
+# honours nothing but this file, so the shield lives here and
+# `scripts/compose.sh refresh` stages the cache with -f. Tracked files stay
+# tracked regardless of an ignore rule; the lock's content_sha256 fails the
+# build loudly if a cache entry is ever incomplete or edited.
+.rokct/cache/
+.rokct/sdk_installer_base.py
+
+# Composed output — everything the SDK installers write into the host, listed
+# in the generated block at the end of this file. The shell commits none of
+# it: it is regenerated on every compose from the cache above.
