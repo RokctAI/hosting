@@ -64,7 +64,7 @@
     "label_voucher_code": "Voucher Code",
     "ph_voucher_code": "ENTER-CODE",
     "label_domain": "Domain (Optional)",
-    "ph_domain": "example.com"
+    "ph_domain": "site domain"
   },
   "features": {
     "browser_extension": "Browser Extension",
@@ -620,7 +620,7 @@
       "role_client": "Client",
       "role_client_desc": "Restricted Portal access",
       "role_viewer": "Viewer",
-      "role_viewer_desc": "Read-only (Demo/Audit)",
+      "role_viewer_desc": "Read-only (audit)",
       "btn_create": "Create User",
       "toast_load_fail": "Failed to load users",
       "toast_create_success": "User created successfully",
