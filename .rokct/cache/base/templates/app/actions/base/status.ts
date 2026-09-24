@@ -30,6 +30,8 @@ import {
   platformCall,
 } from "@/app/services/base/platform-gateway";
 import {
+  isProbeAnswer,
+  readPlatformVersion,
   resolvePlatformStatusProbes,
   type PlatformStatus,
 } from "@/components/custom/landing/footer-chrome-config";
@@ -41,7 +43,8 @@ import {
  * shell: on rokctai_frontend it IS the control site, on a single-tenant
  * shell it is that tenant. `ROKCT_CONTROL_BASE_URL` says which one is
  * control without guessing, and falls back to the configured default so a
- * control-plane shell needs no new variable.
+ * control-plane shell needs no new variable. Only consulted when the
+ * control probe is opted in through `ROKCT_STATUS_SOURCE`.
  */
 function controlBaseUrl(): string | undefined {
   return (
@@ -60,31 +63,36 @@ function controlBaseUrl(): string | undefined {
  * `{data: {status: "ok" | "maintenance", version, user}}`; the gateway's own
  * `message` wrapper is already off by the time platformCall returns. Any
  * other answering cmd (control's version map, for one) carries no `status`
- * field, and an answer at all is the signal - which is exactly how
- * rokct.ai's host footer decides today.
+ * field, and an answer WITH SOMETHING IN IT is the signal - which is how
+ * rokct.ai's host footer decides. Since 1.40.0 a 2xx whose resolved body
+ * is null, not an object, or an empty object is not an answer
+ * ([isProbeAnswer]): a proxy or a placeholder page in front of a backend
+ * that is not there answers 200 with nothing, and that must read as
+ * offline, not operational. Only a real answer reaches this reader.
  */
-function readProbeAnswer(answer: unknown): {
+function readProbeAnswer(answer: Record<string, unknown>): {
   maintenance: boolean;
   version: string | null;
 } {
-  const body = (answer ?? {}) as Record<string, unknown>;
+  const body = answer;
   const data = (body.data ?? body) as Record<string, unknown>;
   const status = typeof data.status === "string" ? data.status.toLowerCase() : "";
-  const version = typeof data.version === "string" ? data.version : null;
-  return { maintenance: status === "maintenance", version };
+  return { maintenance: status === "maintenance", version: readPlatformVersion(answer) };
 }
 
 /**
  * The platform status, probed in the order
- * [resolvePlatformStatusProbes] gives: the tenant site first and the control
- * plane as the fallback by default, either of them alone or neither when
- * `ROKCT_STATUS_SOURCE` says so.
+ * [resolvePlatformStatusProbes] gives: the tenant site ONLY by default
+ * (since 1.37.0 - Ray, 2026-09-09: every shell reads its footer status
+ * from its own tenant backend, never from control), the control plane
+ * only when `ROKCT_STATUS_SOURCE` names it, or neither when it says `off`.
  *
  * The FIRST probe that answers decides. A probe that cannot run at all
  * because no origin is configured for its site is skipped without counting
  * as a failure, so a shell with no backend wired up reports `unconfigured`
  * (the row then shows no indicator) instead of claiming the platform is
- * down. `offline` means every configured probe was tried and none answered.
+ * down. `offline` means every configured probe was tried and none answered
+ * - a 2xx with an empty body counts as tried and not answered (1.40.0).
  *
  * Both default cmds are guest-accessible, so this never needs a session, and
  * it sends no credentials.
@@ -106,6 +114,9 @@ export async function getPlatformStatus(): Promise<PlatformStatus> {
         timeout: 5000,
       });
       attempted = true;
+      // A 2xx with nothing in it (null, a scalar, an array, {}) is a proxy
+      // or a placeholder where the backend should be: not an answer.
+      if (!isProbeAnswer(answer)) continue;
       const { maintenance, version } = readProbeAnswer(answer);
       return {
         state: maintenance ? "maintenance" : "operational",
