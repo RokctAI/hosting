@@ -72,6 +72,69 @@
 // even when named. [resolveHeaderBrand] is the pure rule and
 // [loadHeaderBrand] the loader the header renders through.
 //
+// Since 1.24.0 the brand declaration also says whether the host's mark
+// draws its badge (`badge`: rokct.ai's BETA strip) and whether the brand
+// COLLAPSES the way rokct.ai's old header did (`collapse`: the large
+// wordmark slides away after load, the mark keeps the visitor's country
+// code and a chevron, and the desktop nav fades until the pointer is over
+// the bar or the page is scrolled). Ray, 2026-09-09: rokct.ai keeps
+// everything its old host header had; a shell that declares neither draws
+// the still brand it drew before. An action may also be `secondary`, the
+// filled muted button that header drew its "Chat with ROK" as.
+//
+// Since 1.25.0 an action's icon may also be an IMAGE the shell serves
+// itself (`{ src, alt }`, the shape a hero badge's icon takes) beside the
+// named glyphs. Ray, 2026-09-09, on the Chrome Web Store mark rokct.ai's
+// old header hot-linked from a third party's CDN: "use it but bring it
+// local" - so the home SDK installs the file under public/ and names its
+// path here; base never names a third-party host.
+//
+// Since 1.28.0 a collapsing brand that declares NO image (`logo: "none"`,
+// the wordmark is the logo) folds into a letter tile rather than into
+// nothing (Ray, 2026-09-10, on supacharge.app: "rokctai has logo and name
+// that the name fold into logo and menus disapear, this is not in
+// supacharge. since supacharge has not icon cant it fold and only leave the
+// first letter as its icon?"). The tile is the header's own CSS - the
+// first letter of the platform name, [brandLetterOf], in the shell's
+// primary colour on the same dark ground the generated /brand-icon tab
+// tile draws - and it exists only while the brand is collapsed; the still
+// brand of a shell that declares no `collapse` is byte-for-byte what it
+// was, and a declared image or the host's mark still folds to that image.
+//
+// Since 1.29.0 that same icon-less collapsing brand folds differently when
+// the platform name carries a DOT (Ray, 2026-09-10: "if sitename has a
+// dot, fold dot and what comes after so the s will never show anymore
+// unless there is icon, if there is icon it fold further to leave only
+// icon"): the dot and everything after it slide away and the text before
+// the first dot, [brandStemOf], stays as the wordmark - the letter tile is
+// never drawn for a dotted name. [brandFoldsToStem] is the rule. A brand
+// with an image keeps folding to that image whatever its name, and an
+// undotted icon-less name keeps the 1.28.0 tile.
+//
+// Since 1.31.0 the country code beside a stem wordmark follows the stem's
+// size ([BRAND_STEM_CODE_FONT_SIZE]): the 36px it has beside a mark, or
+// the stem's own size where that is smaller, so on a phone the code is
+// never larger than the wordmark it sits beside - as it never is beside
+// rokct.ai's fixed 44px mark. The code beside a mark or a tile is
+// unchanged.
+//
+// Since 1.36.0 a group may lay its items out in ONE ROW (`layout: "row"`)
+// instead of a column, and the menu may name the trigger's word itself
+// (`megaLabel`) rather than take the first group's label (Ray, 2026-09-10,
+// on supacharge: "header app links first. if possible put mobile apps in
+// one row since supa dont have much menu"). The apps group goes first,
+// its cards side by side across a wider lead column, and the bar still
+// reads the word the shell declares. Also since 1.36.0 the code beside a
+// STEM wordmark is capped at the size rokct.ai's original header gave
+// its code: the superscript scale of its branding, [BRAND_CODE_SCALE],
+// of the 44px mark ([BRAND_CODE_FONT_SIZE], about 12px) - the 36px was
+// that header's fallback for a cache with no style, never what rokct
+// rendered (Ray, 2026-09-10: "za in supa is big, look at one in rokct,
+// original one"). The code beside a mark or a tile is untouched, so
+// rokct.ai renders exactly as it did; beside a stem the code still
+// follows the stem down ([BRAND_STEM_CODE_FONT_SIZE]) so it never
+// outgrows the wordmark.
+//
 // Entries between the markers below are injected by the Rokct SDK installer
 // (sdk_installer_base.py update_integrations()) - the same contract as
 // ./hero-sections.ts, ./hero-copy.ts, ./hero-form.ts, ./plans-query.ts and
@@ -90,6 +153,7 @@ import {
   loadSiteMetadata,
   type SiteMetadataCopy,
 } from "@/components/custom/landing/site-metadata";
+import type { SiteDataMode } from "@/lib/site-data/kinds";
 
 /**
  * One fixed destination in the header menu: a route or an external URL the
@@ -138,6 +202,23 @@ export type HeaderMenuIcon =
   | "chrome";
 
 /**
+ * An image icon on an action (since 1.25.0): a path the shell serves
+ * itself (`/brand/marks/chrome-web-store.svg`, installed by its home SDK)
+ * or an absolute URL, and the alt text. The same shape a hero badge's
+ * `icon` takes (./hero-config.ts). An empty `src` draws nothing, so an
+ * action never shows a broken image. Drawn as a plain <img> at the glyph
+ * slot's size (20px), as the header draws a declared brand image. Since
+ * 1.26.0 base serves the platform marks itself (./brand-marks.ts:
+ * BRAND_MARKS, `/brand/marks/<name>.svg`), so a home SDK may name one of
+ * those - typed, `icon: BRAND_MARKS.chromeWebStore`, or as the bare path -
+ * and the two monochrome marks are inverted on the dark shell by base.
+ */
+export interface HeaderMenuImage {
+  src: string;
+  alt: string;
+}
+
+/**
  * What the header's brand slot draws, as the home SDK declares it (since
  * 1.21.0):
  *
@@ -164,6 +245,61 @@ export interface HeaderBrand {
    * turns it off.
    */
   wordmark?: boolean;
+  /**
+   * Whether the host's brand-logo.tsx draws its badge on the mark (since
+   * 1.24.0): rokct.ai's BETA strip, which its old header always showed.
+   * Default false. A shell whose brand-logo.tsx has no badge accepts the
+   * prop and draws nothing, so the flag is safe on every shell.
+   */
+  badge?: boolean;
+  /**
+   * The COLLAPSING brand rokct.ai's old header had (since 1.24.0; Ray,
+   * 2026-09-09: rokct.ai keeps everything its old host header had). `true`
+   * takes the defaults; an object tunes them; nothing declared keeps the
+   * still brand every shell drew before. See HeaderBrandCollapse.
+   */
+  collapse?: boolean | HeaderBrandCollapse;
+}
+
+/**
+ * How the brand slot moves after the page loads, rokct.ai's old
+ * components/custom/header.tsx as the model:
+ *
+ *  - the mark is drawn at 44px (with its badge when `badge` is on) and the
+ *    wordmark large beside it; `delayMs` after mount the wordmark slides
+ *    away, a chevron appears after the mark, and the country code the
+ *    resolver answers (rokct.ai: the visitor's code from its branding
+ *    cache) slides in beside it;
+ *  - the desktop nav fades with the wordmark and comes back while the
+ *    pointer is over the header or the page is scrolled; the actions, the
+ *    theme toggle and the auth links stay.
+ *
+ * `code` runs on the client only, once, after mount; it may answer the
+ * bare text, or the text with the inline style the host wants on it (the
+ * scale and baseline offset rokct.ai's branding carries). Nothing, or an
+ * empty string, draws no code and the mark collapses on its own.
+ *
+ * With `logo: "none"` (since 1.28.0) there is no mark to leave behind, so
+ * the wordmark folds into a letter tile the header draws itself: the
+ * platform name's first letter ([brandLetterOf]) in the primary colour on
+ * the tab tile's dark ground, 44px like a mark, the code and the chevron
+ * beside it. Before the collapse the wordmark alone shows, as declared.
+ * When that name carries a dot (since 1.29.0) there is no tile: the dot
+ * and what follows it fold away and the stem ([brandStemOf]) stays as
+ * the wordmark, the code and the chevron beside it.
+ */
+export interface HeaderBrandCollapse {
+  /** Milliseconds after mount before the wordmark slides away. Default 1500. */
+  delayMs?: number;
+  /** The text beside the collapsed mark, resolved on the client. */
+  code?: () => HeaderBrandCode | string | null | undefined;
+}
+
+/** What [HeaderBrandCollapse.code] may answer: the text and its inline style. */
+export interface HeaderBrandCode {
+  text: string;
+  /** Inline CSS on the text (React's CSSProperties shape), merged over the header's own. */
+  style?: Record<string, string | number>;
 }
 
 /**
@@ -198,6 +334,15 @@ export interface HeaderMenu {
    */
   groups?: HeaderMenuGroup[];
   /**
+   * The word on the desktop trigger that opens the groups panel (since
+   * 1.36.0). Without it the trigger reads the FIRST group's label, as it
+   * has since 1.18.0; with it a shell may put any group first (the apps,
+   * in a row) while the bar still reads what the shell declares. Blank
+   * or whitespace is treated as absent. The trigger's badge, when any,
+   * is still the first group's.
+   */
+  megaLabel?: string;
+  /**
    * Call-to-action buttons at the right-hand end of the header bar, ahead
    * of the theme toggle and the auth links. Optional and new in 1.14.0.
    */
@@ -231,27 +376,43 @@ export interface HeaderMenuGroup {
   label: string;
   badge?: LandingNavBadge;
   items: HeaderMenuGroupItem[];
+  /**
+   * How the desktop panel lays the group's items out (since 1.36.0).
+   * `"column"` (the default, and everything before 1.36.0) stacks them;
+   * `"row"` puts them side by side in ONE row - cards keep their icon,
+   * label and blurb and shrink to share the width. A row group that
+   * leads the panel widens the lead column to fit; a later row group
+   * spans its headed column. The burger's stacked list ignores it.
+   */
+  layout?: HeaderMenuGroupLayout;
 }
+
+/** The two layouts a group's items may take in the desktop panel (1.36.0). */
+export type HeaderMenuGroupLayout = "column" | "row";
 
 /**
  * A call-to-action button in the header bar (rokct.ai's "Add the Chrome
  * extension" is the model). `primary` paints the platform's primary colour;
- * `ghost` is an outlined button. Taken at face value like a link.
+ * `ghost` is an outlined button; `secondary` (since 1.24.0) is the filled
+ * muted button rokct.ai's old header drew its "Chat with ROK" as, in the
+ * shell's secondary tokens. Taken at face value like a link.
  */
 export interface HeaderMenuAction {
   /** Stable, unique in the menu. */
   id: string;
   label: string;
   href: string;
-  variant?: "primary" | "ghost";
+  variant?: "primary" | "ghost" | "secondary";
   /** Open in a new tab with rel="noopener noreferrer". */
   external?: boolean;
   /**
    * A glyph drawn before the label (since 1.20.0), named from the same
-   * closed set as an item's: rokct.ai's extension button carries "chrome".
+   * closed set as an item's, or (since 1.25.0) an image the shell serves
+   * itself - rokct.ai's extension button carries the Chrome Web Store mark
+   * its old header hot-linked, now at `/brand/marks/chrome-web-store.svg`.
    * Without one the button is label only, as before.
    */
-  icon?: HeaderMenuIcon;
+  icon?: HeaderMenuIcon | HeaderMenuImage;
 }
 
 /** The shape of a registered menu module. */
@@ -295,9 +456,28 @@ export interface HeaderMenuItem {
  * link. A `null` menu, or one that resolves to nothing, yields an empty
  * array and the host then renders no row at all.
  */
+/**
+ * How an anchor entry becomes a link (1.47.0): the page's own fragment by
+ * default (`#id`, the landing resolving its menu against its own nav), or,
+ * through [anchorHrefOn], the fragment on another route - what the site
+ * frame uses on a page that is not the landing, so "Pricing" in the header
+ * of /about still leads to the landing's pricing section.
+ */
+export type HeaderAnchorHref = (id: string) => string;
+
+/** The default: the anchor on the current page. */
+export const sameAnchorHref: HeaderAnchorHref = (id) => `#${id}`;
+
+/** The anchor on `route`: `/landing#pricing` for `anchorHrefOn("/landing")("pricing")`. */
+export function anchorHrefOn(route: string): HeaderAnchorHref {
+  const base = route.trim().replace(/#.*$/, "");
+  return (id) => `${base}#${id}`;
+}
+
 export function resolveHeaderMenuItems(
   menu: HeaderMenu | null,
   nav: LandingNavItem[],
+  anchorHref: HeaderAnchorHref = sameAnchorHref,
 ): HeaderMenuItem[] {
   if (!menu) return [];
 
@@ -310,7 +490,7 @@ export function resolveHeaderMenuItems(
     items.push({
       key: id,
       label: entry.label,
-      href: `#${entry.id}`,
+      href: anchorHref(entry.id),
       badge: entry.badge,
     });
   }
@@ -336,6 +516,8 @@ export interface HeaderMenuResolvedGroup {
   label: string;
   badge?: LandingNavBadge;
   items: HeaderMenuItem[];
+  /** As declared, defaulted: "row" only when the group asked for it (1.36.0). */
+  layout: HeaderMenuGroupLayout;
 }
 
 /** Everything the header renders, resolved against the page's live nav. */
@@ -346,9 +528,35 @@ export interface ResolvedHeaderMenu {
   groups: HeaderMenuResolvedGroup[];
   /** The call-to-action buttons, in the order the home SDK named them. */
   actions: HeaderMenuAction[];
+  /**
+   * The declared trigger word, trimmed, or null when the shell declared
+   * none (1.36.0); [megaTriggerLabel] answers the word the bar shows.
+   */
+  megaLabel: string | null;
 }
 
-const EMPTY_HEADER_MENU: ResolvedHeaderMenu = { items: [], groups: [], actions: [] };
+const EMPTY_HEADER_MENU: ResolvedHeaderMenu = { items: [], groups: [], actions: [], megaLabel: null };
+
+/**
+ * The declared group layout, defaulted (1.36.0): "row" when asked for,
+ * "column" for anything else, including nothing and a value the type
+ * does not know.
+ */
+export function resolveHeaderMenuGroupLayout(
+  layout: HeaderMenuGroupLayout | null | undefined,
+): HeaderMenuGroupLayout {
+  return layout === "row" ? "row" : "column";
+}
+
+/**
+ * The word on the desktop trigger (1.36.0): the menu's `megaLabel` when
+ * it declared one, else the first group's label as it was since 1.18.0;
+ * null with no groups, when the header draws no trigger at all.
+ */
+export function megaTriggerLabel(menu: Pick<ResolvedHeaderMenu, "groups" | "megaLabel">): string | null {
+  if (menu.groups.length === 0) return null;
+  return menu.megaLabel ?? menu.groups[0].label;
+}
 
 /**
  * The whole menu the header should render: [resolveHeaderMenuItems]'s flat
@@ -360,6 +568,7 @@ const EMPTY_HEADER_MENU: ResolvedHeaderMenu = { items: [], groups: [], actions: 
 export function resolveHeaderMenu(
   menu: HeaderMenu | null,
   nav: LandingNavItem[],
+  anchorHref: HeaderAnchorHref = sameAnchorHref,
 ): ResolvedHeaderMenu {
   if (!menu) return EMPTY_HEADER_MENU;
 
@@ -375,7 +584,7 @@ export function resolveHeaderMenu(
         items.push({
           key: entry.anchor,
           label: nav.label,
-          href: `#${nav.id}`,
+          href: anchorHref(nav.id),
           badge: nav.badge,
         });
       } else {
@@ -391,14 +600,39 @@ export function resolveHeaderMenu(
       }
     }
     if (items.length === 0) continue;
-    groups.push({ id: group.id, label: group.label, badge: group.badge, items });
+    groups.push({
+      id: group.id,
+      label: group.label,
+      badge: group.badge,
+      items,
+      layout: resolveHeaderMenuGroupLayout(group.layout),
+    });
   }
 
+  const megaLabel = menu.megaLabel?.trim() || null;
+
   return {
-    items: resolveHeaderMenuItems(menu, nav),
+    items: resolveHeaderMenuItems(menu, nav, anchorHref),
     groups,
     actions: [...(menu.actions ?? [])],
+    megaLabel,
   };
+}
+
+/**
+ * Whether the header draws its OWN "Log in" / "Sign up" pair for a
+ * visitor with no session (1.38.0): the 1.35.0 `local` rule
+ * (landing-page.ts's dropBackendOnlyActions drops the DECLARED sign-in /
+ * sign-up actions) applied to the header's own surface. A shell that
+ * declares `"data": "local"` has no backend, so the two routes auth_sdk
+ * would serve are dead and the pair is skipped; "backend", "hybrid" and
+ * an undeclared mode (every caller that passes none, as before) draw it.
+ * Pure: the header takes the mode as a prop, read on the server by the
+ * page through `siteDataMode()`, so the "use client" header never imports
+ * the server-only reader.
+ */
+export function showsHeaderAuth(dataMode: SiteDataMode | undefined): boolean {
+  return dataMode !== "local";
 }
 
 /**
@@ -428,7 +662,169 @@ export interface ResolvedHeaderBrand {
   logo: ResolvedHeaderBrandLogo;
   /** Whether the wordmark renders; true unless the home SDK said otherwise. */
   wordmark: boolean;
+  /** Whether the host's mark draws its badge; false unless declared (1.24.0). */
+  badge: boolean;
+  /** The collapsing brand, with its defaults filled in; null for a still brand (1.24.0). */
+  collapse: ResolvedHeaderBrandCollapse | null;
 }
+
+/** [HeaderBrandCollapse] with every default filled in. */
+export interface ResolvedHeaderBrandCollapse {
+  delayMs: number;
+  code: (() => HeaderBrandCode | string | null | undefined) | null;
+}
+
+/** The wordmark slides away this long after mount unless the home SDK said otherwise. */
+export const DEFAULT_BRAND_COLLAPSE_DELAY_MS = 1500;
+
+/**
+ * The collapse declaration with its defaults filled in: `true` is the
+ * defaults, an object overrides them, `false` or nothing is a still brand.
+ */
+export function resolveHeaderBrandCollapse(
+  collapse: boolean | HeaderBrandCollapse | null | undefined,
+): ResolvedHeaderBrandCollapse | null {
+  if (!collapse) return null;
+  const declared = collapse === true ? {} : collapse;
+  const delayMs =
+    typeof declared.delayMs === "number" && Number.isFinite(declared.delayMs) && declared.delayMs >= 0
+      ? declared.delayMs
+      : DEFAULT_BRAND_COLLAPSE_DELAY_MS;
+  return { delayMs, code: typeof declared.code === "function" ? declared.code : null };
+}
+
+/**
+ * The letter a collapsing brand with no image folds into (since 1.28.0):
+ * the first letter or digit of `name`, uppercased - the rule the generated
+ * /brand-icon tab tile applies to its host (app/brand-icon/route.tsx), so
+ * the header's tile and the tab's agree. Any script counts ("éclair" gives
+ * "É"); a name with no letter or digit, or no name, gives "" and the
+ * header draws no tile.
+ */
+export function brandLetterOf(name: string | null | undefined): string {
+  if (!name) return "";
+  const match = name.match(/[\p{L}\p{N}]/u);
+  return match ? match[0].toUpperCase() : "";
+}
+
+/**
+ * Whether a resolved brand folds into the letter tile (since 1.28.0): only
+ * a COLLAPSING brand that declared no image. A still brand never does,
+ * whatever its logo; a collapsing brand with a declared image or the
+ * host's own mark keeps folding to that mark, as in 1.24.0.
+ */
+export function brandFoldsToLetter(brand: ResolvedHeaderBrand): boolean {
+  return brand.collapse !== null && brand.logo === "none";
+}
+
+/**
+ * The stem a DOTTED name folds to (since 1.29.0): the text before the
+ * first "." of `name` (trimmed), so "a.b.c" gives "a" and "x." gives "x".
+ * `null` for a name with no dot, one that starts with the dot (".x" has
+ * nothing before it) and no name at all - none of those is dotted for
+ * this rule and the header keeps its 1.28.0 behaviour. No brand string
+ * is known here: whatever name the shell shows is the one that folds.
+ */
+export function brandStemOf(name: string | null | undefined): string | null {
+  const trimmed = name?.trim() ?? "";
+  const dot = trimmed.indexOf(".");
+  if (dot <= 0) return null;
+  return trimmed.slice(0, dot);
+}
+
+/**
+ * The stem as it is DISPLAYED (since 1.39.0): [brandStemOf] with its first
+ * character upper-cased, so "acme.school" folds to "Acme" on the bar and in
+ * the hero while the full name - the title, the aria-label, the metadata,
+ * the suffix that slides away - stays exactly what the shell declared,
+ * lower case and all. Only the first character changes (`toUpperCase()`
+ * on it alone, so "acme" is "Acme" and "ACME" or "Acme" are themselves);
+ * a name with no stem answers `null` as [brandStemOf] does, so an undotted
+ * name is never touched - the letter tile, the whole-name hero wordmark
+ * and the still brand render what they rendered. The rule is one place:
+ * the header and the hero both ask here, never capitalise on their own.
+ */
+export function brandStemLabel(name: string | null | undefined): string | null {
+  const stem = brandStemOf(name);
+  if (stem === null) return null;
+  return stem.charAt(0).toUpperCase() + stem.slice(1);
+}
+
+/**
+ * Whether a resolved brand folds to the stem of `name` (since 1.29.0):
+ * a COLLAPSING brand that declared no image, keeps its wordmark and whose
+ * name has a stem ([brandStemOf]). The header asks this BEFORE
+ * [brandFoldsToLetter], so a dotted name never draws the letter tile; a
+ * brand with a declared image, a registered icon or the host's own mark
+ * folds to that mark whatever its name, and a still brand never folds.
+ */
+export function brandFoldsToStem(
+  brand: ResolvedHeaderBrand,
+  name: string | null | undefined,
+): boolean {
+  return brandFoldsToLetter(brand) && brand.wordmark && brandStemOf(name) !== null;
+}
+
+/**
+ * The stem wordmark's font size (since 1.29.0), a CSS expression the
+ * header sets inline with `--brand-chars`, the FULL name's character
+ * count: the large wordmark's 60px when the name fits, else what fits
+ * a width budget of 20vw + 140px, at 0.6em per character - a bound that
+ * covers a bold, tightly tracked wordmark of any letters, so the whole
+ * name never widens the bar before the fold and the stem, at the same
+ * size, leaves room for the code, the chevron and the burger after it.
+ * 17 characters: about 21px at 390 (at most 218px of text), 29px at 768
+ * (294px), 39px at 1280 (396px); up to 11 characters stay at 60px at
+ * 1280. Pure CSS, nothing measured: a name of 5 letters at 60px is
+ * exactly what 1.24.0 tuned the slot for and reads the same as before.
+ */
+export const BRAND_STEM_FONT_SIZE = "min(60px, calc((20vw + 140px) / (var(--brand-chars) * 0.6)))";
+
+/**
+ * The size of the collapsed brand's mark, tile and slot, in px: the 44px
+ * rokct.ai's original header drew its mark at (since 1.24.0 the header
+ * has drawn it so; named here since 1.36.0 because the code's size is
+ * derived from it).
+ */
+export const BRAND_MARK_SIZE_PX = 44;
+
+/**
+ * The country code's scale (since 1.36.0): the superscript rokct.ai's
+ * branding draws its code at, 0.28 of the text it sits beside - the
+ * "noticeably small superscript" its original header rendered once the
+ * branding cache's style was laid over the span. That header named 36px
+ * inline and then spread the cache's style over it, so 36px was only the
+ * fallback for a cache with no style; what rokct.ai showed was the 0.28em.
+ * No brand string, no colour: a proportion.
+ */
+export const BRAND_CODE_SCALE = 0.28;
+
+/**
+ * The country code's cap beside a STEM wordmark (since 1.36.0):
+ * [BRAND_CODE_SCALE] of the 44px mark - about 12px - the size the
+ * original superscript takes beside the thing the original header sat
+ * it beside. Until 1.32.0 the stem's code was capped at 36px, the
+ * original header's fallback, and beside a wordmark it read almost as
+ * large as the name (Ray, 2026-09-10: "za in supa is big, look at one in
+ * rokct, original one"). The code beside a MARK or a tile does not read
+ * this: it keeps the header's 1.24.0 36px class, so rokct.ai's code is
+ * exactly what it was.
+ */
+export const BRAND_CODE_FONT_SIZE = `calc(${BRAND_MARK_SIZE_PX}px * ${BRAND_CODE_SCALE})`;
+
+/**
+ * The country code's font size beside a STEM wordmark (since 1.31.0; the
+ * cap is 1.36.0's). A stem wordmark is not the same on every viewport -
+ * [BRAND_STEM_FONT_SIZE] shrinks it to fit the bar - and a fixed code
+ * outgrew it on a phone (17 characters at 390: a 21px stem beside what
+ * was then a 36px code). So the code takes its own cap
+ * ([BRAND_CODE_FONT_SIZE], about 12px) wherever the stem is at least that
+ * large - every name that fits a phone - else the stem's size, so the
+ * code follows the wordmark it sits beside and is never larger than it.
+ * The header sets it inline on the code with the same `--brand-chars`
+ * the stem takes.
+ */
+export const BRAND_STEM_CODE_FONT_SIZE = `min(${BRAND_CODE_FONT_SIZE}, ${BRAND_STEM_FONT_SIZE})`;
 
 /**
  * The generated favicon route base_sdk installs at app/brand-icon/route.tsx
@@ -460,23 +856,27 @@ export function isGeneratedBrandIcon(path: string): boolean {
  *  - `"auto"` (or nothing) answers the copy's `icon` when it is a real one,
  *    else "host": the host shell's own brand-logo.tsx.
  *
- * The generated tile is never the answer, whatever was declared.
+ * The generated tile is never the answer, whatever was declared. `badge`
+ * and `collapse` (1.24.0) are carried through with their defaults filled
+ * in, whichever branch answers the logo.
  */
 export function resolveHeaderBrand(
   brand: HeaderBrand | null | undefined,
   copy: Pick<SiteMetadataCopy, "icon"> | null | undefined,
 ): ResolvedHeaderBrand {
   const wordmark = brand?.wordmark !== false;
+  const badge = brand?.badge === true;
+  const collapse = resolveHeaderBrandCollapse(brand?.collapse);
   const declared = brand?.logo?.trim() ?? "";
-  if (declared === "none") return { logo: "none", wordmark };
+  if (declared === "none") return { logo: "none", wordmark, badge, collapse };
   if (declared && declared !== "auto" && !isGeneratedBrandIcon(declared)) {
-    return { logo: { src: declared }, wordmark };
+    return { logo: { src: declared }, wordmark, badge, collapse };
   }
   const icon = copy?.icon?.trim() ?? "";
   if (icon && !isGeneratedBrandIcon(icon)) {
-    return { logo: { src: icon }, wordmark };
+    return { logo: { src: icon }, wordmark, badge, collapse };
   }
-  return { logo: "host", wordmark };
+  return { logo: "host", wordmark, badge, collapse };
 }
 
 /** True when the declaration needs the registered copy to resolve. */

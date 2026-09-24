@@ -1,5 +1,1427 @@
 # Changelog
 
+## 1.48.0
+
+* The landing hero, two faults visible on every composed storefront and a
+  seam its forms were missing.
+  * `components/custom/hero-view.tsx`: the headline box is `min-h-[1.2em]`
+    rather than `h-[1.2em]`. It still reserves one line so the hero does not
+    jump as the word rotates, but a headline that wraps is no longer clipped
+    to a 19px box it overflows upward: measured on juvo's storefront at
+    390px, the wrapped `<h1>` is 115px tall and ate all but 11px of the
+    6.7rem gap under the wordmark (63px of it at 1440px). Both ends of the
+    headline now sit where the spacing says.
+  * `components/custom/hero-view.tsx`: a headline word with no verb renders
+    no verb span. The empty one took a `gap-4` of its own and, having no
+    text, left the `<h1>` reading "Intercity parcelson a white-label
+    delivery platform" to a screen reader and to a crawler; a
+    whitespace-only child now separates the word from the suffix, which
+    costs no layout (a whitespace-only anonymous flex item is not rendered).
+  * `components/custom/landing/hero-form.ts`: `HeroFormProps.nav`
+    (optional), the page's live nav - the list the floating nav and the
+    header menu are already built from, so it names the sections that ARE
+    on this render after each `meta.renders` has answered. A form whose
+    call to action is an in-page anchor reads it before drawing that
+    button. `components/custom/hero.tsx` (`HeroProps.nav`),
+    `components/custom/hero-view.tsx` (`HeroViewProps.nav`) and
+    `app/landing/page.tsx` (`nav={page.navItems}`) hand it down. A form
+    that ignores it behaves exactly as before.
+
+## 1.47.0
+
+* The site frame: the shell a composed page that is not the landing sits
+  in, so it reads as the same site as `/landing`. Ray, 2026-09-11 20:44Z,
+  of an about page in its own bare frame: "we have no way to get here and
+  its so disconnected to the rest of the site". Nothing new is registered:
+  a home SDK marks the sections that ARE its frame - the theme section
+  carrying `rootClass`, the footer - with `frame: true` on the `meta` it
+  already exports, and keeps its header menu where it is.
+  * `components/custom/landing/page-sections.ts`: `PageSectionMeta.frame`
+    (optional; absent is the landing only, as before) and
+    `sectionFramesSite(meta)`. A frame section still renders on the
+    landing exactly as its `order` and `page` say.
+  * NEW `components/custom/landing/site-frame.ts`: `arrangeSiteFrame`
+    (the pure rule) and `resolveSiteFrame(ctx)` (the loader a page awaits,
+    through the landing's own `loadPageSections` and `loadHeaderMenu`).
+    The answer, `SiteFrameLayout`: `registered` (any frame section
+    present after `renders(ctx)`), `before` (negative order) and `after`
+    (the rest) in order, `rootClass` joined from the frame sections, the
+    landing's `navItems`, and the header `menu` resolved against the
+    LANDING's nav with every anchor on the landing route
+    (`/landing#pricing`), the `local` rule dropping backend-only actions
+    as the landing does. `frameSectionsOf`, `landingNavItemsOf` and
+    `SITE_FRAME_ROOT_CLASS` (the landing root's own classes) beside them.
+  * `components/custom/landing/header-menu.ts`: `resolveHeaderMenu` and
+    `resolveHeaderMenuItems` take an optional third argument,
+    `anchorHref: (id) => string` (`sameAnchorHref`, `#id`, when absent -
+    every existing call is unchanged); `anchorHrefOn(route)` builds the
+    one the frame passes.
+  * NEW `components/custom/site-frame.tsx`: `SiteFrame({ frame?, session?,
+    dataMode?, page?, children })`, a directive-free server component
+    that draws the frame - the landing root's classes plus `rootClass`
+    (`data-site-frame` naming the page), base's `Header` with the
+    resolved menu (its links in the first HTML), the `before` sections,
+    `<main>`, the `after` sections, each with the `PageSectionProps` a
+    landing section gets (no plans, no nav), and `BackToTop` once. A
+    page resolves the frame first and keeps its own when `registered` is
+    false (corporate_sdk 1.2.0's `/about`, `/team` and `/legal` do), so a
+    shell composed without a home landing still renders; a caller that
+    hands no `frame` has it resolved here.
+  * Nothing in base names a brand, a host or a route beyond the existing
+    `LANDING_ROUTE`. A home SDK opts in with `frame: true` on its theme
+    and footer sections and nothing else.
+* Tests: `tests/landing-page.test.mts` executes the rule (a frame with
+  nothing marked is not registered; `before` / `after` split and ordered;
+  `renders` honoured; `rootClass` from frame sections only; the menu's
+  anchors on the landing route, a missing anchor dropped, links kept; the
+  `local` rule; `resolveSiteFrame` against the neutral registries);
+  `tests/test_manifest.py` pins the installs, the field, the component's
+  contract and that it is directive-free.
+
+## 1.46.0
+
+* The install offer runs the browser's install prompt as a real action.
+  Ray, 2026-09-11 20:35:38Z: "nextjs no longer offering me to install app
+  like it used to with pwa"; 20:46:43Z: "the install offer used to show
+  its not showing, that bottom offer is not really an offer its
+  attention, no clicking icon on browser and it try to install or it
+  popup and install". Root cause, in the 1.41.0
+  `components/custom/install-offer.tsx`: the `beforeinstallprompt`
+  listener was attached only when NO declared download matched the
+  visitor's platform (`if (platform === undefined || hasEntry) return;`),
+  and only from a second effect after the platform read - so a shell
+  with a matching entry never offered the install at all, and elsewhere
+  an event that fired before that effect was missed while a later one
+  was swallowed by `preventDefault()` with no control drawn for it. Now
+  the FIRST effect on mount, before any platform read, listens for
+  `beforeinstallprompt` and `appinstalled` (once, `[]`); the handler
+  calls `preventDefault()` only when our control will render - a page
+  running installed (`display-mode: standalone`) leaves the browser's
+  own banner alone - and stashes the event, which survives until the
+  visitor acts (`appinstalled` drops it). The Install control renders
+  only once an event is stashed; a click calls `event.prompt()`, awaits
+  `userChoice`, then clears the stash (a second click while it shows is
+  ignored; a later event is stashed again). With a matching download the
+  offer draws BOTH "Get the <label>" and, when an event is stashed,
+  Install - the 1.41.0 link is unchanged. `BeforeInstallPromptEvent` is
+  exported. The server and the first client render still draw nothing;
+  every window read is in an effect. Base registers no service worker:
+  the browser fires the event only for an installable page, which needs
+  the host's `app/manifest.ts` to carry `icons`.
+* The offered platform's icon button is hidden. Ray, 2026-09-11
+  20:33:16Z, of the icon buttons: "they become double when you tell user
+  to download for that platform, i think should hide the normal one when
+  showing the other". NEW client component
+  `components/custom/download-buttons.tsx` `DownloadButtons({ downloads,
+  hideOffered? })` draws the row's buttons - the same `<a>` per entry
+  `FooterChromeRow` drew (label as aria-label and title,
+  `data-download-platform`, `DOWNLOAD_BUTTON_CLASS`, `DownloadMark`) -
+  minus the one entry the install offer is showing. The offer publishes
+  that entry's id after mount to NEW `OFFERED_DOWNLOAD`
+  (`landing/install-offer.ts`; `createOfferedDownloadStore()`: a plain
+  `get`/`set`/`subscribe` store, `null` until set, notifying on a change
+  only) and clears it on unmount; the buttons read it through
+  `React.useSyncExternalStore` with `null` as the server snapshot and
+  filter with NEW `visibleDownloads(entries, offeredId)` (every entry but
+  that id, in order; `null` or an unknown id keeps all). So the server
+  HTML and the first client render carry EVERY icon - no window read at
+  render - and the duplicate goes after mount; with no offer mounted, no
+  platform recognised or an installed page nothing is hidden.
+  `useOfferedDownload()` is exported for a home SDK's own row;
+  `hideOffered={false}` keeps every button. `FooterChromeRow` renders
+  `<DownloadButtons downloads={downloads} />` after the offer, in the
+  same nav; nothing else in the row changes.
+* Tests: `tests/install-offer.test.mts` (node) executes
+  `visibleDownloads` and the store; `test_manifest.py` gains
+  `test_install_offer_runs_the_prompt_and_hides_the_offered_icon` (the
+  early attach, the guarded `preventDefault`, `prompt()` then
+  `userChoice`, the publish, the row's snapshot), re-pins the 1.41.0
+  offer and row needles (three effects now; the buttons in their file)
+  and raises the node pass floor. Manifest installs the new file.
+  `docs/downloads-and-install.md` describes both.
+* The hero's logo tile can be declared away. `HeroConfig.logo?: "tile" |
+  "none"` (`landing/hero-config.ts`, beside `brand`): `"tile"` - the
+  default, `HERO_CONFIG.logo`, and what every shell drew - draws the
+  host's `BrandLogo` (56px, with its badge) beside the wordmark slot;
+  `"none"` skips that render in `hero-view.tsx`
+  (`{hero.logo !== "none" && <BrandLogo width={56} height={56} showBadge={true} />}`),
+  for a shell whose `BrandLogo` is the full wordmark while the hero
+  already draws the stem (`brand: "stem"` or `"stem-tld"`) - the same
+  declaration the header's brand takes (`logo: "none"`). A home SDK's
+  hero copy declares it; nothing changes until one does.
+  `test_manifest.py` gains `test_hero_logo_tile_can_be_declared_none`.
+* Home SDKs: nothing to declare for the install offer; a shell that
+  mounts the offer in a header slot and its own icon row imports
+  `DownloadButtons` (or `useOfferedDownload`) for the same hiding. A
+  home SDK whose host `BrandLogo` is the wordmark declares
+  `logo: "none"` in its hero copy.
+
+## 1.45.0
+
+* The public terms list falls back to the shell's bundled `data/legal`
+  pages when the backend publishes nothing. `app/actions/base/legal.ts`
+  `listPublicTerms()` still asks the backend first, as a guest, for
+  every enabled "Terms and Conditions" document and returns its rows
+  unchanged whenever it answers any; when the answer is nothing - no
+  base URL (a shell with no backend), a refused guest read, a failed
+  call, or a backend that has published no document yet - and the shell
+  bundles the 1.35.0 `legal` kind (`hasSiteData("legal")`: a `local` or
+  `hybrid` data mode with `data/legal/<slug>.md` files present, never
+  backend mode), the answer is those pages, each as the same
+  `{name: slug, title, disabled: false}` a gateway row becomes, in slug
+  order, read through the generated `lib/site-data/generated.ts` and
+  never the disk at request time. The two lists are never merged, the
+  guest soft-fail is kept (a failing bundle read logs and answers `[]`),
+  and a shell with no legal folder, or in backend mode, answers exactly
+  what it did. A footer's Legal row (`legalFooterLinks`) and
+  corporate_sdk's `/legal` index, which already read `listPublicTerms()`,
+  list the shell's own documents with no code change - a shell whose
+  backend has no documents carries its own markdown instead. Shells need
+  the `prebuild` generate step (`docs/site-data.md`) and a data mode that
+  bundles legal for the fallback to have anything to answer.
+  `tests/legal-fallback.test.mts` executes the action against a
+  `generated.ts` the real generator writes from the acme fixture and
+  against the neutral module.
+
+## 1.42.0
+
+* The landing has a floating "Back to top" button. Ray, 2026-09-11
+  12:32Z: "whats missing is floating push to home, that button you press
+  and it get you to top i just forgot what it says". NEW client component
+  `components/custom/back-to-top.tsx` `BackToTop({ threshold?, label?,
+  className? })`: hidden at the top of the page, shown once the visitor
+  has scrolled past `threshold` pixels (one viewport height by default,
+  read on every check), fixed at the bottom right (`bottom-4 right-4`,
+  `md:bottom-6 md:right-6`, the safe-area inset as margin) at `z-30` -
+  under the sticky header (`z-50`) and its mobile panel (`z-40`), so an
+  open menu covers it, and clear of the left edge and the vertical
+  middle a home SDK's floating nav uses; the install offer is inline in
+  the footer, never fixed, so the two never meet. A click calls
+  `window.scrollTo({ top: 0, behavior })` - `"smooth"`, or `"auto"` (the
+  instant jump) when `(prefers-reduced-motion: reduce)` matches - and
+  blurs the button. The scroll and resize listeners are `passive: true`
+  and folded into one `requestAnimationFrame` per frame; every window
+  read is in the effect or the click, never at render, so the server and
+  the first client render agree on hidden. The button stays in the tree
+  and fades (`motion-safe:transition-opacity`); while hidden it carries
+  `tabIndex={-1}`, `aria-hidden` and `pointer-events-none`, so it is
+  never in the tab order unseen. `aria-label` and `title` are
+  `BACK_TO_TOP_LABEL` ("Back to top"; `label` overrides). Lucide's
+  `ArrowUp`, the icon set the shells already import; theme tokens only
+  (`bg-background`, `border-border`, `text-primary`, `hover:bg-muted`,
+  `ring-ring`). NEW `landing/back-to-top.ts` is the pure half:
+  `BACK_TO_TOP_LABEL`, `REDUCED_MOTION_MEDIA_QUERY`,
+  `resolveThreshold(threshold, viewportHeight)`,
+  `isPastThreshold(scrollY, threshold)` (strictly past, so the top is
+  always hidden), `scrollBehaviour(reducedMotion)`.
+  `components/custom/landing-content.tsx` mounts `<BackToTop />` once,
+  after `<main>`, so a base-only host and a home SDK's composed landing
+  (its `/` sends an anonymous visitor to `/landing`) both have it with
+  no host edit; a host that wants it on every page mounts it in its own
+  root layout. `docs/downloads-and-install.md` describes it.
+* The header's suffix no longer clips its last glyph. Ray, 2026-09-11
+  13:57Z: the final "l" of the site name's suffix was "a bit cut". The
+  suffix span (`components/custom/header.tsx` `BrandStemWordmark`) clips
+  its own overflow so the slot can slide closed over it, and its box is
+  the text's advance width - so once a home SDK italicises the wordmark
+  through the `data-brand-wordmark="stem"` hook, the last glyph's
+  italic overhang (a 900 italic lowercase "l" leans about 0.09em past
+  its advance) was sheared off at the box's right edge. The span now
+  carries `pr-[0.12em] -mr-[0.12em]`: the padding keeps the overhang
+  inside the clipped box, the negative margin hands that width back to
+  the grid, so the track, the stem's width and the country code beside
+  it measure exactly what they did, open and folded. No font, size or
+  colour changes; an upright face draws as before. The hero's suffix
+  never clipped and is untouched.
+* Tests: NEW `tests/back-to-top.test.mts` (node) executes the rules;
+  `test_manifest.py` gains
+  `test_back_to_top_is_a_client_component_mounted_in_the_landing_shell`,
+  `test_back_to_top_rules_under_node`,
+  `test_back_to_top_type_checks_under_tsc` and
+  `test_brand_suffix_has_room_for_its_italic_overhang`. Manifest
+  installs the two new files.
+
+## 1.41.0
+
+* The site name's suffix is in the primary colour. Ray, 2026-09-11
+  07:34:03Z: "also site name the .school get primary color in nextjs".
+  The header's stem wordmark (`components/custom/header.tsx`
+  `BrandStemWordmark`) draws the dot and what follows the stem in
+  `text-primary` - the theme token, no brand colour named - with its own
+  `data-brand-wordmark="tld"` hook on that span
+  (`<span data-brand-wordmark="tld" className="min-w-0 overflow-hidden text-primary">`);
+  the stem span, the country-code span, the wordmark's class list and
+  the slide are untouched. The hero has the matching mode:
+  `HeroConfig.brand` accepts `"stem-tld"` (`landing/hero-config.ts`),
+  `resolveHeroWordmark` (`landing/landing-page.ts`) answers
+  `{ text, name, suffix }` for it - `HeroWordmark.suffix?` is the trimmed
+  name after the stem - and `HeroWordmarkSlot` (`hero-view.tsx`) draws the
+  suffix after the stem inside the same span, in primary with the same
+  hook, sized over the stem and the suffix together; `"stem"` and `"name"`
+  draw exactly what they drew. `docs/downloads-and-install.md` describes
+  both.
+* The footer's downloads are icon buttons. Ray, 2026-09-11 07:34:37Z:
+  "footer has  download links let them be platform icons buttons". NEW
+  `FooterChromeConfig.downloads?: DownloadEntry[]`
+  (`landing/footer-chrome-config.ts`): `DownloadPlatform` is the closed
+  set `ios | android | huawei | macos | windows | linux | web`, and
+  `DownloadEntry` is `{ id, platform, label, href, external?, title?,
+  mark?: BrandMarkId }`. `FooterChromeRow` (`components/custom/footer-chrome.tsx`)
+  draws them as `<nav aria-label="Downloads">` beside the link groups,
+  above the copyright line, one `<a>` per entry - the label as
+  aria-label and title, external ones `target="_blank"
+  rel="noreferrer"`, `h-10 w-10 rounded-full border border-border
+  bg-transparent hover:bg-muted flex items-center justify-center` - with
+  the named mark from `BRAND_MARKS` through `next/image` and
+  `markImageClass`, else a neutral glyph from NEW
+  `landing/platform-glyphs.tsx` (`PlatformGlyph`: a phone, a laptop, a
+  terminal, a globe in `currentColor`; `DownloadMark`; the button class
+  `DOWNLOAD_BUTTON_CLASS`) - never a third-party mark drawn by hand. NEW
+  `landing/download-platform.ts` is the pure half: `DOWNLOAD_PLATFORMS`,
+  `isDownloadPlatform`, `isDownloadHref` (https with a host, or a route
+  with one leading slash), `isDownloadEntry`, `normaliseDownloads`,
+  `downloadTitle`. `FooterChromeLabels.downloads` ("Downloads") names the
+  nav. Nothing declared draws nothing; base declares no entry.
+* The install offer checks the platform. Ray, 2026-09-11 07:37:17Z:
+  "this nextjs has install, it does show on mobile though i havent seen
+  it in desktop i think it installs as pwa but i think it should check
+  the platform and offer app of that platform". NEW client component
+  `components/custom/install-offer.tsx` `InstallOffer({ downloads,
+  labels?, platform?, className? })`: nothing on the server and the first
+  client render; after mount it hides when
+  `matchMedia("(display-mode: standalone)")` matches, reads the platform
+  (NEW `landing/install-offer.ts` `detectPlatform()`:
+  `navigator.userAgentData.platform`, then the user-agent string -
+  iPhone/iPad, HarmonyOS/HUAWEI, Android, Windows, Mac, Linux/X11 - and
+  `detectPlatformFrom(hints)` for tests), picks the entry
+  (`pickDownload(entries, platform)`: its own platform first, android and
+  huawei standing in for each other, the desktops and iOS their own
+  only, `DOWNLOAD_FALLBACKS`) and draws one icon button with "Get the
+  <label>" linking there; with none it listens for `beforeinstallprompt`,
+  keeps the event and draws "Install", which calls `prompt()`; with
+  neither it draws nothing. `INSTALL_OFFER_LABELS` (`get`, `install`) and
+  `installOfferText` hold the words; `platform` forces one for a preview.
+  `FooterChromeRow` mounts it FIRST in the Downloads nav (`installOffer`
+  prop, default true); a home SDK that wants it in a header slot imports
+  `@/components/custom/install-offer` itself - no header change in base.
+* Tests: NEW `tests/download-platform.test.mts` and
+  `tests/install-offer.test.mts` (node) execute the rules;
+  `landing-page.test.mts` covers `"stem-tld"`; `header-brand.test.mts`
+  reads the suffix span's new markup; `test_manifest.py` gains
+  `test_brand_suffix_is_in_the_primary_colour`,
+  `test_footer_downloads_seam_shape`,
+  `test_install_offer_is_a_client_component_that_checks_the_platform` and
+  `test_download_and_install_rules_under_node`, and reads the suffix
+  span's new markup in the 1.29.0 test. Manifest installs the four new
+  files.
+* Home SDKs: lms_sdk 1.31.0 declares its entries (the marks by key, its
+  own hrefs) on its footer config; supacharge re-pins after.
+
+## 1.40.0
+
+* The network strip's sites come from the home SDK that owns them, or
+  from the shell's own data, never from base (Ray, 2026-09-11: a shell
+  with no declaration shows no "Trusted by" strip - a shell outside the
+  network must not list products it has nothing to do with; site names
+  are brand content and logos are hostnames, neither of which base may
+  hard-code). NEW `NetworkStripConfig.sites?: NetworkSite[]` on
+  `components/custom/landing/network-strip.ts` is where a home SDK
+  declares the network beside its heading, order, hidden keys and
+  placement; `resolveNetworkStrip(config, selfHost, sites)` draws
+  `config.sites` when the config declares them and its `sites` argument
+  otherwise. `NETWORK_SITES` in `network-sites.ts` is now an EMPTY
+  readonly list - the default the rules fall back to, so nothing is drawn
+  with nothing declared - and the hidden place-holder entries went with
+  the list to the home SDK. The `NetworkSite` shape, `networkSiteHost`,
+  `hasTrackingParameters`, self-exclusion by host and the once-per-page
+  rule are unchanged; `networkStripRendersAt` already answered false with
+  no site, so a config that says only WHERE the strip goes draws nothing
+  until its sites arrive. A shell whose home SDK registers no `sites` and
+  runs in local or hybrid data mode may commit `data/network.json`: NEW
+  site-data kind `network` (`lib/site-data/kinds.ts` `SiteNetwork`
+  `{ heading?, sites: SiteNetworkSite[] }`, `SITE_DATA_KINDS`,
+  `SITE_DATA_FILES`; `validate.mjs` `validateNetwork` holds every `url`
+  to an https origin with no path, query string or fragment - or `null`
+  with `shown: false` - and every logo to a path or URL with no
+  parameters), read by the NEW `"use server"` action
+  `app/actions/base/network-sites.ts` `getNetworkSites()` (`{ sites: [] }`
+  in backend mode or with no file, the bundled file otherwise). NEW
+  `withOwnNetworkSites(config, own)` on `network-strip.ts` lays the data
+  under the config - registered sites win, else the shell's own data (and
+  its heading when the config names none), else none - and
+  `components/custom/network-strip.tsx`'s `loadResolvedNetworkStrip`
+  answers that merge; the module-level render resolves the registered
+  config with the page (`loadNetworkStripInputs`) and reads the data
+  AFTER MOUNT (`loadOwnNetworkSites`, `useOwnNetworkSites`), because a
+  server function cannot be called while a client component renders on
+  the server, so the server markup and the first client render agree. A
+  home SDK that draws the strip itself (a "section" placement) keeps
+  calling `loadResolvedNetworkStrip` and, with its own `sites` declared,
+  never waits on the action. `docs/site-data.md` gains the kind.
+* Tests: `network-strip.test.mts` no longer pins any brand - its list is
+  an inline fixture handed to the rules as the `sites` argument - and
+  asserts `NETWORK_SITES` is empty, a declared `sites` wins over the
+  argument, `withOwnNetworkSites` in every combination, and zero sites
+  rendering on no surface; `site-data.test.mts` validates
+  `data/network.json` (the acme fixture gains one) and bundles it;
+  `test_manifest.py` replaces `test_network_sites_list_shape` with
+  `test_network_sites_list_is_empty` and
+  `test_network_sites_come_from_the_home_sdk_or_data` (the action is
+  installed, names no host and no brand; the component stages the data
+  read after mount), and its first-party host allowlist drops the product
+  origins - no base default names one now.
+* Home SDKs: agent_sdk declares rokct.ai's five entries (three sites, two
+  hidden place-holders) on its registration in the same release train;
+  lms_sdk's registration (`footer: false`, landing `none`) and every shell
+  with no registration draw no strip, as ruled.
+* A registered section whose module loads with NO default export is
+  skipped, not rendered: `loadPageSection` in
+  `components/custom/landing/landing-page.ts` now checks
+  `typeof mod.default === "function"` before it builds the section, logs
+  one `console.error` naming the section id ("its module has no default
+  export; section skipped", with `SECTION_ENTRY_CONTRACT`) and answers
+  null, the way a module that fails to load already did - so the rest of
+  the page renders instead of React throwing "Element type is invalid" at
+  render time and the route answering 500. A module with a default export
+  is loaded exactly as before, its `meta` read or defaulted as before.
+  `landing-page.test.mts` gains the case: a module with meta but no
+  default export (and one whose default is not a function) is skipped
+  with the error logged and no meta warning, and a proper module beside
+  it still renders with its own meta.
+* A 2xx status probe whose body is EMPTY is not an answer:
+  `getPlatformStatus` (`app/actions/base/status.ts`) now asks NEW
+  `isProbeAnswer(answer)` on `components/custom/landing/footer-chrome-config.ts`
+  (a plain object with at least one field, the gateway's `message`
+  envelope looked through) after `attempted = true` and before it reads
+  the answer, and `continue`s when the resolved body is null, undefined,
+  a scalar, an array, `{}` or `{"message": null}` - a proxy or a
+  placeholder page in front of a backend that is not there answers 200
+  with nothing, and that read as `operational`. The three empty shapes
+  `platformCall` produces all read as `offline`: a body that parses to
+  JSON null (`platformCall` answers null and throws nothing), a genuinely
+  empty body (`res.json()` rejects, so it throws a `network_error`) and a
+  body of `{"message": null}` (`data.message || data` hands back the
+  envelope itself, a truthy object). It now reads as `offline` once every
+  probe is tried (the doc comment that said "an answer at all is the
+  signal" now says an answer with something in it is). The three states
+  keep their meaning: `unconfigured` - the state the footer hides the
+  indicator on - is reached from `ROKCT_STATUS_SOURCE=off` / `none`, or
+  from no probe having an origin to ask, and never from a failed or an
+  empty probe, which are `offline`; a real answer is `operational` or
+  `maintenance` with its version, as before. Tests: NEW `status.test.mts`
+  executes the action against a stub gateway (one test per empty shape:
+  a JSON-null body, a body that fails to parse, `{"message": null}` -
+  plus `undefined`, `{}`, a scalar and an array - each offline and never
+  operational or unconfigured; `{status:"ok"}` is
+  operational; the envelope's maintenance and version read as before; an
+  empty tenant answer falls through to an opted-in control probe; `off` /
+  `none` are unconfigured with no probe run; a failed probe is offline,
+  not unconfigured), staged by `test_manifest.py`'s NEW
+  `test_status_action_behaviour_under_node` and held in shape by
+  `test_status_action_treats_an_empty_answer_as_none`;
+  `status-probes.test.mts` covers `isProbeAnswer` itself.
+* The admin system-info actions ask a cmd that EXISTS for the version.
+  `app/actions/base/admin/settings.ts` and `system.ts` `getSystemInfo`
+  called `paasCall("api.get_version")`, a cmd registered nowhere -
+  not among the tenant cmds in `base/frappe/manifest.json`, not in the
+  platform's hooks, not in any cached SDK manifest - so the version was
+  always null. Both now call `paasCall(PLATFORM_VERSION_CMD)` - NEW on
+  `components/custom/landing/footer-chrome-config.ts`,
+  `"api.system.api_status"`, the one registered tenant cmd that carries
+  `version` (`{data: {status, version, user}}`; the same cmd the footer's
+  tenant probe asks) - and read it with NEW `readPlatformVersion(answer)`
+  beside it (the envelope, the gateway's `message` wrapper around it, or
+  a bare `version`; a string, else null). The callers' return shape is
+  unchanged (`{ ...info, version }`); `status.ts` reads its version
+  through the same reader. Tests: `status-probes.test.mts` asserts the
+  cmd name and the reader's string-or-null rule; `test_manifest.py`'s NEW
+  `test_admin_system_info_asks_a_registered_version_cmd` holds both call
+  sites to the constant, checks the frappe manifest registers the cmd and
+  not the phantom, and that no template or kernel file asks
+  `api.get_version`.
+* The header's stem wordmark is set in the same face as the hero's (Ray,
+  2026-09-11: on supacharge.school the "Supacharge" wordmark is right in
+  the hero and the footer but wrong in the header). The header's
+  `BrandStemWordmark` (`components/custom/header.tsx`) and the hero's
+  `HeroWordmarkSlot` (`components/custom/hero-view.tsx`) now carry the
+  SAME font utilities - `font-bold tracking-tighter leading-none`, no
+  family of their own - so both inherit the face the shell's root
+  declares (the hero span's `font-sans`, which forced Tailwind's default
+  stack over whatever the shell set, is gone; the header never had one),
+  and both carry the one hook `data-brand-wordmark="stem"`, so a home
+  SDK that gives its wordmark a face of its own styles the header and
+  the hero with ONE rule instead of reaching the hero through a deep
+  selector and leaving the header in the body font. The code span
+  beside the stem keeps `font-medium` at its `calc(44px * 0.28)` cap;
+  the stem's label (`brandStemLabel`) and sizes are unchanged. NEW
+  `test_header_stem_wordmark_shares_the_hero_wordmark_font` holds the
+  two class lists equal.
+* The admin settings and content actions send their `frappe.client.*`
+  calls through the gateway instead of nowhere. `app/actions/base/admin/settings.ts`
+  (21 sites: payment gateways, permission settings, Flutter app and build
+  settings, terms, privacy policies) and `admin/content.ts` (4 sites:
+  FAQs) still called `frappe.call({ method, args })` on the client from
+  `getPaaSClient()`; frappe-js-sdk's `call()` takes no object argument,
+  so those calls sent nothing and the admin surfaces were silently
+  empty. Every site is now `paasCall(cmd, args)` - the cmd string
+  verbatim, the same args, the `message` envelope unwrapped by the
+  gateway as the already-migrated sites in the same files have it - and
+  the `getPaaSClient` import is gone from both. NEW
+  `test_admin_actions_call_the_gateway_not_the_sdk_client` in
+  `test_manifest.py` walks every action file and fails on any `.call({`,
+  `frappe.call(` or `as any).call(` left, on a `getPaaSClient` import,
+  or on a dotted `/api/method/` URL, and pins the 25 sites per cmd.
+
+## 1.39.0
+
+* The folded brand stem is capitalised where base shows ONLY the stem
+  (Ray, 2026-09-11 04:23Z: the brand string stays the domain, lower
+  case - "supacharge.school" - and the stem without ".school" is
+  capitalised: "supacharge" shows as "Supacharge"). NEW
+  `brandStemLabel(name)` beside `brandStemOf` in
+  `components/custom/landing/header-menu.ts` is the one rule: the
+  1.29.0 stem with its first character upper-cased, `null` for a name
+  with no stem exactly as `brandStemOf` answers, so an undotted name
+  ("Rokct") is never touched and a stem that already starts upper-case
+  ("Juvo") is itself. The header's stem wordmark (`header.tsx`,
+  `BrandStemWordmark`) shows the label in the stem span, still cuts the
+  suffix from the name at the stem's length so ".school" slides away
+  as it did, and now carries `title={name.trim()}` - the full name as
+  declared. The hero's stem wordmark (`landing-page.ts`,
+  `resolveHeroWordmark`) answers `{ text: brandStemLabel(name) ?? name,
+  name }`, so `brand: "stem"` draws "Supacharge" with the full domain on
+  the element's aria-label and title as before; the whole-name case
+  ("stem" on an undotted name) is unchanged. Nothing else changes case:
+  the site metadata, the network strip, the footer and every brand
+  string source stay what the shell declared. The fold rule, the
+  1.36.0 code cap (`calc(44px * 0.28)`) and the code's placement beside
+  the stem are untouched; no brand string is named in base.
+* Tests: `header-brand.test.mts` gains the `brandStemLabel` cases
+  (lower-case, already-capitalised and undotted names, the header
+  markup) and `landing-page.test.mts` reads "Acme" / "Supacharge" from
+  `resolveHeroWordmark` with the lower-case name beside it;
+  `test_manifest.py` gains `test_folded_stem_is_capitalised` (one
+  `toUpperCase` in base, in `brandStemLabel`; the header and the hero
+  show the label and title the full name).
+* Release order: 1.38.0 (RokctAI/core #220, the page slot and the
+  header's local-mode switch) merged first; this release sits above it
+  on main and touches none of its files' rules.
+
+## 1.38.0
+
+* A registered section may name the PAGE it belongs to, so a home SDK's
+  card reaches a company page through the one registry it already knows
+  (Ray, 2026-09-10: corporate_sdk owns `/about` and `/team` as renderers;
+  their content comes from the shell's `data/` folder - base 1.35.0's
+  reader - or is empty, and Supacharge's about page reuses lms's founder
+  card). `PageSectionMeta.page?: "landing" | "about" | "team"`
+  (`components/custom/landing/page-sections.ts`; `PageSlot`, `PAGE_SLOTS`,
+  `DEFAULT_PAGE_SLOT`, `sectionPageOf(meta)`): absent is `"landing"`, and
+  every section registered before this field renders exactly where it
+  did. `arrangeLandingPage` keeps only landing sections - a section that
+  names another page is neither drawn nor a floating-nav stop on the
+  landing - and NEW `pageSectionsFor(page, ctx?, entries?)` in
+  `landing-page.ts` is what a company page's renderer awaits: the same
+  loader (a failing module skipped and logged, an unreadable meta
+  rendered with defaults), the same `meta.renders(ctx)` and `meta.order`
+  rules (`presentSectionsFor`, the rule both share), filtered to that
+  page; `ctx` defaults to no plans and no session, and nothing registered
+  answers `[]`. No brand, route or host is named by either module.
+* The header's own "Log in" / "Sign up" pair follows the shell's data
+  mode - the TODO 1.35.0 left on `dropBackendOnlyActions`, now that the
+  header files are free. `app/landing/page.tsx` hands the mode it read
+  through `siteDataMode()` to `landing-content.tsx` (`dataMode?`), which
+  passes it to `header.tsx` (`HeaderProps.dataMode?: SiteDataMode`); for
+  a visitor with no session the header draws no pair, on the bar and in
+  the burger panel, when `showsHeaderAuth(dataMode)` (NEW in
+  `landing/header-menu.ts`, pure: false for `"local"` only) says so, and
+  the burger hides with nothing left to open. A page that mounts the
+  header without the prop - every caller before this release - draws the
+  pair as it did; the "use client" files import only the `SiteDataMode`
+  type from `lib/site-data/kinds`, never the server-only reader.
+* `docs/site-data.md`: the legal kind's title rule now reads "the first
+  level-1 heading" - the code span that held a hash and a trailing space
+  failed markdownlint MD038 (no-space-in-code) in every host that vendors
+  the docs; the doc also gains the company-pages section and the switched
+  header paragraph.
+* Tests: `tests/landing-page.test.mts` (+6: the slots, a landing
+  arrangement identical with and without the field, a company-page
+  section kept off the landing, the filter / renders / stable order rule,
+  `pageSectionsFor` over given entries and over the live registry),
+  `tests/header-brand.test.mts` (+2: `showsHeaderAuth` and the header
+  reading it on both surfaces), `test_manifest.py` (the page-slot
+  contract, the header switch, the local-mode test updated for the
+  wrapper's fourth `dataMode`, the header-menu stage stubbing the type).
+
+## 1.37.0
+
+* The footer chrome has a links seam, and base reads the shell's legal
+  documents for it. Ray, 2026-09-10: "supa has no terms pages or about
+  page"; asked where the pages belong: "legal pages are not in corporate
+  sdk?" and "you should look at the dart side if they are not there
+  yet". On the Dart side `corporate_sdk` owns the policy / terms pages
+  and every auth composition includes it, so the Next.js layout mirrors
+  that split: the pages at `/legal` and `/legal/<name>` are
+  `corporate_sdk`'s (RokctAI/corporate `corporate/corporate/nextjs`,
+  floor base_sdk >= 1.37.0); base carries the links and the read only.
+  * `FooterChromeConfig.links?: FooterLinkGroup[]`
+    (`components/custom/landing/footer-chrome-config.ts`): `{id, label,
+    items: {id, label, href, external?}[]}`. `FooterChromeRow`
+    (`components/custom/footer-chrome.tsx`) draws the groups as one
+    compact labelled row between the network strip and the copyright
+    line, internal links through `next/link`, external ones with
+    `rel="noopener noreferrer"`, and NOTHING when `links` is absent or
+    every group is empty - rokct.ai and supacharge render exactly what
+    they rendered until their home SDK opts in.
+  * NEW `app/actions/base/legal.ts`: `listPublicTerms()` reads every
+    enabled "Terms and Conditions" document (the doctype the admin editor
+    at `app/admin/settings/terms` writes) as `{name, title, disabled}`
+    through the platform gateway as a guest, and soft-fails to `[]` with
+    no backend, a refused guest read or a failed call - the shape
+    `getLandingPlans` takes, so a footer lists nothing rather than the
+    page failing.
+  * NEW `components/custom/landing/legal-links.ts`, the pure half:
+    `PublicTerm`, `normalisePublicTerms(rows)` (drops disabled and
+    malformed rows, `null` is `[]`), `legalDocHref(name)` and
+    `legalFooterLinks(terms, label?)`, which maps the documents to
+    `/legal/<name>` links under one "Legal" group - the only word base
+    owns here; titles come from the documents, never from code - or to no
+    group when nothing is published.
+* Tests: `tests/legal-links.test.mts` (node) executes the rule;
+  `test_manifest.py` holds the seam's shape, the installs and that the
+  footer draws no row without groups.
+* The footer status probes the tenant only by default. Ray, 2026-09-09:
+  every shell reads its footer status from its own tenant backend, never
+  from control. `resolvePlatformStatusProbes()` with `ROKCT_STATUS_SOURCE`
+  unset now runs `DEFAULT_PLATFORM_STATUS_SOURCES` (`["tenant"]`); the
+  control probe is opt-in (`ROKCT_STATUS_SOURCE=control`, or
+  `tenant,control` to keep it as a fallback). Variable names unchanged;
+  `tests/status-probes.test.mts` holds the default and the opt-in.
+## 1.36.0
+
+* A header-menu group may lay its items out in ONE ROW, and the menu
+  may name the trigger's word (Ray, 2026-09-10, on supacharge: "header
+  app links first. if possible put mobile apps in one row since supa
+  dont have much menu"). `HeaderMenuGroup.layout?: "column" | "row"`
+  (default `"column"`, everything before this release): a `"row"`
+  group's items sit side by side in the desktop panel - cards keep
+  their icon, label and blurb and shrink to share the width (`min-w-0
+  flex-1` cells, `md:flex-row`, `data-layout` on the list). A row group
+  that LEADS the panel widens the lead column from 300px to 58% of the
+  panel (about 650px at `max-w-6xl`, three cards of about 210px) and
+  the headed columns share the rest; alone in the panel it takes the
+  whole width; a row group AFTER the lead spans the headed grid
+  (`col-span-full`). The burger's stacked list ignores the layout.
+  `HeaderMenu.megaLabel?: string` is the trigger's word: without it the
+  trigger reads the first group's label as it has since 1.18.0; with it
+  a shell may put any group first while the bar still reads what it
+  declares. `resolveHeaderMenu()` carries both (`layout` on every
+  resolved group, `megaLabel` trimmed or null on the menu),
+  `resolveHeaderMenuGroupLayout()` and `megaTriggerLabel()` are the pure
+  rules, `HeaderProps.megaLabel` / `HeaderMenuNavProps.megaLabel` carry
+  it to the trigger, and the landing host passes it with the groups.
+* The country code beside a STEM wordmark is capped at the size
+  rokct.ai's ORIGINAL header rendered its code at (Ray, 2026-09-10: "za
+  in supa is big, look at one in rokct, original one"). That header
+  named 36px inline and then spread the branding cache's style over the
+  span, and the cache's style is a 0.28em superscript, so 36px was only
+  the fallback for a cache with no style - never what rokct.ai showed.
+  `BRAND_CODE_SCALE` (0.28) of `BRAND_MARK_SIZE_PX` (44) is
+  `BRAND_CODE_FONT_SIZE`, `calc(44px * 0.28)`, about 12px, and
+  `BRAND_STEM_CODE_FONT_SIZE` is now `min(` that `, BRAND_STEM_FONT_SIZE)`
+  - the 1.31.0 follow-the-stem rule with the new cap, so on a phone the
+  code is still never larger than the stem. For a 17-character name:
+  1280 was 36px, now 12.32px; 768 was 28.78px, now 12.32px; 390 was
+  21.37px, now 12.32px. The code beside a MARK or a letter tile is
+  byte-for-byte the 1.24.0 code (`text-[36px]`, the -2px top), so
+  rokct.ai's country code renders exactly as it did (Ray: "if i merge
+  that one it will change country code in rokct to wrong one" - it does
+  not), and a declaration's own style is still merged over the header's.
+* The hero's STEM wordmark is no longer clipped by its own slot (Ray,
+  2026-09-10, on supacharge: "supa name in hero cut off on g and e").
+  `hero-view.tsx` draws the stem at `leading-none` inside the slot that
+  hides its overflow (that is how the slot closes when the form takes
+  over), and a 1em line box is shorter than a face's glyphs: the
+  descenders of "g" and "p" reached below it (Inter's by about 0.11em,
+  Montserrat's by 0.07em) and were cut flat, and an italic face's last
+  glyph overhangs its advance width and lost its right edge. The span
+  now carries `HERO_STEM_PADDING_CLASS`, `py-[0.15em] px-[0.05em]` -
+  padding rather than line height because a home SDK restyles the span
+  from outside (face, size, `line-height: 1 !important`) and would undo
+  a leading change; and symmetric so the glyphs do not move (the row is
+  a fixed 72px with the slot centred in it, so equal padding above and
+  below keeps the baseline where it was and only the slot's box grows).
+  Font size, tracking and everything around the slot are unchanged;
+  measured on supacharge at 1280/768/390: 5px, 5px and 3.7px of the
+  descenders and 1.2-1.6px of the last glyph were clipped before, 0px
+  after.
+* Tests: `header-brand.test.mts` gains the layout and trigger-word
+  cases (the stage now carries `header-menu.tsx`) and the stem-code
+  cases read the new cap; `test_manifest.py` gains
+  `test_header_code_beside_a_mark_is_untouched_and_the_stem_cap_is_the_original`,
+  `test_header_menu_group_row_layout_and_trigger_word` and
+  `test_hero_stem_wordmark_has_room_for_its_descenders`.
+
+## 1.35.0
+
+* The shell's host-owned `data/` folder, and an explicit data mode. Ray,
+  2026-09-10: "do you think we need a data folder for non backend shells?
+  so if the folder exist sdks read it?", "but dont the shell need to
+  anounce im local so it look for data/ first?", "what we cant give sdk we
+  can give data/". A shell with no backend (South River), or one that
+  keeps some content with the site, commits a `data/` folder and announces
+  how it is read with ONE top-level key in its own composer.json,
+  `"data": "local" | "backend" | "hybrid"`. Absent is `backend`: today's
+  behaviour, byte for byte - rokct.ai and Supacharge change nothing. The
+  declaration is explicit rather than "the folder exists" so a half-static
+  shell can never silently call a backend it does not have, and so base
+  has one signal for hiding backend-only surface.
+  * Kinds and files: `theme` (`data/theme.json`: `primary`, optional
+    `secondary`, `accent`, hex strings), `team` (`data/team.json`:
+    `members[]` of `name`, `role`, optional `photo`, `links[]`),
+    `stockists` (`data/stockists.json`: `items[]` of `name`, `address`,
+    `town`, optional `lat`/`lng` together, `mapsUrl`), `products`
+    (`data/products.json`: `items[]` of `name`, optional `description`,
+    `sizes[]`, `image`, `status` "active" | "coming"), `about`
+    (`data/about.md`, the markdown verbatim) and `legal`
+    (`data/legal/<slug>.md`, a map of slug to `{ title, markdown }`; the
+    title from a `title:` front-matter line, else the first level-1
+    heading, which is then removed from the body). Types in
+    `lib/site-data/kinds.ts`; the checks, hand-written and dependency-free,
+    in `lib/site-data/validate.mjs`. The brand name is never in data/.
+  * Bundled at BUILD time, never read at request time. A new script,
+    `lib/site-data/generate.mjs`, run from the shell root before
+    `next build` (the shell's own package.json `"prebuild": "node
+    lib/site-data/generate.mjs"`, plus `predev`; npm runs it on its own
+    before `build`, so Vercel's `bash scripts/compose.sh && npm run build`
+    composes, generates, builds), reads composer.json's `"data"`, reads
+    and validates every known file under data/ and writes
+    `lib/site-data/generated.ts` - the typed module the reader imports.
+    base installs the neutral `generated.ts` (backend, no files), so a
+    shell that never runs the script builds exactly as before. A bad file
+    fails the build naming the file and the field
+    ("data/team.json: members[1].role must be a non-empty string"), so
+    does an unknown mode, an unknown file in data/ (a typo such as
+    teams.json) and, in local mode, a kind an installed SDK's manifest
+    requires (`"site_data": { "requires": ["about"] }`) with no file.
+  * The reader, `lib/site-data/read-site-data.ts` (server-only), for any
+    composed SDK's server code: `readSiteData(kind)` answers the kind's
+    file, typed by kind; `hasSiteData(kind)` whether it would, never
+    throwing; `siteDataMode()` the declared mode. The rule
+    (`resolveSiteData` in kinds.ts): backend answers undefined for
+    everything; hybrid the file when it was bundled, else undefined and
+    the caller falls back to its backend; local the file, or an Error
+    naming the missing file - a local shell has nothing to fall back to.
+    Import paths: `@/lib/site-data/read-site-data` for the functions,
+    `@/lib/site-data/kinds` for the types (importable from client code).
+    corporate_sdk 1.1.0 is the first consumer: its legal, about and team
+    renderers read their content here.
+  * Theme: with a `data/theme.json` the shell's colours reach every
+    route. `components/custom/site-theme.tsx` (server) renders one
+    `<style>` with a `:root` block from `lib/site-data/site-theme.ts`:
+    `--primary`, `--secondary`, `--accent` as the HSL triplets the
+    shells' shadcn tokens expect, a `-foreground` for each picked for
+    contrast, `--ring` following primary, and the raw hex as
+    `--site-primary` / `--site-secondary` / `--site-accent`. It is
+    rendered by `components/custom/theme-provider.tsx`, the seam every
+    host layout already wraps its page in - which is now a directive-free
+    SERVER entry over the new `theme-provider.client.tsx` (next-themes,
+    the 1.22.0 dark default and class attribute, unchanged), the same
+    split as a landing section's entry and its `<name>.client.tsx`. Order:
+    the host's globals.css first, this block after it in `<body>` (wins
+    over the `:root` and `.dark` token blocks, same specificity, later),
+    and a home SDK's own theme set later in the document or on a more
+    specific selector (lms_sdk's `.sc-landing { ... }`) still wins over
+    it. No theme file, or backend mode: nothing is rendered and the markup
+    of every shell composed today is unchanged.
+  * Local mode switches off backend-only surface base owns: the landing
+    prefetches no plans (every section already handles the empty list)
+    and `arrangeLandingPage` drops the DECLARED header actions (a home
+    SDK's `HeaderMenu.actions`) whose href is the sign-in or sign-up
+    route (`dropBackendOnlyActions`, applied to the resolved menu, so
+    header.tsx and header-menu.ts are untouched). `PageSectionContext`
+    and `PageSectionProps` carry `dataMode` so a home SDK's `meta.renders`
+    keeps pricing or a sign-in strip off a local shell. The footer status
+    pill already hides itself with no base URL (state "unconfigured"); the
+    1.37.0 status-probe default keeps its own files. NOT yet switched, on
+    purpose: the header's own "Log in" / "Sign up" pair - header.tsx
+    draws it for a visitor with no session from the `loginUrl` /
+    `signupUrl` props landing-content.tsx passes, and both files belong
+    to the 1.36.0 header branch. `siteDataMode()` is the switch; the TODO
+    sits on `dropBackendOnlyActions` for the 1.36.0 merge (header.tsx
+    skips the pair when the mode is "local").
+* Tests: `tests/site-data.test.mts` (validators for every kind, the
+  legal title rule, the mode rule in all three modes with a missing and
+  a present file, hex to HSL and contrast, the generator end to end
+  against `tests/fixtures/site-data/` - valid acme.school-style fixtures,
+  a bad field, an unknown file, an unknown mode, a local shell missing a
+  required kind, backend ignoring the folder, the neutral module byte for
+  byte); `test_manifest.py` holds the install set, the version, the
+  theme-provider split and runs the node suite.
+
+## 1.32.1
+
+* The Supacharge network site is named `supacharge.school`. Ray,
+  2026-09-10, on rokct.ai's logos marquee: "logos in rokct are wrong.
+  wrong names". The site is a `wordmark` entry - its name is drawn AS the
+  brand, on rokct.ai's marquee and on every footer strip - and
+  `NETWORK_SITES` (`components/custom/landing/network-sites.ts`) named it
+  "Supacharge", a re-cased, shortened form of the brand string the product
+  declares (lms_sdk's site-metadata `siteName`, under Ray's 2026-09-10
+  ruling that the brand is written "supacharge.school", lowercase, wherever
+  it is written as the brand). The entry now carries that string verbatim,
+  and the rule sits on the `name` field: a name is the product's declared
+  brand string, never shortened, re-cased or otherwise normalised here.
+  `rokct.ai` and `juvo` are as Ray writes them and unchanged. Nothing else
+  moves: a shell never lists itself, and Supacharge's own strip is off
+  (lms_sdk's placement).
+* Tests: `test_network_sites_list_shape` and `network-strip.test.mts` pin
+  the three names verbatim and refuse "Supacharge".
+
+## 1.32.0
+
+* The landing renders server-side. Ray, 2026-09-10: "hero i think should
+  be server side if not the whole landing". Until 1.31.0 the client
+  orchestrator (`components/custom/landing-content.tsx`) loaded every
+  registered section, the header menu and the hero copy in effects after
+  mount, so the first HTML a visitor or a crawler got was the header
+  chrome and an empty hero frame: no words, no section headings, no
+  header links until the client bundle had run. Now:
+  * `app/landing/page.tsx` does the registry work on the server, through
+    the new `components/custom/landing/landing-page.ts`: every
+    `PAGE_SECTIONS` entry is awaited (a module that fails to load is
+    logged and skipped, exactly as the effect did), `meta.renders` is
+    asked once, the sections are sorted (stable, registry order breaking
+    ties), the floating nav is built, the header menu is resolved against
+    it and the hero copy is overlaid. `resolveLandingPage(ctx)` is the
+    loader, `arrangeLandingPage(loaded, ctx, menu)` the pure rule the node
+    tests execute, `resolveHeroConfig()` the hero's half. The page renders
+    the sections and the hero itself (server elements) and hands them,
+    with the resolved menu, to the thin client wrapper.
+  * `components/custom/landing-content.tsx` is that wrapper: it keeps only
+    the search-active state that hides the sections while the hero shows
+    results, and provides the setter to the hero through
+    `HeroResultsContext` so no function crosses the server boundary as a
+    prop. It loads nothing. Section modules stay in the home SDK; only
+    where they are loaded moved - to the server, which is what the next
+    bullet's contract follows from.
+  * The server-safe section contract. The registry is imported on the
+    server now, and on the server every export of a module that starts
+    with `"use client"` is a client reference proxy: `meta.order`,
+    `meta.nav`, `meta.renders` and `meta.rootClass` read as undefined, so
+    a section fell back to its module name as its id and floating-nav
+    label ("Scroll to lms-sessions-section"), the header's anchors did not
+    resolve, a section `renders` would have dropped stayed on the page and
+    the order broke - and the node tests, which load plain objects, never
+    saw it. The contract, in one sentence: a section's ENTRY module (the
+    one the registry imports) is server-safe - no `"use client"`, `meta`
+    exported as a plain object and a default component - and anything
+    that needs hooks, state, effects, browser APIs or framer-motion lives
+    in a sibling `<name>.client.tsx` that starts with `"use client"` and
+    that the entry's default export renders, with `meta.renders(ctx)` pure
+    (no window, no localStorage). `loadPageSection` now checks `meta`
+    before reading it (`describeMetaProblem`: React's
+    `Symbol.for("react.client.reference")` tag or `$$typeof`/`$$id` own
+    keys mark a client reference, a missing export is named, and anything
+    else that is not a plain object is named for what it is) and, rather
+    than dropping the section, renders it with `fallbackSectionMeta()` -
+    order 100, the entry id as its DOM id, no floating-nav entry, always
+    present, no rootClass - and one `console.warn` naming the section, the
+    settings it renders with and the contract (`SECTION_ENTRY_CONTRACT`).
+    So unsplit sections still render with default settings: a shell
+    re-pinned to this base with a home SDK that has not split its entries
+    yet keeps every section on the page (a client-reference default export
+    renders fine from the server component; only its meta is unreadable),
+    which is what 1.31.0 showed, less the nav tick a module name would
+    label. base registers no section of its own and none of its installed
+    modules exports a `meta` from a client module;
+    `tests/test_manifest.py` scans every installed entry for that, and
+    `tests/landing-page.test.mts` executes the fallback against a client
+    reference, React's throwing deep proxy, a missing meta and every
+    non-object.
+  * `components/custom/hero.tsx` is the SERVER wrapper: `HERO_CONFIG` with
+    the registered copy laid over it, awaited, handed as props to the new
+    client view `components/custom/hero-view.tsx`, which draws the copy
+    from props and keeps the word rotation, the visitor's branding cache
+    (`localStorage`, read after mount) and the registered form
+    client-side and hydration-safe (index 0 on both sides, no mismatch).
+    The client copy load is gone; there is no pending "no words" state,
+    because the words are known before the first byte. Framer's entrance
+    animation is off on the elements that carry the copy (`initial={false}`
+    on the wordmark block, the h1 and the badges block, and on the word's
+    `AnimatePresence`), so the server's text is visible before hydration
+    and without JavaScript; the word swap still animates on every rotation
+    after the first. `fallbackHref`, HeroConfig's one function-typed
+    field, cannot be a prop; the view resolves it beside the form that
+    consumes it, in the form's own `next/dynamic` loader, so a registered
+    copy's override still reaches the form. `hasBadgeIcon` is re-exported
+    from `hero.tsx`.
+  * The header's links and mega trigger are in the first HTML: the wrapper
+    passes the menu the page resolved, and `Header` already prefers props.
+  * `HeroConfig.brand?: "name" | "stem"` (default `"name"`; no visible
+    change on any shell until a home SDK's hero copy declares it). `"stem"`
+    renders `brandStemOf(PLATFORM_NAME)` - the whole name when it has no
+    dot - as the wordmark's visible text, sized to the slot, with the full
+    name on the element's `aria-label` and `title`; resolved on the server
+    (`resolveHeroWordmark`), so the first HTML carries the stem. No brand
+    string and no hostname in base.
+  * `PageSectionMeta.rootClass?: string`: class names the landing root
+    carries from the first HTML, every present section's value joined in
+    page order. The seam for a home SDK whose theme section puts its token
+    class on the document from a client effect: server-rendered copy would
+    otherwise first paint unthemed. The effect may keep running for what
+    only `<html>` can carry (a mode default, a mirror attribute).
+  * Installs: `components/custom/hero-view.tsx` and
+    `components/custom/landing/landing-page.ts`. No new dependency.
+  * Tests: `tests/landing-page.test.mts` (node, run by
+    `tests/test_manifest.py`) executes `arrangeLandingPage` (skip, renders,
+    stable order, overlays/flow, nav ends, menu against the live nav,
+    rootClass), `describeMetaProblem`/`isClientReference` and the
+    client-reference fallback, and `resolveHeroWordmark`/`resolveHeroConfig`
+    with an `acme.school` fixture; `test_manifest.py` holds that the page, the
+    wrapper and the view load no section, menu or copy in an effect and
+    that the view renders the copy from props with `initial={false}` on
+    the h1.
+
+## 1.31.0
+
+* The country code beside a stem wordmark follows the stem's size. Ray,
+  2026-09-10: "look at rokct header's country code and then check
+  supacharge's". Beside a mark the code is the 36px rokct.ai's old header
+  set it at, against a 44px mark that is the same on every viewport, so
+  it is always the smaller of the two; beside a stem wordmark (1.29.0),
+  which `BRAND_STEM_FONT_SIZE` shrinks to fit the bar, the 36px code
+  outgrew the wordmark on a phone (17 characters at 390: a 21px stem
+  beside a 36px code, the code's capitals half again the wordmark's
+  height and 8px below its baseline) while at 1280 the two shells drew
+  the code the same (36px, medium, foreground, 4px after the brand, a
+  25px capital). rokct.ai keeps everything its old host header had and
+  Supacharge inherits it; what Supacharge did not inherit was the code
+  being the smaller element, so:
+  * `components/custom/landing/header-menu.ts`:
+    `BRAND_STEM_CODE_FONT_SIZE`, `min(36px, <BRAND_STEM_FONT_SIZE>)` -
+    the 36px wherever the stem is at least that (a 5-letter name at 60px,
+    17 characters at 1280), else the stem's own size (17 characters: 21px
+    at 390, 29px at 768). Pure CSS over the same `--brand-chars`.
+  * `components/custom/header.tsx`: `CollapsingBrand` sets it inline on
+    the code, with `--brand-chars`, only when the brand folds to a stem,
+    and lays the code out as the stem is (centred, `leading-none`, the
+    same `pt-0.5`) so it sits on the stem's baseline at every width. The
+    code beside a mark (rokct.ai) or a letter tile keeps its 1.24.0
+    class and inline style, literal for literal, and a declaration's own
+    `code.style` still wins.
+* Tests: `header-brand.test.mts` pins `BRAND_STEM_CODE_FONT_SIZE` (36px
+  where the stem is 36px or larger, the stem's size where it is smaller,
+  never larger than either, for names of 1 to 30 characters at 320 to
+  1920) and reads the staged `header.tsx` for where it is applied;
+  `test_header_code_follows_the_stem_wordmark` holds the two branches'
+  literals, the untouched slot and the stem wordmark.
+
+## 1.30.0
+
+* A tenant's BACKEND custom domain, from the host resolver (Ray,
+  2026-09-10). A tenant may have, besides the shell domain that opens
+  its portal, a domain of its own that its backend answers on, so it
+  keeps working when the platform's own zone is down - protection, not a
+  new identity. The control site's `resolve_site_by_host` returns
+  `backend_url` (a scheme'd origin) beside `site_name` while that domain
+  is Active, and the kernel keeps the two apart:
+  * `app/services/base/tenant-host-control.ts`: the answer is parsed as
+    a pair, `TenantHostSite { siteName, backendUrl? }`, by the new
+    `resolveTenantHost(host)`; the positive cache holds the pair
+    (`cachedTenantHost`). A `backend_url` that is malformed, not an
+    http(s) origin, not a public host, the control site, or the site
+    itself is dropped and the site name still answers; only its origin
+    is kept (no path). `resolveTenantSiteByHost` and
+    `resolveTenantSiteForRequest` answer the SITE NAME as before, so the
+    `x-rokct-tenant-site` header auth_sdk's middleware forwards never
+    carries the backend origin. The registered
+    `controlTenantHostResolver` answers the backend origin when control
+    named one (already scheme'd, so `normalizeSiteUrl` keeps it), else
+    the site name as before; `ROKCT_TENANT_HOSTS` entries are unchanged
+    and name no backend.
+  * Stale-while-error, same module: every positive answer is also kept
+    for `TENANT_HOST_STALE_TTL_MS` (24 h, `ROKCT_TENANT_HOST_STALE_TTL_MS`,
+    `0` switches it off) beyond the 5-minute positive TTL. When control
+    is UNREACHABLE - a network error, a timeout, a 5xx - the last known
+    answer for that host is served instead of "unknown host" (for the
+    negative TTL, so control is asked again soon). A 4xx, or control
+    reached and saying the host is nobody's, is a definitive answer and
+    replaces the stale one. Per process, in memory: an instance that
+    never saw a host while control was up still answers the storefront.
+  * `alternateTenantOrigin(origin)` (the other half of a known pair,
+    both ways, kept for the stale TTL) and `sameTenantOrigin(a, b)`
+    (same site, or the two halves of one pair) are exported for the
+    gateway; all new names are re-exported from `index.ts`.
+  * `app/services/base/platform-gateway.ts`: `platformCall` retries a
+    RESOLVED origin ONCE on the other half of the pair when the first
+    attempt fails at the network level (a fetch error, a timeout - the
+    retry gets its own timeout budget) or with a 502/503/504: a backend
+    origin falls back on the site name, a site name on the backend
+    origin (known for the session's site once this process resolved the
+    tenant's shell host). Never on a 4xx or any other status (that is
+    the tenant's answer), never for an explicit `baseUrl` (that call
+    asked for one specific origin), never a third origin; the alternate's
+    own outcome is final. The credential guard is `sameTenantOrigin`: a
+    session's credentials reach its site's origin or that site's backend
+    origin, nothing else. Logged once per alternate origin.
+  * Tests: `tests/tenant-host-control.test.mts` gains the backend
+    origin (parsing, the cached pair, the resolver answering the origin,
+    the header still the site name, unusable backends dropped, the pair
+    both ways) and stale-while-error (network error, 5xx, 4xx is
+    definitive, a definite "nobody's" forgets it, off at 0, its own TTL);
+    new `tests/platform-gateway.test.mts` (retry once on a network error
+    / timeout / 502-504, no retry on 4xx or 500, exactly two attempts,
+    the retry's own signal, GET keeps its query, the reverse direction
+    with credentials, no pair means one attempt, credentials never to a
+    third origin, explicit `baseUrl` never retried), staged by
+    `test_manifest.py` with session.ts's host seam stood in by a null
+    session. The contract test follows the new exports.
+
+## 1.29.0
+
+* Supacharge network site moves to https://supacharge.school (Ray,
+  2026-09-10). `NETWORK_SITES` url, tests and the first-party host
+  allowlist updated. No visible change on any shell; the marquee and
+  footer strip link to the new host after re-pin.
+* An icon-less collapsing brand whose platform name carries a dot folds
+  to its stem. Ray, 2026-09-10: "same on the nextjs is if sitename has a
+  dot, fold dot and what comes after so they s will never show anymore
+  unless there is icon, if there is icon it fold further to leave only
+  icon". So:
+  * `components/custom/landing/header-menu.ts`: `brandStemOf(name)`, the
+    text before the first dot of the trimmed name (`"a.b.c"` gives `"a"`,
+    `"x."` gives `"x"`; `null` for no dot, a leading dot or no name - not
+    dotted for this rule), and `brandFoldsToStem(brand, name)`: a
+    collapsing brand whose logo resolved to `"none"`, with its wordmark
+    on, whose name has a stem. Base names no brand string; whatever name
+    the shell shows is the one that folds.
+  * `components/custom/header.tsx`: `BrandStemWordmark`, asked by
+    `CollapsingBrand` before the 1.28.0 letter tile: the whole
+    `PLATFORM_NAME` at load, as text in the large wordmark's classes (the
+    ones the `Branding` slot takes) at the host wordmarks' bold weight,
+    and after `delayMs` the dot and what follows SLIDE into the stem,
+    leaving the stem as the wordmark with the code and the chevron beside
+    it. Ray, 2026-09-10: "its like its being erased but not as a back type
+    but like sliding into what gets left. i think rokct already use the
+    animation in header" - so it is the large wordmark slot's own slide
+    (500ms ease-in-out, width closing over hidden overflow), the suffix's
+    slot a one-column grid whose track goes `1fr` to `0fr` so it closes
+    from the suffix's own width with nothing measured, and the stem's
+    glyphs never move: no backspace, no swap. The wordmark's size is
+    responsive (`BRAND_STEM_FONT_SIZE` in `header-menu.ts`, set inline
+    with `--brand-chars`, the full name's character count): the large
+    wordmark's 60px when the whole name fits, else what fits a budget of
+    20vw + 140px at 0.6em per character - one size for the name and its
+    stem, so a long dotted name never widens the bar before the fold nor
+    pushes the burger off a phone after it (17 characters: about 21px at
+    390, 29px at 768, 39px at 1280; 5 letters at 1280 stay at 60px).
+    Pure CSS, nothing measured. The letter tile is never
+    drawn for a dotted name. A brand with a declared
+    image, a registered icon or the host's own mark still folds to that
+    mark whatever its name; an undotted icon-less name still folds to the
+    1.28.0 tile; a still brand is untouched. The favicon route is not
+    part of this.
+* Tests: `header-brand.test.mts` - the stem for dotted, multi-dot,
+  trailing-dot, leading-dot, undotted and empty names, and the fold rule
+  for the three cases (a dotted name without an icon, an icon whatever
+  the name, no dot and no icon) with the edge cases;
+  `test_header_folds_a_dotted_name_to_its_stem` reads the stem wordmark
+  (text only, the suffix slot closing with the collapse, the responsive
+  size set once on the span both stem and suffix inherit from and no
+  60px class on it, asked before the tile, no brand string in code) and
+  holds the 1.28.0 literals; `header-brand.test.mts` also pins
+  `BRAND_STEM_FONT_SIZE` (the widths it bounds for 17 characters at 390,
+  768 and 1280, a 5-letter name at 1280, the stem beside the burger at
+  390) and reads the staged `header.tsx` for where it is applied.
+
+## 1.28.0
+
+* A collapsing brand with no image folds into a letter tile. Ray,
+  2026-09-10, on supacharge.app: "rokctai has logo and name that the name
+  fold into logo and menus disapear, this is not in supacharge. since
+  supacharge has not icon cant it fold and only leave the first letter as
+  its icon?" A shell that declares `brand.logo: "none"` (the wordmark is
+  the logo) and `brand.collapse` had nothing to fold into: `BrandMark`
+  draws nothing for `"none"`, so after `delayMs` the header was left with
+  the code and the chevron alone. So:
+  * `components/custom/header.tsx`: `BrandLetterTile`, drawn by
+    `CollapsingBrand` in the mark's slot when the brand folds to a letter.
+    The platform name's first letter (the same `PLATFORM_NAME` the
+    wordmark shows) in the shell's `primary` token on the generated
+    /brand-icon tab tile's ground (`#0b0b0b` with its highlight, the same
+    in both themes, as the tab's icon is), 44px square like a mark,
+    corners at 22% and the face at 84% of the square - the tab tile's
+    proportions - `role="img"` with the name as its label. CSS and text
+    only: no `<img>`, nothing fetched. Its slot opens with the collapse,
+    the way the code's does, so at load the wordmark stands alone as the
+    declaration says and the name then folds into the letter; the code
+    and the chevron sit beside it and the desktop nav fades and returns
+    exactly as in 1.24.0.
+  * `components/custom/landing/header-menu.ts`: `brandLetterOf(name)`, the
+    tab tile's rule restated for the browser bundle (first letter or
+    digit, any script, uppercased; `""` for none), and
+    `brandFoldsToLetter(brand)`: a collapsing brand whose logo resolved to
+    `"none"`, and nothing else. A shell that declares no `collapse`
+    renders byte-for-byte what it did (`resolveHeaderBrand` answers the
+    same shape); a collapsing brand with a declared image, a registered
+    icon or the host's own mark keeps folding to that mark.
+* Tests: `header-brand.test.mts` - the letter for a capitalised, a
+  lowercase, a digit-led and an empty name, and the fold rule for `"none"`
+  with and without a collapse, for a declared image, a registered icon
+  and the host mark, and the unchanged resolved shape without a collapse;
+  `test_header_folds_to_a_letter_tile_for_an_icon_less_shell` reads the
+  tile (text in the primary token, no image, the tab tile's ground and
+  proportions, opened by the collapse) and holds the still brand's and the
+  mark branches' literals.
+
+## 1.27.0
+
+* The network strip renders once per page. Ray, 2026-09-09, on rokct.ai:
+  "we now have two trusted by". The shell's layout draws its footer on
+  every route, `/landing` included, so a registered landing placement
+  (`afterHero`) and `footer: true` both landed on the same page - the
+  placement rule knew the surface, not the page. So:
+  * `networkStripRendersAt(strip, surface, onLandingPage = false)`: the
+    footer surface yields on the landing route whenever the landing
+    placement is not `"none"` (the page already carries the strip). Every
+    other route keeps the footer strip; a shell that registers nothing
+    (landing `"none"`, footer on) sees no change anywhere.
+  * `isLandingRoute(pathname)` and `LANDING_ROUTE = "/landing"` in
+    `components/custom/landing/network-strip.ts` - the pure half;
+    `components/custom/network-strip.tsx` reads `usePathname()` itself,
+    so neither `FooterChromeRow` nor a host footer that renders
+    `<NetworkStrip surface="footer" />` needs to know. A render outside
+    the App Router (`null` pathname) counts as any other route.
+  * A fourth landing placement, `"section"`: a page section the home SDK
+    registered draws the strip itself, in its own look (rokct.ai's logos
+    marquee, agent_sdk 1.17.0), reading `loadResolvedNetworkStrip()` and
+    asking `networkStripRendersAt(strip, "section")`; base's `afterHero`
+    and `beforeFooter` surfaces then draw nothing and the footer still
+    yields on `/landing`. `NetworkStripSurface` gains the value with it.
+  * Nothing about the list, the links or the heading changes: a link is
+    still the site's origin, no parameter, no handler.
+* Tests: `network-strip.test.mts` covers `isLandingRoute`, the footer
+  yielding on the landing route only while a landing placement is set,
+  the `"section"` surface, and the unchanged defaults;
+  `test_network_strip_registry_contract` names the four placements and the
+  two new exports, `test_network_strip_component_never_tracks` holds that
+  the component reads the route through `usePathname` and asks the pure
+  rule, and `test_network_strip_renders_once_per_page` reads the rule.
+
+## 1.26.0
+
+* Base ships the platform brand marks itself. Ray, 2026-09-09, on the
+  store logos agent_sdk 1.15.0 (Chrome Web Store, Google Play) and lms_sdk
+  1.16.0 (Google Play, AppGallery, App Store, Windows) each installed under
+  their own `public/brand/marks/`: "move to base, home sdk can choose to
+  use them or not". So:
+  * `templates/public/brand/marks/` - `chrome-web-store.svg` (4353 B, the
+    agent_sdk drawing), `google-play.svg` (1181 B, lms_sdk's gilbarbara
+    tracing; the same four Google colours as agent's), `app-gallery.svg`
+    (1342 B, Huawei red), `app-store.svg` (687 B, Apple, `currentColor`),
+    `windows.svg` (218 B, four equal panes, `currentColor`) - installed as
+    a directory to `public/brand/marks/`, so every host that pins base
+    serves `/brand/marks/<name>.svg`. Only the `marks/` subdirectory is
+    base's; a home SDK's own `public/brand` mapping (lms's wordmarks) is
+    untouched. Each file: a `viewBox`, no `<script>`, no `href`, no host
+    but the SVG namespace (`test_brand_marks_are_installed`).
+  * `components/custom/landing/brand-marks.ts`, a typed registry a home
+    SDK may use or ignore: `BrandMark { src, alt, mono }`, `BRAND_MARKS`
+    keyed `chromeWebStore | googlePlay | appGallery | appStore | windows`,
+    and the dark-mode rule - `isMonoMark(src)` / `markImageClass(src)`.
+    Opting in is handing a mark to a hero badge's `icon` (hero-copy.ts)
+    or a header action's `icon` (header-menu.ts), typed
+    (`icon: BRAND_MARKS.chromeWebStore`) or as the bare path; nothing in
+    base draws one by default.
+  * Dark mode, once, in base: the two monochrome marks are `currentColor`
+    inside an `<img>`, an isolated document, so they resolve black in both
+    themes. `hero.tsx` (a badge's image icon) and `header-menu.tsx` (an
+    action's image icon) now add `dark:invert` to exactly the image whose
+    src path is `/brand/marks/app-store.svg` or `/brand/marks/windows.svg`
+    (`markImageClass`: trimmed, `?query`/`#hash` ignored, absolute URLs
+    never match). Coloured marks and every other image are never filtered.
+    A home SDK must NOT add its own invert for these paths: lms_sdk
+    1.16.0's `lms-theme.css` rule for the same two files is retired in
+    lms_sdk 1.17.0.
+  * Defaults unchanged: `HERO_CONFIG`'s badges keep the built-in "chrome"
+    and "app-store" glyphs, the Google Play badge still names no icon, the
+    header's actions name no image - a shell that declares nothing renders
+    1.25.0's DOM.
+  * Tests: `test_brand_marks_are_installed`,
+    `test_brand_marks_registry_contract`,
+    `test_brand_marks_behaviour_under_node` (`brand-marks.test.mts`) and
+    `test_brand_marks_type_check_under_tsc`; the 1.25.0 image-icon test
+    follows the class merge.
+
+## 1.25.0
+
+* A header action may carry an IMAGE icon the shell serves itself. Ray,
+  2026-09-09, on the Chrome Web Store mark rokct.ai's old host header
+  hot-linked from a third party's CDN for its "Add ROK Extension" button
+  (and which the 1.24.0 restore left out for that reason): "i dont think
+  merlin owns [the icon] so use it but bring it local". Base never names a
+  third-party host, so the home SDK installs the file under `public/` and
+  names its path:
+  * `HeaderMenuImage` (`components/custom/landing/header-menu.ts`):
+    `{ src, alt }`, the shape a hero badge's `icon` already takes in
+    `hero-config.ts`. `HeaderMenuAction.icon` is now
+    `HeaderMenuIcon | HeaderMenuImage`; a link's and a resolved item's
+    icon stay the closed glyph set.
+  * `components/custom/header-menu.tsx`: `actionIcon()` answers the named
+    glyph, the image when it has a src, or nothing; `HeaderMenuActions`
+    draws the image as a plain `<img>` (the way `header.tsx` draws a
+    declared brand image) at the glyph slot's 20px, `object-contain`,
+    before the label, in both the bar and the stacked mobile layout. No
+    `next/image`, no dark-mode filter: the mark is a multi-colour drawing
+    and the old header drew it as it was in both themes. A named glyph
+    renders as it did in 1.20.0; an action without an icon, or with an
+    empty src, renders the label alone - a shell that declares no image
+    renders identical DOM to 1.24.0.
+  * Tests: `test_header_menu_action_carries_an_image_icon`, the 1.20.0
+    glyph test updated for the widened type, and two node cases in
+    `header-brand.test.mts` (`resolveHeaderMenu` carries an image icon
+    verbatim, beside a glyph and beside none).
+  * Downstream: agent_sdk 1.15.0 installs `/brand/marks/chrome-web-store.svg`
+    and sets it on rokct.ai's extension action; it needs this floor.
+
+## 1.24.0
+
+* The header's mega menu no longer closes before the pointer reaches it.
+  Ray, on supacharge.app, 2026-09-09: "it is impossible to choose links if
+  mega menu is open, it leaves no moment to move mouse". Two faults in
+  `components/custom/header-menu.tsx`'s `DesktopMegaMenu`, both fixed at
+  the source, so every composed shell gets the same menu:
+  * A DEAD STRIP between trigger and panel. The bar (`header.tsx`, `h-16`)
+    centres the desktop nav, which had no height of its own, so the menu's
+    hover wrapper - the element carrying `onMouseEnter`/`onMouseLeave` -
+    was as tall as the bar's text (bottom edge at 42px) while the panel
+    hangs from the bar's bottom edge (top at 64px). Moving straight down
+    from the word to the panel crossed 22px of bar that belonged to
+    neither, and the leave closed the panel on the spot. `HeaderMenuNav`
+    is now `h-full`, so the wrapper spans the bar and meets the panel edge
+    to edge (the measured gap is 0px); inside the legacy `HeaderMenuRow`
+    the parent has no set height and the class is inert. No visual change:
+    the trigger sits where it did, the panel draws where it did.
+  * NO HOVER INTENT. A leave closed at once. It now starts a
+    `HOVER_CLOSE_DELAY_MS` (200ms) timer that re-entering the wrapper or
+    the panel, focusing the trigger or clicking it cancels, so brushing an
+    edge or overshooting a corner is not a close. Escape, a click outside,
+    focus leaving the menu and a click on one of its links still close at
+    once; the timer is cleared on unmount. Touch and the burger panel's
+    stacked list are untouched.
+  * Also fixed while here: Escape pressed on one of the panel's links
+    returned focus to the trigger and re-opened the panel, because the
+    trigger's `onFocus` (which opens) fired after the close. The handler
+    now focuses first and closes second.
+  * Tests: `test_header_menu_hover_intent` ties the wrapper's leave to the
+    delayed close and its enter to the cancel, the nav to `h-full`, and the
+    Escape handler to the focus-then-close order.
+* The header's brand may BADGE and COLLAPSE again. Ray, 2026-09-09, on
+  rokct.ai after its re-pin to base_sdk 1.21.0: "header lost functions the
+  old rokct header had"; the standing ruling is that rokct.ai keeps
+  everything its old host header (rokctai_frontend's hand-written
+  `components/custom/header.tsx`, 668 lines, before its PR #143) had. Set
+  against that file, the shared header had dropped three things around
+  the brand and one button style; all four are back, each behind the home
+  SDK's declaration so a shell that declares nothing (Supacharge) renders
+  byte-for-byte what it did:
+  * `HeaderBrand.badge` (`components/custom/landing/header-menu.ts`):
+    the host's `brand-logo.tsx` is drawn with `showBadge` - rokct.ai's
+    BETA strip, which its old header always passed (`showBadge={true}`).
+    Every shell's brand-logo.tsx accepts the prop (the `requires` contract;
+    Supacharge's and delivery's accept it and draw nothing).
+  * `HeaderBrand.collapse` (`true`, or a `HeaderBrandCollapse`): the old
+    header's brand motion - the mark at 44px, the wordmark at
+    `text-[60px] tracking-tighter` in a 250px slot that closes 1500ms
+    after mount (`delayMs`), a chevron after the mark once it has, and the
+    visitor's COUNTRY CODE sliding in beside the mark at the same moment
+    (`code`, a client-side resolver the home SDK supplies, answering the
+    text or `{ text, style }`; rokct.ai reads its branding cache exactly
+    as the old header's `getBrandingSync()` did). The desktop nav fades
+    with the wordmark and comes back while the pointer is over the header
+    or the page is scrolled past 10px - the old `navVisible` rule verbatim.
+    `resolveHeaderBrand` carries `badge` and `collapse` (defaults filled
+    by the new `resolveHeaderBrandCollapse`) on `ResolvedHeaderBrand`;
+    `header.tsx` renders a collapsing brand through `CollapsingBrand`, runs
+    the timer and the scroll/hover listeners only when one is declared
+    (`useBrandCollapse`), and wraps the nav in the fading element only
+    then. Colours are theme tokens (`text-foreground`,
+    `text-muted-foreground`), not the old header's zinc/gray.
+  * `HeaderMenuAction.variant` gains `"secondary"`: the filled muted
+    button (`bg-secondary text-secondary-foreground`) the old header drew
+    its "Chat with ROK" nav button as (`bg-zinc-700`), beside `primary`
+    and the outlined `ghost`. `header-menu.tsx`'s `HeaderMenuActions`
+    paints it in both layouts.
+  * Not restored, on purpose, and listed here so nobody hunts for them:
+    the old bar's `max-w-screen-2xl px-6 md:px-12` container (shared
+    chrome; 32px wider at 1280 than the `max-w-6xl` bar every shell has),
+    the old mobile panel's `text-2xl` link size (the shared panel lists
+    more and uses `text-lg`), the old panel's 200ms fade-and-slide (the
+    shared panel toggles `hidden` so `aria-controls` always resolves), the
+    old mobile CTA's hard-coded `#4f46e5` (theme tokens only) and the
+    Chrome Web Store icon hot-linked from a third party's CDN (the lucide
+    `chrome` glyph since 1.20.0).
+  * Tests: `test_header_brand_badge_and_collapse` ties the registry's
+    fields, the header's `CollapsingBrand` / `useBrandCollapse` and the
+    still-brand literals to the source, and `header-brand.test.mts`
+    executes `resolveHeaderBrandCollapse` and the carried defaults.
+
+## 1.23.0
+
+* The NETWORK STRIP: the other sites of the Rokct network, each a link,
+  under a "Trusted by" heading, on every composed shell minus itself.
+  Ray, 2026-09-09: rokct.ai must not list his other products as choices
+  (each has moved to its own shell), but a founder landing on rokct.ai's
+  free opportunities pages must still learn about them - a clickable logo
+  strip, and the heading is his wording ("these products already trust
+  rokct as they run on it"). He also asked whether rokct's existing
+  `logos` section is enough. It is not: agent_sdk's `logos.tsx` is a
+  marquee of Walmart, Cisco, Netflix, Pinterest, Zoom, Sony, Ebay and
+  Uber images hotlinked from a third party's CDN (a chat template's
+  leftover), none of them a link, on the landing page only. That section
+  is left in place (an unused surface is flagged, never removed).
+  * `components/custom/landing/network-sites.ts` is the ONE list:
+    rokct.ai (https://rokct.ai), Supacharge (https://supacharge.app,
+    `wordmark: true` until Ray designs an icon) and juvo
+    (https://juvo.app), plus `hosting` and `telephony` with `url: null`
+    and `shown: false` until Ray picks their domains (Ray, 2026-09-09:
+    "hosting will get a name when i decide on domain"). An entry is
+    `{ key, name, url, logo?, logoDark?, wordmark?, shown? }`; the logos
+    are read from each site's own `/images/logo_dark.svg` (the black
+    glyph, for the light page) and `/images/logo.svg` (the white glyph,
+    for the dark page; the shells name the two after the TILE their
+    brand-logo.tsx draws them on, not the page), so a mark changes in
+    one place, on its own site. `resolveNetworkSites
+    (sites, { selfHost, order, hidden })` is the pure rule: every shown
+    entry with a URL, minus the shell whose host matches `selfHost`
+    (`networkSiteHost()` normalises a URL's host exactly as
+    `resolveDisplayHost` does, through the kernel's `normaliseHost`:
+    port dropped, `www.` dropped, lower-cased), minus the hidden keys, the
+    named order first and the rest in list order. `hasTrackingParameters()`
+    names the line no link may cross: no entry carries, and no rule adds,
+    a query string or a fragment.
+  * `components/custom/landing/network-strip.ts` is an eighth one-marker
+    registry, `// @rokct-sdk-network-strip-start`, single-answer and
+    home-SDK-owned like `header-menu.ts`: a home SDK registers a module
+    whose default export is a `NetworkStripConfig` - `heading`, `order`,
+    `hidden` (site keys), `placement: { landing?: "afterHero" |
+    "beforeFooter" | "none"; footer?: boolean }` - with one line,
+    `{ id: "<sdk>-network-strip", load: () => import("@/components/custom/
+    landing/<file>") }`. `resolveNetworkStrip(config, selfHost)` lays it
+    over the defaults - heading "Trusted by", list order, nothing hidden,
+    `footer: true`, `landing: "none"` - and `networkStripRendersAt(strip,
+    surface)` is the one test of where the strip draws: the footer while
+    `footer` is on, a landing surface only when `landing` names it, never
+    with no site left. Nothing registered is the default, so lms_sdk, the
+    hosting and the delivery home SDKs need no change to get the strip in
+    their footer row minus themselves.
+  * `components/custom/network-strip.tsx` draws it: `<NetworkStrip
+    surface="afterHero" | "beforeFooter" | "footer" />`, the heading as
+    an eyebrow and one link per site - the logo when the site has one
+    (its dark twin under `dark:`, the name as text if the image will not
+    load) else the name as text - each `href` the site's own origin with
+    `rel="noopener"`, no query string, no click handler, no ad network.
+    Generic chrome in the footer row's mould: neutral alphas only, no
+    product name, no brand hue. The shell it draws on is left out by host
+    - `NEXT_PUBLIC_SITE_URL` first, else the `url` registered in
+    `site-metadata.ts` - the CONFIGURED site, not the request host, since
+    a white-label domain in front of the same deployment is still the
+    same product. The config and the host are resolved once per module
+    and rendered through `next/dynamic`, as the header renders its brand,
+    so the strip is server-rendered with the page and never pops in.
+  * WHERE it hooks in. Base has no footer component to hook: the shells
+    own their footers (rokctai_frontend's host `footer.tsx`, lms_sdk's
+    `lms-footer-section.tsx`) and base ships only the copyright row they
+    end with (`footer-chrome.tsx`, 1.12.0). So that row is the footer
+    hook: `FooterChromeRow` draws `<NetworkStrip surface="footer" />`
+    above itself, inside one fragment, and gains `networkStrip?: boolean`
+    (default true) for a footer that places the strip itself. The
+    landing page's two surfaces are `landing-content.tsx`'s: right under
+    the hero and right before the footer anchor, both inside the block
+    that hides while the hero shows search results.
+  * rokct.ai: agent_sdk 1.13.0 registers `placement: { landing:
+    "afterHero", footer: true }`, so the strip sits under the hero on
+    /landing and in every footer that renders the row. rokctai_frontend's
+    host `footer.tsx` does not yet render `FooterChromeRow` (it keeps its
+    own copy of the copyright row) and must adopt it - or render
+    `<NetworkStrip surface="footer" />` itself - for the strip to reach
+    the pages outside /landing; that is a host edit, flagged here.
+    supacharge.app: lms_sdk registers nothing and the footer section's
+    row shows rokct.ai and juvo, never Supacharge.
+  * Base's own third-party defaults come out with it. Ray, 2026-09-09:
+    "everything served from another company cdn tells you is placeholder".
+    `components/custom/landing/hero-config.ts` named four assets from a
+    chat template's CDN (`cdn.getmerlin.in`): the gradient behind the
+    hero (a 502 today, and at 30% opacity in dark mode - the default now),
+    the Chrome Web Store and Google Play badge icons, and the claim
+    "Trusted by 20M+ users" beside them. `backgroundImage` is `""` (the
+    hero already hides the block on an empty string), `trustLine` is `[]`
+    (the network strip is what stands under the hero now), the Chrome
+    badge's icon is the new built-in `"chrome"` glyph (lucide's own mark,
+    the one the header's extension button draws since 1.20.0) and the
+    Google Play badge has no icon. `HeroBadge.icon` is optional and
+    `hero.tsx` draws only a badge that has one (`hasBadgeIcon`: a built-in
+    glyph, or an image with a `src`), because below `md` a badge shows its
+    icon alone and would otherwise be an empty pill - so the Google Play
+    badge waits for a home SDK's hero copy to give it an icon rather than
+    base inventing one. Every home-SDK override path is unchanged: a
+    registered `HeroCopy` may still set a background, a trust line and
+    image icons of its own.
+  * `tests/test_manifest.py` asserts that no default under `templates/`
+    or `src/` references a third-party host (an allowlist of the
+    network's own sites, the licence URL, the social origins the admin
+    settings page links and the documentation examples), the four hero
+    defaults, and the badge rule.
+  * `tests/test_manifest.py` also asserts the installs, the registry's
+    marker and contract, the two landing surfaces and the footer hook,
+    that the component names no tracking parameter, and stages the list,
+    the registry and the kernel under node (22.6+, type-stripping) to
+    execute `tests/network-strip.test.mts`: the list's shape (unique keys, https
+    origins with no query string, `url: null` only with `shown: false`),
+    self-exclusion by host (`https://www.rokct.ai:443/` leaves rokct out;
+    supacharge's host leaves Supacharge out; no host leaves every site
+    in), the order and hidden rules, that a link is never given a
+    tracking parameter, and that `landing: "none"` hides both landing
+    surfaces while `footer: false` hides the footer.
+
+## 1.22.0
+
+* The shells default to DARK. Ray, 2026-09-09: "default to dark mode".
+  base_sdk never shipped the theme seam: each shell carried its own
+  pass-through `components/custom/theme-provider.tsx` over next-themes and
+  its root layout chose the default alone - supacharge-web's `app/layout.tsx`
+  with `defaultTheme="dark"`, rokctai_frontend's with `defaultTheme="system"`
+  and `enableSystem`, so rokct.ai opened in whatever the visitor's OS said.
+  The rule now lives in base, once, for every shell the composer lands it on.
+  * `components/custom/theme-provider.tsx` is a new `installs` entry (the
+    composer overwrites the shell copies, as it did the header in 1.14.0): a
+    client wrapper over next-themes' `ThemeProvider` whose defaults are
+    `defaultTheme="dark"` and `attribute="class"` (the signal Tailwind's
+    `darkMode: ["class"]` reads), exported alongside as `DEFAULT_THEME` and
+    `THEME_ATTRIBUTE`. A first visit with no stored preference paints dark
+    whatever the OS says; a preference the visitor already expressed through
+    the header's toggle (next-themes' `theme` key in localStorage) is
+    honoured exactly as before, and the toggle keeps flipping light and dark.
+    Every other next-themes prop (`enableSystem`, `disableTransitionOnChange`,
+    `storageKey`) is the host's to pass; with `enableSystem` on, "system"
+    stays a value a toggle may select, it is only no longer what an
+    unexpressed preference resolves to. The props type is imported from the
+    "next-themes" package root (0.4.x ships no `dist/types` entry point).
+  * `next-themes` `^0.4.6` joins the manifest's `dependencies` - both shells
+    already pin it.
+  * The `requires` note for `app/layout.tsx` states the contract: mount
+    `<ThemeProvider>` from `@/components/custom/theme-provider`, pass no
+    `defaultTheme` (or `"dark"`), keep `suppressHydrationWarning` on `<html>`.
+    A layout passing `"light"` or `"system"` overrides the platform rule and
+    is a host regression to fix in the shell. Follow-up: rokctai_frontend's
+    `app/layout.tsx` lines 69-74 pass `defaultTheme="system"` today.
+  * Tests: `test_theme_provider_is_installed_and_defaults_to_dark` ties the
+    install to the template and asserts the dark default, the class
+    attribute, the next-themes dependency and the layout contract;
+    `test_theme_provider_type_checks_under_tsc` type-checks the staged
+    template against next-themes' prop shape when a tsc is reachable.
+
 ## 1.21.0
 
 * The home SDK declares what the header's brand slot draws. Ray,

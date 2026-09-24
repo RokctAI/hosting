@@ -21,10 +21,14 @@
 // (components/custom/header.tsx) renders them in.
 //
 //  - [HeaderMenuNav]  the inline desktop list: flat links, then the groups
-//                     as ONE trigger (the first group's label) that opens a
-//                     panel under the bar on hover, focus and click (Escape
-//                     and an outside click close it) - the mega menu
-//                     rokct.ai's own header drew before base shipped one.
+//                     as ONE trigger (the first group's label, or the word
+//                     the menu declares as `megaLabel` since 1.36.0) that
+//                     opens a panel under the bar on hover, focus and click
+//                     (Escape and an outside click close it) - the mega
+//                     menu rokct.ai's own header drew before base shipped
+//                     one. A group declared `layout: "row"` (1.36.0) lays
+//                     its items side by side in the panel instead of
+//                     stacking them.
 //  - [HeaderMenuList] the stacked mobile list the burger panel shows: every
 //                     link one under the other, each group as a headed
 //                     list.
@@ -59,10 +63,14 @@ import {
 
 import type {
   HeaderMenuAction,
+  HeaderMenuGroupLayout,
   HeaderMenuIcon,
+  HeaderMenuImage,
   HeaderMenuItem,
   HeaderMenuResolvedGroup,
 } from "@/components/custom/landing/header-menu";
+import { megaTriggerLabel } from "@/components/custom/landing/header-menu";
+import { markImageClass } from "@/components/custom/landing/brand-marks";
 import { MenuLabel } from "@/components/custom/menu-label";
 import { cn } from "@/lib/utils";
 
@@ -143,6 +151,35 @@ const MENU_ICONS: Record<HeaderMenuIcon, LucideIcon> = {
 /** An item with a description or an icon is drawn as a card, not a link. */
 const isCard = (item: HeaderMenuItem) => !!(item.description || item.icon);
 
+/**
+ * What an action draws before its label (1.25.0): the named glyph, the
+ * declared image when it has a src, or nothing. An image with an empty
+ * src is nothing, never a broken picture.
+ */
+function actionIcon(
+  icon: HeaderMenuAction["icon"],
+): { glyph: LucideIcon } | { image: HeaderMenuImage } | null {
+  if (!icon) return null;
+  if (typeof icon === "string") return { glyph: MENU_ICONS[icon] };
+  return icon.src.trim() ? { image: icon } : null;
+}
+
+/**
+ * How long the pointer may be off the mega menu before it closes, in ms.
+ * Hover intent (1.24.0): a pointer crossing from the trigger to the panel,
+ * or brushing past the edge of either, is not a leave; only staying away
+ * this long is. The timer is cancelled the moment the pointer is back.
+ */
+const HOVER_CLOSE_DELAY_MS = 200;
+
+/**
+ * The lead column's width when its group is laid out as a ROW (1.36.0):
+ * 58% of the panel, about 650px at the panel's max-w-6xl, room for three
+ * cards of about 210px each with their icon, label and two-line blurb,
+ * and the headed columns take the rest. A stacked lead keeps its 300px.
+ */
+const LEAD_ROW_WIDTH = "w-[58%] shrink-0";
+
 const PANEL_LINK =
   "flex items-center gap-2 text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground";
 
@@ -156,16 +193,16 @@ function MenuCard({ item, onNavigate }: { item: HeaderMenuItem; onNavigate?: () 
   return (
     <MenuLink
       item={item}
-      className="group flex items-center justify-between rounded-xl border border-border p-3 transition-colors hover:bg-foreground/5"
+      className="group flex h-full min-w-0 items-center justify-between rounded-xl border border-border p-3 transition-colors hover:bg-foreground/5"
       onNavigate={onNavigate}
     >
-      <span className="flex items-center gap-4">
+      <span className="flex min-w-0 items-center gap-4">
         {Icon && (
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-foreground/5 text-foreground">
             <Icon aria-hidden="true" className="h-5 w-5" />
           </span>
         )}
-        <span className="flex flex-col">
+        <span className="flex min-w-0 flex-col">
           <span className="flex items-center gap-2 text-[14px] font-semibold leading-tight text-foreground">
             <span>{item.label}</span>
             {item.badge && <MenuLabel badge={item.badge} />}
@@ -185,18 +222,38 @@ function MenuCard({ item, onNavigate }: { item: HeaderMenuItem; onNavigate?: () 
   );
 }
 
-/** A column's rows: cards for items that carry a blurb or icon, links otherwise. */
+/**
+ * A group's items in the panel: cards for items that carry a blurb or
+ * icon, links otherwise. Stacked by default; a `"row"` group (1.36.0)
+ * puts them side by side in ONE row - each item an equal, shrinkable
+ * flex cell, so three cards share the column's width and the burger's
+ * stacked list is untouched. The desktop panel only exists from `lg`,
+ * so the row's `md` fold is the safety net for a narrow panel, not a
+ * breakpoint the panel is ever seen at.
+ */
 function PanelItems({
   items,
+  layout = "column",
   onNavigate,
 }: {
   items: HeaderMenuItem[];
+  layout?: HeaderMenuGroupLayout;
   onNavigate?: () => void;
 }) {
+  const row = layout === "row";
   return (
-    <ul className={items.some(isCard) ? "flex flex-col gap-3" : "space-y-4"}>
+    <ul
+      data-layout={layout}
+      className={
+        row
+          ? "flex flex-col gap-3 md:flex-row md:items-stretch"
+          : items.some(isCard)
+            ? "flex flex-col gap-3"
+            : "space-y-4"
+      }
+    >
       {items.map((item) => (
-        <li key={item.key}>
+        <li key={item.key} className={row ? "min-w-0 flex-1" : undefined}>
           {isCard(item) ? (
             <MenuCard item={item} onNavigate={onNavigate} />
           ) : (
@@ -220,13 +277,71 @@ function PanelItems({
  * any of its links. The panel is `absolute` against the bar, whose
  * backdrop-filter makes it the containing block (see header.tsx), so it
  * spans the bar's full width and needs no knowledge of its height.
+ *
+ * The pointer's leave is DEBOUNCED (1.24.0). Ray, on supacharge.app: "it
+ * is impossible to choose links if mega menu is open, it leaves no moment
+ * to move mouse". Two things made that so: the wrapper was as tall as the
+ * bar's text (the nav sat centred in the bar with no height of its own)
+ * while the panel hangs from the bar's bottom edge, so the pointer crossed
+ * a dead strip of bar between the two, and a leave closed the panel on the
+ * spot. Now the nav is `h-full`, so this wrapper - button and panel are
+ * both inside it - spans the bar and meets the panel edge to edge, and a
+ * leave only starts a [HOVER_CLOSE_DELAY_MS] timer that re-entering, focus
+ * or a click cancels. Escape, an outside click and focus leaving still
+ * close at once.
  */
-function DesktopMegaMenu({ groups }: { groups: HeaderMenuResolvedGroup[] }) {
+function DesktopMegaMenu({
+  groups,
+  megaLabel = null,
+}: {
+  groups: HeaderMenuResolvedGroup[];
+  /** The declared trigger word (1.36.0); the first group's label when null. */
+  megaLabel?: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelId = useId();
   const [lead, ...columns] = groups;
+  // 1.36.0: the trigger's word is the declared one when there is one.
+  const label = megaTriggerLabel({ groups, megaLabel });
+  // 1.36.0: a lead group laid out as a row needs more than the 300px a
+  // stacked column takes - three cards side by side, each with its icon,
+  // label and blurb - so it takes LEAD_ROW_WIDTH of the panel (about 650px
+  // of the 1120px the panel has at max-w-6xl) and the headed columns share
+  // the rest; alone in the panel it takes the whole width.
+  const leadWidth =
+    lead.layout === "row"
+      ? columns.length > 0
+        ? LEAD_ROW_WIDTH
+        : "flex-1 min-w-0"
+      : "w-[300px] shrink-0";
+
+  const cancelClose = useCallback(() => {
+    if (closeTimer.current !== null) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  }, []);
+
+  /** Open now, and forget any leave that was about to close. */
+  const openNow = useCallback(() => {
+    cancelClose();
+    setOpen(true);
+  }, [cancelClose]);
+
+  /** Close once the pointer has stayed away for the hover-intent delay. */
+  const closeSoon = useCallback(() => {
+    cancelClose();
+    closeTimer.current = setTimeout(() => {
+      closeTimer.current = null;
+      setOpen(false);
+    }, HOVER_CLOSE_DELAY_MS);
+  }, [cancelClose]);
+
+  // A pending close must not fire into an unmounted component.
+  useEffect(() => cancelClose, [cancelClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -237,28 +352,46 @@ function DesktopMegaMenu({ groups }: { groups: HeaderMenuResolvedGroup[] }) {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
-  const onKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (event.key === "Escape") {
-      event.stopPropagation();
-      setOpen(false);
-      buttonRef.current?.focus();
-    }
-  }, []);
+  const close = useCallback(() => {
+    cancelClose();
+    setOpen(false);
+  }, [cancelClose]);
 
-  const onBlur = useCallback((event: React.FocusEvent) => {
-    if (!rootRef.current?.contains(event.relatedTarget as Node | null)) {
-      setOpen(false);
-    }
-  }, []);
+  const onKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        // Focus FIRST: focus() dispatches the button's onFocus (which
+        // opens) synchronously, so closing after it is what sticks. The
+        // other order re-opened the panel whenever Escape was pressed on
+        // one of its links.
+        buttonRef.current?.focus();
+        close();
+      }
+    },
+    [close],
+  );
 
-  const close = useCallback(() => setOpen(false), []);
+  const onBlur = useCallback(
+    (event: React.FocusEvent) => {
+      if (!rootRef.current?.contains(event.relatedTarget as Node | null)) {
+        close();
+      }
+    },
+    [close],
+  );
+
+  const toggle = useCallback(() => {
+    cancelClose();
+    setOpen((v) => !v);
+  }, [cancelClose]);
 
   return (
     <div
       ref={rootRef}
       className="flex h-full items-center"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={openNow}
+      onMouseLeave={closeSoon}
       onKeyDown={onKeyDown}
       onBlur={onBlur}
     >
@@ -267,11 +400,11 @@ function DesktopMegaMenu({ groups }: { groups: HeaderMenuResolvedGroup[] }) {
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((v) => !v)}
-        onFocus={() => setOpen(true)}
+        onClick={toggle}
+        onFocus={openNow}
         className={cn(INLINE_LINK, "gap-1")}
       >
-        <span>{lead.label}</span>
+        <span>{label}</span>
         {lead.badge && <MenuLabel badge={lead.badge} />}
         <ChevronDown
           aria-hidden="true"
@@ -286,18 +419,24 @@ function DesktopMegaMenu({ groups }: { groups: HeaderMenuResolvedGroup[] }) {
         className="absolute inset-x-0 top-full z-50 border-b border-border bg-background shadow-2xl"
       >
         <div className="mx-auto flex max-w-6xl gap-12 px-4 py-8">
-          <div className="w-[300px] shrink-0">
-            <PanelItems items={lead.items} onNavigate={close} />
+          <div className={leadWidth} data-lead-layout={lead.layout}>
+            <PanelItems items={lead.items} layout={lead.layout} onNavigate={close} />
           </div>
           {columns.length > 0 && (
             <div className="grid flex-1 grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-8">
               {columns.map((group) => (
-                <section key={group.id} aria-label={group.label}>
+                <section
+                  key={group.id}
+                  aria-label={group.label}
+                  // 1.36.0: a row group after the lead spans the grid, so
+                  // its cards have the width of every headed column.
+                  className={group.layout === "row" ? "col-span-full" : undefined}
+                >
                   <h4 className="mb-6 flex items-center gap-2 text-[15px] font-semibold text-foreground">
                     <span>{group.label}</span>
                     {group.badge && <MenuLabel badge={group.badge} />}
                   </h4>
-                  <PanelItems items={group.items} onNavigate={close} />
+                  <PanelItems items={group.items} layout={group.layout} onNavigate={close} />
                 </section>
               ))}
             </div>
@@ -312,6 +451,8 @@ export interface HeaderMenuNavProps {
   /** Already resolved against the page's live nav by [resolveHeaderMenu]. */
   items: HeaderMenuItem[];
   groups?: HeaderMenuResolvedGroup[];
+  /** The declared trigger word (1.36.0); the first group's label when absent. */
+  megaLabel?: string | null;
   /** Extra classes on the nav element (the header passes its breakpoint). */
   className?: string;
   /** Accessible name for the nav; the page has other navs on it. */
@@ -320,12 +461,20 @@ export interface HeaderMenuNavProps {
 
 /**
  * The inline list for the desktop bar: the groups' one trigger first (the
- * old rokct.ai bar led with Product), then the flat links. Renders nothing when there is nothing to list, so the
- * header can mount it without deciding anything.
+ * old rokct.ai bar led with Product), then the flat links. Renders nothing
+ * when there is nothing to list, so the header can mount it without
+ * deciding anything.
+ *
+ * `h-full`: the bar (header.tsx, `h-16`) centres this nav, and the mega
+ * menu's wrapper fills the nav, so the nav taking the bar's full height is
+ * what puts the wrapper's bottom edge on the panel's top edge - no strip
+ * of bar between them for the pointer to leave across. Inside the legacy
+ * [HeaderMenuRow] the parent has no set height and `h-full` is inert.
  */
 export function HeaderMenuNav({
   items,
   groups = [],
+  megaLabel = null,
   className,
   ariaLabel = "Sections",
 }: HeaderMenuNavProps) {
@@ -334,9 +483,9 @@ export function HeaderMenuNav({
   return (
     <nav
       aria-label={ariaLabel}
-      className={cn("items-center gap-5 text-sm", className)}
+      className={cn("h-full items-center gap-5 text-sm", className)}
     >
-      {groups.length > 0 && <DesktopMegaMenu groups={groups} />}
+      {groups.length > 0 && <DesktopMegaMenu groups={groups} megaLabel={megaLabel} />}
       {items.map((item) => (
         <MenuLink key={item.key} item={item} className={INLINE_LINK} />
       ))}
@@ -419,23 +568,45 @@ export function HeaderMenuActions({
   return (
     <>
       {actions.map((action) => {
-        const primary = (action.variant ?? "primary") === "primary";
+        const variant = action.variant ?? "primary";
         const className = cn(
           "inline-flex items-center justify-center gap-2 font-medium transition-colors",
           layout === "bar"
             ? "rounded-md px-3 py-1.5 text-[13px]"
             : "w-full rounded-2xl py-4 text-lg font-bold",
-          primary
+          // 1.24.0: `secondary` is the filled muted button rokct.ai's old
+          // header drew its "Chat with ROK" as, in the shell's own tokens.
+          variant === "primary"
             ? "bg-primary text-black hover:opacity-90"
-            : "border border-border text-foreground hover:bg-foreground/5",
+            : variant === "secondary"
+              ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              : "border border-border text-foreground hover:bg-foreground/5",
         );
         // 1.20.0: the glyph before the label (rokct.ai's Chrome mark on its
         // extension button), the size the panel's cards draw theirs at; no
-        // icon named renders the label alone, as before.
-        const Icon = action.icon ? MENU_ICONS[action.icon] : null;
+        // icon named renders the label alone, as before. 1.25.0: an image
+        // the shell serves itself draws in the same slot, as a plain <img>
+        // the way the header draws a declared brand image (Ray, 2026-09-09:
+        // "use it but bring it local"). 1.26.0: a monochrome mark base serves
+        // itself (brand-marks.ts, `mono`) is black inside an <img>, so it
+        // carries `dark:invert` on the dark shell - markImageClass, keyed on
+        // the src; a coloured mark, or any other image, gets no filter.
+        const icon = actionIcon(action.icon);
+        const Icon = icon && "glyph" in icon ? icon.glyph : null;
+        const image = icon && "image" in icon ? icon.image : null;
         const content = (
           <>
             {Icon && <Icon aria-hidden="true" className="h-5 w-5 shrink-0" />}
+            {image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={image.src}
+                alt={image.alt}
+                width={20}
+                height={20}
+                className={cn("h-5 w-5 shrink-0 object-contain", markImageClass(image.src))}
+              />
+            )}
             <span>{action.label}</span>
           </>
         );
