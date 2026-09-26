@@ -4,10 +4,10 @@
   "app_type": "hosting",
   "protocol": {
     "git": "https://github.com/RokctAI/The-Rokct-Protocol",
-    "ref": "b83f179d8964e08293aef9209d5575fae98bf788",
+    "ref": "cade4ac887a467fe56fbcebfc6fd4b8f64790293",
     "vendored": ".rokct/cache/_composer",
     "files": {
-      "sdk_composer.py": "6f4e8762012ec10fd5ce8a689432a6d698be5e9f4e7a77f9c327eb9ff58eddd5",
+      "sdk_composer.py": "5fafad102ac00047506783d4fdf53f0c2a09c48aa56c57aba5f0ecc59d523178",
       "sdk_installer_base.py": "3ce332833c2bac2d2e08bb75a024d40e62a3f1f46cf72c9be4eb64ee61f10e60"
     }
   },
@@ -43,10 +43,10 @@
       "git": "https://github.com/RokctAI/Users",
       "path": "../Users/auth/nextjs",
       "ref": "main",
-      "commit": "885fc11aaff5e30cf08b18789410c9c552a764ff",
-      "version": "1.8.0",
+      "commit": "fc6cda3f5feaf11052b6a6e2dff56ffb2d460b14",
+      "version": "1.8.1",
       "install_py_sha256": "b9b0d4156a68d46f528be2b885eed17cc7dba21f6b4b48b2991ba2c3274ae21b",
-      "content_sha256": "457850bb3f0657c3aa980ef2eba496c6a89c448cf8724b63fc1309212bcc82a0"
+      "content_sha256": "8d5a4e40804714c00e13a47a9a926dd0ce5c0f6d326504dc6a5c8e2a18d7d6ef"
     },
     {
       "name": "corporate_sdk",
@@ -55,7 +55,7 @@
       "git": "https://github.com/RokctAI/corporate",
       "path": "../corporate/corporate/nextjs",
       "ref": "main",
-      "commit": "607dab6d05df70b5677ab90ade8d9b08b1e82347",
+      "commit": "32f548266e7e76cfc43012fa1b383cbe382ca788",
       "version": "1.2.0",
       "install_py_sha256": "6e03485fd03617ea1e175adc50354a91af25e213908371fa3581083d8aa7d4ba",
       "content_sha256": "aaac8235c2e20c8bd9dbcf460d3bdec1a38eb988971af565a7ce9621b6bfec14"
@@ -67,7 +67,7 @@
       "git": "https://github.com/RokctAI/hardware",
       "path": "../hardware/hosting/nextjs",
       "ref": "main",
-      "commit": "a27852ac1ce7c1f55b9df7aa65f644ebb76a6fd6",
+      "commit": "cc31063c5f22ee778f34576b0d8826e5940734b5",
       "version": "1.2.0",
       "install_py_sha256": "a2f6b895733cacd18dac6f63228bb5537e4ac6ea20c33009a211db2984b4e25f",
       "content_sha256": "a25bc572832535f9c3fb5d6d6847d1bc1bd9630e1ef8ff2022e37ee776c0ad29"

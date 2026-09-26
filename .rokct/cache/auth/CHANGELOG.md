@@ -1,3 +1,13 @@
+## 1.8.1
+
+* **`next build` type-checks again under stricter shell tsconfigs.**
+  `app/(auth)/actions.ts` (two places) and
+  `app/(auth)/register-provision-default.ts` read `target.error` on
+  `{ baseUrl: string } | { baseUrl: null; error: string }` after
+  `if (!target.baseUrl)`, which does not narrow the union when
+  `strictNullChecks` is off. They now narrow with
+  `"error" in target ? target.error : ...`, which works under any config.
+
 ## 1.8.0
 
 * **Web email sign-up asks for the emailed code.** The default

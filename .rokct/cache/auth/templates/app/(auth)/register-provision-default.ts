@@ -68,7 +68,7 @@ const defaultProvisioner: RegisterProvisioner = {
   async provision(submission: RegisterSubmission): Promise<RegisterOutcome> {
     const target = await resolveRegisterBaseUrl(submission.tenantSite);
     if (!target.baseUrl) {
-      return { status: "failed", error: target.error };
+      return { status: "failed", error: "error" in target ? target.error : "No site to register on." };
     }
     const baseUrl = target.baseUrl;
 

@@ -245,7 +245,7 @@ export async function verifyRegistrationEmail(input: {
     return { status: "invalid_data", error: "Enter the code we emailed you." };
   }
   const target = await resolveRegisterBaseUrl(input.siteName);
-  if (!target.baseUrl) return { status: "failed", error: target.error };
+  if (!target.baseUrl) return { status: "failed", error: "error" in target ? target.error : "No site to register on." };
 
   try {
     const result = await platformCall<{ status?: boolean | string; message?: string }>(
@@ -286,7 +286,7 @@ export async function resendRegistrationCode(input: {
   siteName: string | null;
 }): Promise<ActionState> {
   const target = await resolveRegisterBaseUrl(input.siteName);
-  if (!target.baseUrl) return { status: "failed", error: target.error };
+  if (!target.baseUrl) return { status: "failed", error: "error" in target ? target.error : "No site to register on." };
   try {
     await platformCall(
       RESEND_CODE_CMD,
