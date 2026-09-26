@@ -1,3 +1,26 @@
+## 1.8.0
+
+* **Web email sign-up asks for the emailed code.** The default
+  provisioner's `api.user.register_user` emails a 6-digit code, and
+  `api.user.login` answers 403 "Account not verified" until it is
+  entered, so the auto sign-in after registering failed silently and the
+  visitor was stuck. The register page now shows a code step when that
+  sign-in fails: `verifyRegistrationEmail` (app/(auth)/actions.ts) checks
+  the code with users_sdk's guest `api.user.verify_email_code`, signs in
+  with the credentials just registered, then continues to the home SDK's
+  post-account steps (or straight on, signed in, when there are none). A
+  Resend code button calls `api.user.resend_verification_email`.
+* **`RegisterOutcome` success gains `verifyEmail`.** A provisioner sets it
+  when the site emailed a code and will not sign the account in until it
+  is entered; the default provisioner does. It only matters when the
+  sign-in fails, so a provisioner answering `signIn: false` (a
+  verification mail it handles itself) or one whose sign-in succeeds is
+  unchanged. The register action answers `status: "verify_email"` with the
+  site name in that case.
+* The site resolution the default provisioner used inline is exported as
+  `resolveRegisterBaseUrl`, so the code step talks to the same tenant site
+  (never the control site) the account was created on.
+
 ## 1.7.3
 
 * **The sign-in heading prints the brand, not the address.** Ray,
