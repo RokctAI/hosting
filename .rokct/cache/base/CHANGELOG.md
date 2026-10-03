@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.49.0
+
+* fix: admin FAQ form writes `active` (the FAQ doctype field) instead of
+  `is_active`. `getCareerCategories`, `getPaymentMethods` and
+  `getSocialSettings` now have backend functions. `getGallery` still has none
+  in core.
+
 ## 1.48.0
 
 * The landing hero, two faults visible on every composed storefront and a

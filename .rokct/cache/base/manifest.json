@@ -1,6 +1,7 @@
 {
   "name": "base_sdk",
-  "version": "1.48.0",
+  "version": "1.49.0",
+  "_comment_version_1_49_0": "1.48.0 -> 1.49.0: Admin actions getCareerCategories, getPaymentMethods and getSocialSettings now resolve (backend functions added in base/frappe); the FAQ form writes the doctype's active field instead of is_active.",
   "installs": [
     {
       "from": "src/services",
