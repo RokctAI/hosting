@@ -20,22 +20,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Clock,
-  Database,
-  Folder,
-  Globe,
-  HardDrive,
-  Mail,
-  ShieldCheck,
-  type LucideIcon,
-} from "lucide-react";
+  RiTimeLine,
+  RiDatabase2Line,
+  RiFolderLine,
+  RiGlobalLine,
+  RiHardDrive2Line,
+  RiMailLine,
+  RiShieldCheckLine,
+  type RemixiconComponentType,
+} from "@remixicon/react";
 
 import { HOSTING_ROLES } from "@/components/custom/rpanel/roles";
 
 interface RPanelNavItem {
   title: string;
   href: string;
-  icon: LucideIcon;
+  icon: RemixiconComponentType;
   roles?: string[];
 }
 
@@ -51,7 +51,15 @@ const rpanelNavItems: RPanelNavItem[] = [
  * Keeps the icon imports and HOSTING_ROLES referenced before the installer
  * fills the array (the injected entries use them).
  */
-void [Clock, Database, Folder, Globe, HardDrive, Mail, ShieldCheck];
+void [
+  RiTimeLine,
+  RiDatabase2Line,
+  RiFolderLine,
+  RiGlobalLine,
+  RiHardDrive2Line,
+  RiMailLine,
+  RiShieldCheckLine,
+];
 void HOSTING_ROLES;
 
 /** The nav items a user with these roles may see. */

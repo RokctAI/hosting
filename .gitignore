@@ -64,6 +64,7 @@ next-env.d.ts
 /app/(auth)/register-provision.ts
 /app/(auth)/register/page.tsx
 /app/(auth)/register/register-view.tsx
+/app/(auth)/return-to.ts
 /app/(auth)/tenant-host.ts
 /app/(auth)/tenant-link-database.ts
 /app/(auth)/tenant-link-single.ts
@@ -168,6 +169,7 @@ next-env.d.ts
 /components/custom/company/company-sections.tsx
 /components/custom/company/markdown-parser.ts
 /components/custom/company/markdown.tsx
+/components/custom/company/team-count.tsx
 /components/custom/company/team-grid.tsx
 /components/custom/download-buttons.tsx
 /components/custom/footer-chrome.tsx

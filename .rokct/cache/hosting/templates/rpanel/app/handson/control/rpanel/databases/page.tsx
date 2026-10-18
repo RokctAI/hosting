@@ -18,14 +18,14 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import {
-  Database,
-  Search,
-  MoreVertical,
-  KeyRound,
-  Eye,
-  EyeOff,
-  X,
-} from "lucide-react";
+  RiDatabase2Line,
+  RiSearchLine,
+  RiMore2Line,
+  RiKey2Line,
+  RiEyeLine,
+  RiEyeOffLine,
+  RiCloseLine,
+} from "@remixicon/react";
 import {
   getDatabases,
   updateDatabasePassword,
@@ -95,14 +95,14 @@ function DatabasesContent() {
     <>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Database className="h-6 w-6 text-green-500" />{" "}
+          <RiDatabase2Line className="h-6 w-6 text-green-500" />{" "}
           {t("common.databases")}
         </h1>
       </div>
 
       <div className="flex justify-between items-center mb-6">
         <div className="relative w-1/3">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+          <RiSearchLine className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder={t("common.search_databases")}
             className="pl-9 bg-[#1a1f36] border-gray-700 text-gray-200"
@@ -157,7 +157,7 @@ function DatabasesContent() {
                       onClick={() => setEditingDb(db)}
                       title="Change Password" // placeholder
                     >
-                      <KeyRound className="h-4 w-4" />
+                      <RiKey2Line className="h-4 w-4" />
                     </Button>
                   </td>
                 </tr>
@@ -192,9 +192,9 @@ function DatabasesContent() {
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
+                  <RiEyeOffLine className="h-4 w-4" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <RiEyeLine className="h-4 w-4" />
                 )}
               </button>
             </div>

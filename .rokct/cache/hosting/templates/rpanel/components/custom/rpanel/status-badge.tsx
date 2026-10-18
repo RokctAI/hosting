@@ -16,12 +16,12 @@
 
 import React from "react";
 import {
-  Lock,
-  Unlock,
-  AlertCircle,
-  CheckCircle,
-  HelpCircle,
-} from "lucide-react";
+  RiLockLine,
+  RiLockUnlockLine,
+  RiErrorWarningLine,
+  RiCheckboxCircleLine,
+  RiQuestionLine,
+} from "@remixicon/react";
 
 interface StatusBadgeProps {
   status: string | boolean | number | null | undefined;
@@ -57,16 +57,16 @@ export const StatusBadge = ({
   const getIcon = () => {
     // SSL Context
     if (displayValue === "Issued" || displayValue === "Let's Encrypt")
-      return <Lock className="h-4 w-4" />;
+      return <RiLockLine className="h-4 w-4" />;
     if (displayValue === "None" || displayValue === "Expired")
-      return <Unlock className="h-4 w-4" />;
+      return <RiLockUnlockLine className="h-4 w-4" />;
 
     // General Status
-    if (displayValue === "Active") return <CheckCircle className="h-4 w-4" />;
+    if (displayValue === "Active") return <RiCheckboxCircleLine className="h-4 w-4" />;
     if (displayValue === "Suspended" || displayValue === "Error")
-      return <AlertCircle className="h-4 w-4" />;
+      return <RiErrorWarningLine className="h-4 w-4" />;
 
-    return <HelpCircle className="h-4 w-4" />;
+    return <RiQuestionLine className="h-4 w-4" />;
   };
 
   const getColorClass = () => {

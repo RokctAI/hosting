@@ -18,14 +18,14 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  Server,
-  Monitor,
-  Cpu,
-  Clock,
-  HardDrive,
-  Globe,
-  Database,
-} from "lucide-react";
+  RiServerLine,
+  RiComputerLine,
+  RiCpuLine,
+  RiTimeLine,
+  RiHardDrive2Line,
+  RiGlobalLine,
+  RiDatabase2Line,
+} from "@remixicon/react";
 import { getClientUsage } from "@/app/actions/handson/control/rpanel/dashboard/get-client-usage";
 
 interface ServerInfo {
@@ -105,7 +105,7 @@ export function ServerInfoHeader({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white/10 p-4 rounded-lg flex items-center gap-4">
               <div className="p-3 bg-blue-500/20 rounded-full">
-                <Globe className="h-6 w-6 text-blue-400" />
+                <RiGlobalLine className="h-6 w-6 text-blue-400" />
               </div>
               <div>
                 <p className="text-sm text-gray-400">Websites</p>
@@ -120,7 +120,7 @@ export function ServerInfoHeader({
 
             <div className="bg-white/10 p-4 rounded-lg flex items-center gap-4">
               <div className="p-3 bg-purple-500/20 rounded-full">
-                <Database className="h-6 w-6 text-purple-400" />
+                <RiDatabase2Line className="h-6 w-6 text-purple-400" />
               </div>
               <div>
                 <p className="text-sm text-gray-400">Databases</p>
@@ -135,7 +135,7 @@ export function ServerInfoHeader({
 
             <div className="bg-white/10 p-4 rounded-lg flex items-center gap-4">
               <div className="p-3 bg-green-500/20 rounded-full">
-                <HardDrive className="h-6 w-6 text-green-400" />
+                <RiHardDrive2Line className="h-6 w-6 text-green-400" />
               </div>
               <div>
                 <p className="text-sm text-gray-400">Storage (GB)</p>
@@ -170,19 +170,19 @@ export function ServerInfoHeader({
 
             <div className="flex flex-wrap gap-6 text-sm text-gray-300">
               <div className="flex items-center gap-2">
-                <Server className="h-4 w-4" />
+                <RiServerLine className="h-4 w-4" />
                 <span>{info.ip}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Monitor className="h-4 w-4" />
+                <RiComputerLine className="h-4 w-4" />
                 <span>OS: {info.os}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Cpu className="h-4 w-4" />
+                <RiCpuLine className="h-4 w-4" />
                 <span>Cores: {info.cores}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
+                <RiTimeLine className="h-4 w-4" />
                 <span>Uptime: {info.uptime}</span>
               </div>
             </div>

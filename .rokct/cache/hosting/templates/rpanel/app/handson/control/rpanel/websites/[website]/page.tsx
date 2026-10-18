@@ -18,20 +18,20 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  Database,
-  Mail,
-  FileText,
-  Folder,
-  Clock,
-  Settings,
-  ShieldCheck,
-  Terminal,
-  Activity,
-  HardDrive,
-  RefreshCw,
-  ChevronLeft,
-  ArrowUpRight,
-} from "lucide-react";
+  RiDatabase2Line,
+  RiMailLine,
+  RiFileTextLine,
+  RiFolderLine,
+  RiTimeLine,
+  RiSettings3Line,
+  RiShieldCheckLine,
+  RiTerminalBoxLine,
+  RiPulseLine,
+  RiHardDrive2Line,
+  RiRefreshLine,
+  RiArrowLeftSLine,
+  RiArrowRightUpLine,
+} from "@remixicon/react";
 import { getClientWebsites } from "@/app/actions/handson/control/rpanel/websites/get-client-websites";
 // import { RPanelNav } from "@/components/custom/nav/rpanel-nav";
 import { Button } from "@/components/ui/button";
@@ -98,7 +98,7 @@ export default function SiteDashboardPage({
         <main className="flex-1 p-8">
           <div className="mb-4">
             <Button variant="ghost" onClick={() => router.back()}>
-              <ChevronLeft className="mr-2 h-4 w-4" /> Back to Websites
+              <RiArrowLeftSLine className="mr-2 h-4 w-4" /> Back to Websites
             </Button>
           </div>
           <div className="text-center text-gray-400 mt-20">
@@ -116,49 +116,49 @@ export default function SiteDashboardPage({
   const tools = [
     {
       label: "Scheduler",
-      icon: <Clock className="h-6 w-6 text-purple-400" />,
+      icon: <RiTimeLine className="h-6 w-6 text-purple-400" />,
       desc: "Manage cron jobs",
       href: `/rpanel/cron?website=${website.name}`,
     },
     {
       label: "Mail",
-      icon: <Mail className="h-6 w-6 text-blue-400" />,
+      icon: <RiMailLine className="h-6 w-6 text-blue-400" />,
       desc: "Email accounts",
       href: `/rpanel/emails?domain=${website.domain}`,
     },
     {
       label: "Logs",
-      icon: <FileText className="h-6 w-6 text-gray-400" />,
+      icon: <RiFileTextLine className="h-6 w-6 text-gray-400" />,
       desc: "Server logs",
       href: `/rpanel/websites/${website.name}/logs`,
     },
     {
       label: "Files",
-      icon: <Folder className="h-6 w-6 text-yellow-400" />,
+      icon: <RiFolderLine className="h-6 w-6 text-yellow-400" />,
       desc: "File manager",
       href: `/rpanel/websites/${website.name}/files`,
     },
     {
       label: "Databases",
-      icon: <Database className="h-6 w-6 text-green-400" />,
+      icon: <RiDatabase2Line className="h-6 w-6 text-green-400" />,
       desc: "Manage databases",
       href: `/rpanel/databases?website=${website.name}`,
     },
     {
       label: "FTP Accounts",
-      icon: <Folder className="h-6 w-6 text-orange-400" />,
+      icon: <RiFolderLine className="h-6 w-6 text-orange-400" />,
       desc: "FTP access",
       href: `/rpanel/ftp?website=${website.name}`,
     },
     {
       label: "Backups",
-      icon: <ShieldCheck className="h-6 w-6 text-teal-400" />,
+      icon: <RiShieldCheckLine className="h-6 w-6 text-teal-400" />,
       desc: "Site backups",
       href: `/rpanel/backups?website=${website.name}`,
     },
     {
       label: "Settings",
-      icon: <Settings className="h-6 w-6 text-gray-300" />,
+      icon: <RiSettings3Line className="h-6 w-6 text-gray-300" />,
       desc: "PHP & General",
       action: () =>
         toast({
@@ -169,25 +169,25 @@ export default function SiteDashboardPage({
     },
     {
       label: "Nginx Config",
-      icon: <FileText className="h-6 w-6 text-red-400" />,
+      icon: <RiFileTextLine className="h-6 w-6 text-red-400" />,
       desc: "Manual settings",
       placeholder: true,
     },
     {
       label: "Terminal",
-      icon: <Terminal className="h-6 w-6 text-green-500" />,
+      icon: <RiTerminalBoxLine className="h-6 w-6 text-green-500" />,
       desc: "Web terminal",
       placeholder: true,
     },
     {
       label: "Scanning",
-      icon: <Activity className="h-6 w-6 text-red-500" />,
+      icon: <RiPulseLine className="h-6 w-6 text-red-500" />,
       desc: "Malware scan",
       placeholder: true,
     },
     {
       label: "SFTP Accounts",
-      icon: <HardDrive className="h-6 w-6 text-blue-300" />,
+      icon: <RiHardDrive2Line className="h-6 w-6 text-blue-300" />,
       desc: "Secure FTP",
       placeholder: true,
     },
@@ -202,7 +202,7 @@ export default function SiteDashboardPage({
             onClick={() => router.push("/rpanel/websites")}
             className="mb-4 pl-0 hover:bg-transparent hover:text-white text-gray-400"
           >
-            <ChevronLeft className="mr-2 h-4 w-4" /> Back to Websites
+            <RiArrowLeftSLine className="mr-2 h-4 w-4" /> Back to Websites
           </Button>
           <div className="flex justify-between items-start">
             <div>
@@ -223,7 +223,7 @@ export default function SiteDashboardPage({
               variant="outline"
               onClick={() => window.open(`http://${website.domain}`, "_blank")}
             >
-              Visit Site <ArrowUpRight className="ml-2 h-4 w-4" />
+              Visit Site <RiArrowRightUpLine className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>

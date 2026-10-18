@@ -18,16 +18,16 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  FileText,
-  RefreshCw,
-  Trash2,
-  Home,
-  ChevronRight,
-  Activity,
-  AlertCircle,
-  FileCode,
-  Server,
-} from "lucide-react";
+  RiFileTextLine,
+  RiRefreshLine,
+  RiDeleteBinLine,
+  RiHome4Line,
+  RiArrowRightSLine,
+  RiPulseLine,
+  RiErrorWarningLine,
+  RiFileCodeLine,
+  RiServerLine,
+} from "@remixicon/react";
 // import { RPanelNav } from "@/components/custom/nav/rpanel-nav";
 import { Button } from "@/components/ui/button";
 import {
@@ -101,13 +101,13 @@ export default function LogsPage({ params }: { params: { website: string } }) {
   const getLogIcon = (type: string) => {
     switch (type) {
       case "nginx_access":
-        return <Activity className="h-4 w-4" />;
+        return <RiPulseLine className="h-4 w-4" />;
       case "nginx_error":
-        return <AlertCircle className="h-4 w-4" />;
+        return <RiErrorWarningLine className="h-4 w-4" />;
       case "php_error":
-        return <FileCode className="h-4 w-4" />;
+        return <RiFileCodeLine className="h-4 w-4" />;
       default:
-        return <FileText className="h-4 w-4" />;
+        return <RiFileTextLine className="h-4 w-4" />;
     }
   };
 
@@ -147,10 +147,10 @@ export default function LogsPage({ params }: { params: { website: string } }) {
                 loadLogContent(currentLog);
               }}
             >
-              <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+              <RiRefreshLine className="mr-2 h-4 w-4" /> Refresh
             </Button>
             <Button variant="destructive" onClick={handleClearLog}>
-              <Trash2 className="mr-2 h-4 w-4" /> Clear Log
+              <RiDeleteBinLine className="mr-2 h-4 w-4" /> Clear Log
             </Button>
           </div>
         </div>
@@ -186,7 +186,7 @@ export default function LogsPage({ params }: { params: { website: string } }) {
         <Card className="flex-1 bg-[#1a1f36] border-gray-700 flex flex-col overflow-hidden min-h-0">
           <CardHeader className="border-b border-gray-700 py-3 shrink-0">
             <CardTitle className="text-sm font-mono flex items-center gap-2">
-              <Server className="h-4 w-4" />
+              <RiServerLine className="h-4 w-4" />
               /var/log/.../{currentLog}.log
             </CardTitle>
           </CardHeader>

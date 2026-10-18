@@ -52,13 +52,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Plus,
-  RefreshCcw,
-  Trash2,
-  Archive,
-  Download,
-  RotateCcw,
-} from "lucide-react";
+  RiAddLine,
+  RiRefreshLine,
+  RiDeleteBinLine,
+  RiArchiveLine,
+  RiDownloadLine,
+  RiArrowGoBackLine,
+} from "@remixicon/react";
 import t from "@/app/lib/i18n";
 import {
   getBackups,
@@ -248,7 +248,7 @@ function BackupsContent() {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <RiAddLine className="mr-2 h-4 w-4" />
               Create Backup
             </Button>
           </DialogTrigger>
@@ -370,7 +370,7 @@ function BackupsContent() {
                           onClick={() => handleRestoreBackup(backup.name)}
                           title="Restore"
                         >
-                          <RotateCcw className="h-4 w-4" />
+                          <RiArrowGoBackLine className="h-4 w-4" />
                         </Button>
                       )}
                       <Button
@@ -380,7 +380,7 @@ function BackupsContent() {
                         onClick={() => handleDeleteBackup(backup.name)}
                         title="Delete"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <RiDeleteBinLine className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>

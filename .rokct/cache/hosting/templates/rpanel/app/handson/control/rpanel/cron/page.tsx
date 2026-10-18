@@ -46,7 +46,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trash2, Edit2, Play } from "lucide-react";
+import {
+  RiAddLine,
+  RiDeleteBinLine,
+  RiPencilLine,
+  RiPlayLine,
+} from "@remixicon/react";
 import {
   getCronJobs,
   createCronJob,
@@ -264,7 +269,7 @@ function CronJobsContent() {
         >
           <DialogTrigger asChild>
             <Button onClick={() => setEditingJob(null)}>
-              <Plus className="mr-2 h-4 w-4" />
+              <RiAddLine className="mr-2 h-4 w-4" />
               Add Cron Job
             </Button>
           </DialogTrigger>
@@ -398,7 +403,7 @@ function CronJobsContent() {
                         }}
                         title="Edit"
                       >
-                        <Edit2 className="h-4 w-4" />
+                        <RiPencilLine className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -407,7 +412,7 @@ function CronJobsContent() {
                         onClick={() => handleDelete(job.name)}
                         title="Delete"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <RiDeleteBinLine className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>

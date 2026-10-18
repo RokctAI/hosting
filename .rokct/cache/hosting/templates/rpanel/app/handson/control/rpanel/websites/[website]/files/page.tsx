@@ -18,18 +18,18 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  Folder,
-  File,
-  FileText,
-  Download,
-  Trash2,
-  Upload,
-  ChevronRight,
-  Home,
-  RefreshCw,
-  MoreVertical,
-  Edit,
-} from "lucide-react";
+  RiFolderLine,
+  RiFileLine,
+  RiFileTextLine,
+  RiDownloadLine,
+  RiDeleteBinLine,
+  RiUploadLine,
+  RiArrowRightSLine,
+  RiHome4Line,
+  RiRefreshLine,
+  RiMore2Line,
+  RiEditLine,
+} from "@remixicon/react";
 import {
   getFiles,
   deleteFile,
@@ -145,10 +145,10 @@ export default function FileManagerPage({
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => loadFiles(currentPath)}>
-              <RefreshCw className="mr-2 h-4 w-4" /> Refresh
+              <RiRefreshLine className="mr-2 h-4 w-4" /> Refresh
             </Button>
             <Button>
-              <Upload className="mr-2 h-4 w-4" /> Upload
+              <RiUploadLine className="mr-2 h-4 w-4" /> Upload
             </Button>
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function FileManagerPage({
         {/* Breadcrumbs */}
         <div className="bg-[#1a1f36] p-4 rounded-t-lg border-b border-gray-700 flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => loadFiles("")}>
-            <Home className="h-4 w-4" />
+            <RiHome4Line className="h-4 w-4" />
           </Button>
           <span className="text-gray-500">/</span>
           {getPathParts(currentPath).map((part, index, arr) => {
@@ -222,9 +222,9 @@ export default function FileManagerPage({
                         }
                       >
                         {file.is_dir ? (
-                          <Folder className="h-5 w-5 text-blue-400 fill-blue-400/20" />
+                          <RiFolderLine className="h-5 w-5 text-blue-400 fill-blue-400/20" />
                         ) : (
-                          <FileText className="h-5 w-5 text-gray-400" />
+                          <RiFileTextLine className="h-5 w-5 text-gray-400" />
                         )}
                         <span
                           className={
@@ -256,7 +256,7 @@ export default function FileManagerPage({
                             size="icon"
                             onClick={() => handleDownload(file.path)}
                           >
-                            <Download className="h-4 w-4" />
+                            <RiDownloadLine className="h-4 w-4" />
                           </Button>
                         )}
                         <Button
@@ -265,7 +265,7 @@ export default function FileManagerPage({
                           className="text-red-400 hover:text-red-300"
                           onClick={() => handleDelete(file.path)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <RiDeleteBinLine className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

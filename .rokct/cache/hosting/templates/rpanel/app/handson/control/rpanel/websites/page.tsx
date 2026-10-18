@@ -18,23 +18,23 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import {
-  Plus,
-  Trash2,
-  Edit,
-  MoreVertical,
-  Search,
-  ExternalLink,
-  ShieldCheck,
-  Database,
-  LayoutGrid,
-  List,
-  Mail,
-  FileText,
-  Folder,
-  Settings,
-  RefreshCw,
-  Image as ImageIcon,
-} from "lucide-react";
+  RiAddLine,
+  RiDeleteBinLine,
+  RiEditLine,
+  RiMore2Line,
+  RiSearchLine,
+  RiExternalLinkLine,
+  RiShieldCheckLine,
+  RiDatabase2Line,
+  RiLayoutGridLine,
+  RiListUnordered,
+  RiMailLine,
+  RiFileTextLine,
+  RiFolderLine,
+  RiSettings3Line,
+  RiRefreshLine,
+  RiImageLine as ImageIcon,
+} from "@remixicon/react";
 import { getClientWebsites } from "@/app/actions/handson/control/rpanel/websites/get-client-websites";
 import { getServerInfo } from "@/app/actions/handson/control/rpanel/dashboard/get-server-info";
 import {
@@ -210,7 +210,7 @@ export default function WebsitesPage() {
         {/* Toolbar */}
         <div className="flex justify-between items-center mb-6">
           <div className="relative w-1/3">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+            <RiSearchLine className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               placeholder="Search"
               className="pl-9 bg-[#1a1f36] border-gray-700 text-gray-200"
@@ -231,7 +231,7 @@ export default function WebsitesPage() {
                 }
                 onClick={() => setViewMode("list")}
               >
-                <List className="h-4 w-4" />
+                <RiListUnordered className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
@@ -243,12 +243,12 @@ export default function WebsitesPage() {
                 }
                 onClick={() => setViewMode("grid")}
               >
-                <LayoutGrid className="h-4 w-4" />
+                <RiLayoutGridLine className="h-4 w-4" />
               </Button>
             </div>
 
             <Button onClick={() => setShowCreate(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Create site
+              <RiAddLine className="mr-2 h-4 w-4" /> Create site
             </Button>
           </div>
         </div>
@@ -321,9 +321,9 @@ export default function WebsitesPage() {
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 group-hover:opacity-10 transition-opacity duration-300">
                   <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4 text-blue-400">
                     {site.site_type === "CMS" ? (
-                      <Database className="h-8 w-8" />
+                      <RiDatabase2Line className="h-8 w-8" />
                     ) : (
-                      <ExternalLink className="h-8 w-8" />
+                      <RiExternalLinkLine className="h-8 w-8" />
                     )}
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-1">
@@ -352,7 +352,7 @@ export default function WebsitesPage() {
                         (window.location.href = `/rpanel/emails?domain=${site.domain}`)
                       }
                     >
-                      <Mail className="h-6 w-6" />
+                      <RiMailLine className="h-6 w-6" />
                       <span className="text-xs font-medium">Mail</span>
                     </div>
                     <div
@@ -361,7 +361,7 @@ export default function WebsitesPage() {
                         (window.location.href = `/rpanel/websites/${site.name}/logs`)
                       }
                     >
-                      <FileText className="h-6 w-6" />
+                      <RiFileTextLine className="h-6 w-6" />
                       <span className="text-xs font-medium">Logs</span>
                     </div>
                     <div
@@ -370,7 +370,7 @@ export default function WebsitesPage() {
                         (window.location.href = `/rpanel/websites/${site.name}/files`)
                       }
                     >
-                      <Folder className="h-6 w-6" />
+                      <RiFolderLine className="h-6 w-6" />
                       <span className="text-xs font-medium">Files</span>
                     </div>
                     <div
@@ -379,7 +379,7 @@ export default function WebsitesPage() {
                         (window.location.href = `/rpanel/websites/${site.name}`)
                       }
                     >
-                      <Settings className="h-6 w-6" />
+                      <RiSettings3Line className="h-6 w-6" />
                       <span className="text-xs font-medium">Options</span>
                     </div>
                   </div>
@@ -399,13 +399,13 @@ export default function WebsitesPage() {
                     className="p-1.5 bg-teal-500 rounded-full text-white cursor-pointer"
                     title="SSL"
                   >
-                    <ShieldCheck className="h-4 w-4" />
+                    <RiShieldCheckLine className="h-4 w-4" />
                   </div>
                   <div
                     className="p-1.5 bg-orange-500 rounded-full text-white cursor-pointer"
                     title="Visit"
                   >
-                    <ExternalLink className="h-4 w-4" />
+                    <RiExternalLinkLine className="h-4 w-4" />
                   </div>
                 </div>
 
@@ -415,7 +415,7 @@ export default function WebsitesPage() {
                     className="p-1 cursor-pointer hover:text-white"
                     title="Move"
                   >
-                    <RefreshCw className="h-4 w-4" />
+                    <RiRefreshLine className="h-4 w-4" />
                   </div>
                 </div>
               </div>

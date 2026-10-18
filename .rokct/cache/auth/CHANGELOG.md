@@ -1,3 +1,60 @@
+## 1.10.1
+
+* **A login does not depend on the local database.** The tenant-link lookup (`resolveLink`) and the save after a login (`rememberLogin`) run in their own `try` blocks in `auth.ts`. With no `POSTGRES_URL`, or a database that is down, the login goes to the backend and succeeds with the right password, instead of showing "Invalid credentials". A failed save is logged and does not fail the login.
+
+## 1.10.0
+
+* **Web sign-up can ask for a role, as the apps do.** A link to
+  `/register?role=seller` signs the new account up as a seller (the hidden
+  `app_role` field, `APP_ROLE_FIELD`, in the default register config). The
+  default provisioner sends it as `register_user`'s `app_role`. The backend
+  grants only Seller at sign-up and ignores anything else, so a plain
+  `/register` still makes a plain account. A seller then sees the merchant
+  dashboard for their own pending shop. A home SDK with its own `fields`
+  keeps the role link by listing `APP_ROLE_FIELD`.
+
+## 1.9.0
+
+* **Sign-up brings the visitor back to where they were.** `/login` and
+  `/register` take `?next=<same-site path>`, and once the account is signed
+  in or created the visitor lands on that path instead of the home page.
+  Ray's case: a Reel viewer opens a tender, has to sign up first, and must
+  not lose the tender. `app/(auth)/return-to.ts` (`safeReturnPath`) honours
+  only a path on this site: no other host (`//x`, `/\x`, a scheme), no
+  control characters or backslashes, not an auth page, at most 512
+  characters. The links between login and register keep it, and an already
+  signed-in visitor opening either page with it goes straight there.
+
+## 1.8.4
+
+* **The one native login call says why it bypasses the gateway.** Ray's
+  rule: every client call goes through `rokct.platform.api` unless there is
+  no other way. The standard (control-site) branch of `auth.ts` still posts
+  to `/api/method/login`, because it needs Frappe's `sid` Set-Cookie for the
+  follow-up `control:get_my_subscription` read, and `platformCall` returns
+  only the body while `api.user.login` issues API keys, not a `sid`. A
+  one-line `// bypasses gateway:` comment now sits above it, and a test
+  requires that comment on any raw `/api/method/` fetch in `auth.ts`. The
+  PaaS branch already logs in through the gateway. No behaviour change.
+
+## 1.8.3
+
+* **`next build` type-checks again.** `verifyRegistrationEmail` read
+  `result.message` inside `if (!result || ...)`, where `result` is possibly
+  null (TS18047 under Next 16's type check). It now reads `result?.message`.
+
+## 1.8.2
+
+* **Web password login works again.** `api.user.login` answers through
+  `api_response` (`{ data, message: "Logged In", status_code }`, no
+  `status` flag), so the credentials check `result.status !== true`
+  rejected every login. It now accepts a body with status_code below 400
+  and an access token. The login's `refresh_token` is now kept on the
+  session (`session.user.refreshToken`), which `refreshTokens()` reads.
+* **A wrong emailed code is rejected.** `verifyRegistrationEmail` checked
+  `status === false`, but `api.user.verify_email_code` answers a wrong code
+  with HTTP 200 and `status_code: 401`; it now fails on status_code >= 400.
+
 ## 1.8.1
 
 * **`next build` type-checks again under stricter shell tsconfigs.**

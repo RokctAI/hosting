@@ -18,15 +18,15 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import {
-  Folder,
-  Search,
-  KeyRound,
-  Eye,
-  EyeOff,
-  X,
-  Plus,
-  Trash2,
-} from "lucide-react";
+  RiFolderLine,
+  RiSearchLine,
+  RiKey2Line,
+  RiEyeLine,
+  RiEyeOffLine,
+  RiCloseLine,
+  RiAddLine,
+  RiDeleteBinLine,
+} from "@remixicon/react";
 import {
   getFtpAccounts,
   updateFtpPassword,
@@ -170,13 +170,13 @@ function FtpContent() {
     <>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Folder className="h-6 w-6 text-yellow-500" /> FTP Accounts
+          <RiFolderLine className="h-6 w-6 text-yellow-500" /> FTP Accounts
         </h1>
       </div>
 
       <div className="flex justify-between items-center mb-6">
         <div className="relative w-1/3">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+          <RiSearchLine className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder={t("app.control.rpanel.ftp.ph_search")}
             className="pl-9 bg-[#1a1f36] border-gray-700 text-gray-200"
@@ -186,7 +186,7 @@ function FtpContent() {
         </div>
 
         <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Create FTP Account
+          <RiAddLine className="mr-2 h-4 w-4" /> Create FTP Account
         </Button>
       </div>
 
@@ -227,7 +227,7 @@ function FtpContent() {
                         onClick={() => setEditingFtp(ftp)}
                         title="Change Password" // placeholder
                       >
-                        <KeyRound className="h-4 w-4" />
+                        <RiKey2Line className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="destructive"
@@ -235,7 +235,7 @@ function FtpContent() {
                         onClick={() => handleDelete(ftp)}
                         title="Delete"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <RiDeleteBinLine className="h-4 w-4" />
                       </Button>
                     </div>
                   </td>
@@ -269,9 +269,9 @@ function FtpContent() {
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
+                  <RiEyeOffLine className="h-4 w-4" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <RiEyeLine className="h-4 w-4" />
                 )}
               </button>
             </div>

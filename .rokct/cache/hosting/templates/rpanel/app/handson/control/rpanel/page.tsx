@@ -17,7 +17,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { HardDrive, Globe, Database, Mail } from "lucide-react";
+import {
+  RiHardDrive2Line,
+  RiGlobalLine,
+  RiDatabase2Line,
+  RiMailLine,
+} from "@remixicon/react";
 import { getClientUsage } from "@/app/actions/handson/control/rpanel/dashboard/get-client-usage";
 import { getServerInfo } from "@/app/actions/handson/control/rpanel/dashboard/get-server-info";
 // import { RPanelNav } from "@/components/custom/nav/rpanel-nav"; // Removing as it's now part of Control Layout
@@ -67,21 +72,21 @@ export default function OverviewPage() {
             title="Websites"
             value={usage?.websites?.used || 0}
             limit={usage?.websites?.limit}
-            icon={<Globe className="h-4 w-4 text-blue-400" />}
+            icon={<RiGlobalLine className="h-4 w-4 text-blue-400" />}
             loading={isLoading}
           />
           <StatCard
             title="Databases"
             value={usage?.databases?.used || 0}
             limit={usage?.databases?.limit}
-            icon={<Database className="h-4 w-4 text-green-400" />}
+            icon={<RiDatabase2Line className="h-4 w-4 text-green-400" />}
             loading={isLoading}
           />
           <StatCard
             title="Emails"
             value={usage?.emails?.used || 0}
             limit={usage?.emails?.limit} // Assuming api returns this
-            icon={<Mail className="h-4 w-4 text-purple-400" />}
+            icon={<RiMailLine className="h-4 w-4 text-purple-400" />}
             loading={isLoading}
           />
           <StatCard
@@ -92,7 +97,7 @@ export default function OverviewPage() {
             limit={
               usage?.storage_gb?.limit ? `${usage.storage_gb.limit} GB` : "∞"
             }
-            icon={<HardDrive className="h-4 w-4 text-orange-400" />}
+            icon={<RiHardDrive2Line className="h-4 w-4 text-orange-400" />}
             loading={isLoading}
           />
         </div>

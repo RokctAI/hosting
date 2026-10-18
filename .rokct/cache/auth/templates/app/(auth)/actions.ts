@@ -248,13 +248,16 @@ export async function verifyRegistrationEmail(input: {
   if (!target.baseUrl) return { status: "failed", error: "error" in target ? target.error : "No site to register on." };
 
   try {
-    const result = await platformCall<{ status?: boolean | string; message?: string }>(
+    const result = await platformCall<{ status_code?: number; message?: string }>(
       VERIFY_EMAIL_CODE_CMD,
       { email, otp: code },
       { baseUrl: target.baseUrl, session: null, requireAuth: false, throwOnError: true },
     );
-    if (result && result.status === false) {
-      return { status: "failed", error: result.message || "Invalid or expired verification code." };
+    // verify_email_code answers through api_response: a wrong or expired code
+    // is HTTP 200 with status_code 401 (400/403/404/500 for the other
+    // failures) in the body, never a `status: false` flag.
+    if (!result || Number(result.status_code ?? 200) >= 400) {
+      return { status: "failed", error: result?.message || "Invalid or expired verification code." };
     }
   } catch (e) {
     if (e instanceof PlatformGatewayError && e.reason === "http_error") {

@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.3.1
+
+* fix(icons): the rpanel pages, nav, server header, status badge and toast
+  import their icons from `@remixicon/react` instead of lucide-react and
+  @radix-ui/react-icons. The seven injected nav entries name the `Ri*`
+  components. The manifest declares `@remixicon/react` ^4.6.0 in place of
+  lucide-react.
+
+## 1.3.0
+
+* The frappe half joins: `hosting/frappe` now carries the rPanel hosting
+  backend, moved from RokctAI/rPanel's `rpanel/hosting` module (Ray,
+  2026-09-26: "it belong there. hosting and rpanel become app shell repos" /
+  "one for frappe another for nexxtjs"). It has a `manifest.json`
+  (module `Hosting`, version 1.3.0) declaring the scheduler events, the
+  `update-ecosystem` bench command, the Workspace fixture filter and the
+  Python dependencies; the 21 doctypes under `doctype/`; the server managers,
+  reports and tasks under `src/`; and the former `rpanel/tests/` under
+  `tests/`. Module paths use `{app_name}.hosting.…`, which resolves to
+  `rpanel.hosting.…` in the rPanel shell. See `hosting/frappe/README.md`.
+* The Next.js half is unchanged. The version moves so both halves of the SDK
+  share one version.
+
 ## 1.2.0
 
 * The rpanel control pages now compose into the HOSTING web app shell, not
