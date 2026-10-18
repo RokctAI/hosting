@@ -10,7 +10,7 @@
  * header does not reflow once the resolved theme is known and the server and
  * client agree on the first paint.
  */
-import { Moon, Sun } from "lucide-react";
+import { RiMoonLine, RiSunLine } from "@remixicon/react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
@@ -46,8 +46,8 @@ export function ThemeToggle({ className }: { className?: string }) {
       aria-label="Toggle theme"
       onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
     >
-      <Sun className="h-5 w-5 dark:hidden" />
-      <Moon className="hidden h-5 w-5 dark:block" />
+      <RiSunLine className="h-5 w-5 dark:hidden" />
+      <RiMoonLine className="hidden h-5 w-5 dark:block" />
       <span className="sr-only">Toggle theme</span>
     </Button>
   );
