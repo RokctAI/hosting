@@ -15,10 +15,21 @@
  */
 
 "use client";
+// ==========================================
+// [GENERATED TEMPLATE FILE]
+// This file was installed from: base_sdk
+// Feel free to modify and customize this code.
+// Note: If you edit this file, the SDK installer will detect your changes
+// and automatically skip overwriting it during future upgrades.
+// ==========================================
 
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { RiCheckLine, RiArrowDownSLine, RiArrowUpSLine } from "@remixicon/react";
+import {
+  RiCheckLine,
+  RiArrowDownSLine,
+  RiArrowUpSLine,
+} from "@remixicon/react";
 
 import { cn } from "@/lib/utils";
 
