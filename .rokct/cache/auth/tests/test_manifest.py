@@ -55,12 +55,14 @@ STAGED = {
     "register-link.ts": os.path.join(AUTH_GROUP, "register-link.ts"),
     "tenant-link.ts": os.path.join(AUTH_GROUP, "tenant-link.ts"),
     "brand-heading.ts": os.path.join(AUTH_GROUP, "login", "brand-heading.ts"),
+    "return-to.ts": os.path.join(AUTH_GROUP, "return-to.ts"),
 }
 NODE_SUITES = [
     "tenant-host.test.mts",
     "register-registry.test.mts",
     "register-link.test.mts",
     "login-heading.test.mts",
+    "return-to.test.mts",
 ]
 
 # Words no fixture, copy or comment of this SDK's new files may carry.
@@ -70,6 +72,7 @@ NEW_FILES = [
     os.path.join(AUTH_GROUP, "register-provision.ts"),
     os.path.join(AUTH_GROUP, "register-provision-default.ts"),
     os.path.join(AUTH_GROUP, "register-link.ts"),
+    os.path.join(AUTH_GROUP, "return-to.ts"),
     os.path.join(AUTH_GROUP, "register", "page.tsx"),
     os.path.join(AUTH_GROUP, "register", "register-view.tsx"),
     os.path.join(AUTH_GROUP, "login", "page.tsx"),
@@ -281,10 +284,10 @@ class TestTenantHostSwitch(unittest.TestCase):
         self.assertIn("(await headers()).get(TENANT_SITE_HEADER)", page)
         self.assertIn("params.site_name", page)
         self.assertLess(page.index("if (tenantSite) return <PaaSLogin tenantSite={tenantSite} />;"),
-                        page.index("return <LoginView />;"))
+                        page.index("return <LoginView next={safeReturnPath(params[RETURN_TO_PARAM])} />;"))
         view = read(os.path.join(AUTH_GROUP, "login", "login-view.tsx"))
         self.assertIn('"use client";', view)
-        self.assertIn("export function LoginView() {", view)
+        self.assertIn("export function LoginView({ next = null }: { next?: string | null } = {}) {", view)
         paas = read(os.path.join(TEMPLATES, "components", "custom", "paas-login.tsx"))
         self.assertIn('searchParams.get("site_name") || tenantSite || null', paas)
         self.assertIn('formData.append("site_name", siteName);', paas)
@@ -337,6 +340,20 @@ class TestTenantHostSwitch(unittest.TestCase):
         passed = re.search(r"^# pass (\d+)$", run.stdout, re.M)
         self.assertIsNotNone(passed, run.stdout)
         self.assertGreaterEqual(int(passed.group(1)), 20)
+
+
+class TestGatewayBypassesAreMarked(unittest.TestCase):
+    # Ray's rule: every client call goes through rokct.platform.api; a raw
+    # /api/method/ fetch is allowed only when there is no other way, and
+    # then says why on the line above it.
+    def test_every_raw_method_fetch_says_why(self):
+        lines = read(os.path.join(AUTH_GROUP, "auth.ts")).splitlines()
+        hits = [i for i, line in enumerate(lines) if "fetch(" in line and "/api/method/" in line]
+        self.assertTrue(hits, "expected the native /api/method/login bypass")
+        for i in hits:
+            with self.subTest(line=i + 1):
+                self.assertIn("// bypasses gateway:", lines[i - 1])
+                self.assertIn("sid", lines[i - 1])
 
 
 if __name__ == "__main__":

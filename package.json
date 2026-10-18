@@ -48,7 +48,8 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^4.1.13"
+    "zod": "^4.1.13",
+    "@radix-ui/react-toast": "^1.2.15"
   },
   "devDependencies": {
     "@types/node": "^20",
