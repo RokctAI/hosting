@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.7.0
+
+* The studio home has the "Back to top" button (Ray, 2026-10-31: "every
+  app shell need the button to go up"). `studio-home.tsx` mounts base_sdk
+  1.56.0's `<BackToTop />` inside the `.st` root, so base's root button
+  steps aside on this page.
+* The button is the studio's own (Ray, 2026-10-31: the button must not
+  look the same on every site; each home SDK sets its own style). New
+  `components/custom/landing/hosting-back-to-top.ts` registers a
+  `BackToTopConfig` at base_sdk 1.56.0's
+  `// @rokct-sdk-back-to-top-style-start` marker, so the studio home and
+  every other route of the hosting shell (sign-in, the rPanel) read it:
+  a rounded square with the proof sheet's crisp 3px corners and the
+  1.5px ink outline of its `.btn`, the ink arrow on the `--bg` paper,
+  the `--acc` / `--acc-ink` fill on hover, the `--acc-text` focus ring,
+  the sheet's `--shadow` and a quiet 200ms ease. Outside `.st` each value
+  falls back to base's shadcn token, so the sign-in page's button is an
+  ink arrow on the page ground instead of the yellow-on-white (1.6:1) the
+  token default drew there.
+* fix: `studio.css`'s `.st button` reset skipped the button
+  (`:where(:not([data-back-to-top]))`, same weight for every other
+  button). The reset outranked the button's utility classes, so the
+  button drew transparent, borderless and in plain text colour (a bare
+  white arrow over the Starter price card in dark mode at 390). The
+  `--back-to-top-*` mapping in `studio.css` gives way to the registered
+  style.
+* Needs base_sdk >= 1.56.0. The hosting block's `requires` lists
+  `components/custom/back-to-top.tsx`, `landing/back-to-top-style.ts` and
+  `landing/back-to-top.ts`.
+* test: `tests/test_studio_back_to_top.py`.
+
 ## 1.6.0
 
 * Live site shots (Ray, 2026-10-31: the studio's pictures of each client

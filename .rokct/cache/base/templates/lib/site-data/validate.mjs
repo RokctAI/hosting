@@ -117,7 +117,7 @@ export function validateTheme(value) {
   checkHex(problems, "primary", value.primary, { required: true });
   checkHex(problems, "secondary", value.secondary);
   checkHex(problems, "accent", value.accent);
-  const fields = ["primary", "secondary", "accent", "palette", "paletteDark", "fonts"];
+  const fields = ["primary", "secondary", "accent", "palette", "paletteDark", "fonts", "backToTop"];
   for (const extra of Object.keys(value).filter((k) => !fields.includes(k))) {
     problems.push(`${extra} is not a theme field (${fields.join(", ")})`);
   }

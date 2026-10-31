@@ -57,7 +57,7 @@ def base_sdk_root():
 class TestStudioShotsWiring(unittest.TestCase):
     def test_version_installs_and_requires(self):
         manifest = json.loads(read(MANIFEST))
-        self.assertEqual(manifest["version"], "1.6.0")
+        self.assertGreaterEqual(tuple(int(p) for p in manifest["version"].split(".")), (1, 6, 0))
         hosting = manifest["app_type"]["hosting"]
         installs = {e["from"]: e["to"] for e in hosting["installs"]}
         self.assertEqual(installs["templates/components/custom/studio/studio-shots.ts"],
