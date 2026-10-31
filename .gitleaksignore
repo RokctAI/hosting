@@ -1,0 +1,6 @@
+# False positives: sha256 content hashes in .rokct/cache/install_state.json, committed by
+# mistake in a15effb3a7fb989c63cfc7cbbd12dc435b02639c and untracked again in the next commit (the file is gitignored).
+a15effb3a7fb989c63cfc7cbbd12dc435b02639c:.rokct/cache/install_state.json:generic-api-key:336
+a15effb3a7fb989c63cfc7cbbd12dc435b02639c:.rokct/cache/install_state.json:generic-api-key:337
+a15effb3a7fb989c63cfc7cbbd12dc435b02639c:.rokct/cache/install_state.json:generic-api-key:357
+a15effb3a7fb989c63cfc7cbbd12dc435b02639c:.rokct/cache/install_state.json:generic-api-key:371
