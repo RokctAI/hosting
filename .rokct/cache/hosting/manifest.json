@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "installs": [],
   "dependencies": {},
   "devDependencies": {},
@@ -80,6 +80,10 @@
           "to": "components/custom/landing/hosting-site-metadata.ts"
         },
         {
+          "from": "templates/components/custom/landing/hosting-back-to-top.ts",
+          "to": "components/custom/landing/hosting-back-to-top.ts"
+        },
+        {
           "from": "templates/components/custom/landing/hosting-plans-query.ts",
           "to": "components/custom/landing/hosting-plans-query.ts"
         },
@@ -154,6 +158,11 @@
           "replacement": "  { id: \"hosting-site-metadata\", load: () => import(\"@/components/custom/landing/hosting-site-metadata\") },"
         },
         {
+          "target": "components/custom/landing/back-to-top-style.ts",
+          "placeholder": "// @rokct-sdk-back-to-top-style-start",
+          "replacement": "  { id: \"hosting-back-to-top\", load: () => import(\"@/components/custom/landing/hosting-back-to-top\") },"
+        },
+        {
           "target": "components/custom/landing/plans-query.ts",
           "placeholder": "// @rokct-sdk-plans-query-start",
           "replacement": "  { id: \"hosting-plans\", load: () => import(\"@/components/custom/landing/hosting-plans-query\") },"
@@ -200,6 +209,9 @@
         "app/lib/i18n/index.ts",
         "app/lib/session.ts",
         "app/services/base/platform-gateway.ts",
+        "components/custom/back-to-top.tsx",
+        "components/custom/landing/back-to-top-style.ts",
+        "components/custom/landing/back-to-top.ts",
         "components/custom/landing/header-menu.ts",
         "components/custom/landing/hero-copy.ts",
         "components/custom/landing/hero-form.ts",
@@ -236,6 +248,8 @@
     "components/custom/landing/plans-query.ts": "installed by base_sdk >= 1.9.0 (the plans-query registry the hosting-plans integration targets)",
     "app/landing/page.tsx": "installed by base_sdk >= 1.5.0 (the composed plans storefront; until 1.3.1 app/page.tsx redirected every visitor here, since 1.4.0 app/page.tsx is the studio home)",
     "app_type": "Since 1.2.0 the manifest carries ONE app_type block, 'hosting' (1.1.0 had a second, 'rokctapp', which installed the rpanel pages into RokctAI_frontend; Ray, 2026-09-26: \"rokctai_frontend loses hosting sdk. hosting web app shell gets it\", so that block is gone and its installs moved here). 'hosting' is the storefront exactly as 1.0.x shipped it (templates/app, templates/components) plus the rpanel control panel under templates/rpanel/ at their host paths: app/handson/control/rpanel/** (pages and a layout.tsx that gates on HOSTING_ROLES and renders the nav and toaster), app/actions/handson/control/rpanel/**, app/services/control/rpanel/**, app/services/control/base.ts, components/custom/rpanel/**, components/custom/nav/rpanel-nav.tsx and components/ui/toast.tsx + use-toast.ts. The seven Hosting nav entries are injected at the // @rokct-sdk-control-nav-start marker in rpanel-nav.tsx, which this SDK installs itself (the shell has no /handson layout to host it); HOSTING_ROLES and the Remixicon icons are imported there. A rokctapp host is not a persona here, so this SDK installs nothing top-level into one.",
+    "components/custom/back-to-top.tsx": "installed by base_sdk >= 1.56.0 (BackToTop with the framed scope and the --back-to-top-* variables; the studio home mounts it inside .st since hosting_sdk 1.7.0). Its look is the studio's own: components/custom/landing/hosting-back-to-top.ts, registered at base's back-to-top-style.ts registry (base_sdk >= 1.56.0), names the studio tokens; studio.css keeps its .st button reset off the button.",
+    "components/custom/landing/back-to-top-style.ts": "installed by base_sdk >= 1.56.0: the Back to top style registry; hosting_sdk registers the studio's style there (hosting-back-to-top.ts) since 1.7.0.",
     "components/custom/site-credit.tsx": "installed by base_sdk >= 1.54.0 (SiteCredit, which the studio footer draws since hosting_sdk 1.5.1)",
     "components/custom/landing/site-credit.ts": "installed by base_sdk >= 1.54.0 (the site credit's rules, imported by site-credit.tsx)",
     "components/custom/landing/site-shots.ts": "installed by base_sdk >= 1.55.0 (the site-shots manifest and image checks app/studio/shots/[site]/[file]/route.ts applies to each client site's /site-shots/). hosting_sdk 1.6.0 therefore needs base_sdk >= 1.55.0",

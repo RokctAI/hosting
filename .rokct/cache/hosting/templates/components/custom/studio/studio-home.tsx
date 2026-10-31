@@ -24,6 +24,7 @@ import "./studio.css";
 
 import { Fragment } from "react";
 
+import { BackToTop } from "@/components/custom/back-to-top";
 import { SiteCredit } from "@/components/custom/site-credit";
 
 import {
@@ -617,6 +618,11 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
             </div>
           </div>
         </footer>
+        {/* base_sdk's "Back to top" button, framed inside .st so the
+            studio's registered style (../landing/hosting-back-to-top.ts)
+            resolves against the studio tokens; base's root button steps
+            aside here. */}
+        <BackToTop />
       </div>
     </StudioCurrencyProvider>
   );

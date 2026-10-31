@@ -68,6 +68,12 @@ fields on `theme.json`:
   display voice, `displayWeight` (400-900), `displayItalic`,
   `displayUppercase`.
 
+Any shell with a data/ folder (local or hybrid) may also set `backToTop`
+on `theme.json` (since 1.56.0): the floating Back to top button's
+settings - `enabled`, `position`, `icon`, `shape`, `label`, the colours,
+`offset`, `showAfter` and the design language - laid over the home SDK's
+registered style. See "How to customise" in `docs/downloads-and-install.md`.
+
 base owns the schema only (`lib/site-data/validate-site.mjs`): every field
 is checked and named on failure ("data/sections.json: sections[2].steps[0].title
 is required"), a section type outside the library fails, and the kinds must

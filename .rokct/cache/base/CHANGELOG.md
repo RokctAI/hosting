@@ -1,5 +1,80 @@
 # Changelog
 
+## 1.56.0
+
+* feat(back-to-top): the "Back to top" button is on every page of every
+  shell (Ray, 2026-10-31: "every app shell need the button to go up").
+  Until now only the landing shell and the site frame mounted it, so
+  admin pages, dashboards and a home SDK's own pages had none.
+  `components/custom/theme-provider.tsx`, which every shell's root layout
+  already wraps its page in, now mounts `<BackToTop scope="root" />` after
+  the page. No host edit is needed.
+* `BackToTop` gains `scope` (`"frame"` by default, `"root"` for the
+  seam's). The root button draws nothing while a framed one is mounted
+  (`yieldsToFrame`), so a page never shows two, and the framed button
+  wears the look of the page it sits in.
+* The colours are now CSS variables over the shadcn tokens:
+  `--back-to-top-bg` / `-fg` / `-border` / `-hover-bg` / `-hover-fg` /
+  `-ring`, falling back to `--background`, `--primary`, `--border`,
+  `--primary` / `--primary-foreground`, `--ring`. On hover the button
+  fills with the site's primary.
+* Position: `right` and `bottom` add the right and bottom safe-area insets
+  to the gap (`--back-to-top-gap`, 1rem, 1.5rem from md). An element fixed
+  in the same corner that carries `data-rokct-floating` (a chat or
+  WhatsApp bubble, a cookie button) lifts the button 12px above it
+  (`floatingLift`, `bottomFor`). `--back-to-top-offset` lifts it by hand.
+* The arrow is Remixicon's ri-arrow-up-line drawn as inline SVG; the
+  component no longer imports `@remixicon/react`.
+* fix: under reduced motion the jump is `"instant"`, not `"auto"`.
+  `"auto"` follows the page's CSS `scroll-behavior`, so a site with
+  `html { scroll-behavior: smooth }` (the studio home) still glided.
+* feat(back-to-top): per site (Ray, 2026-10-31: the button is
+  customisable per site - colour, position, icon, on/off - and must not
+  look the same on every site; base supplies only the mechanism and a
+  neutral fallback). A `BackToTopConfig` - `enabled`, `position`
+  (bottom-right, bottom-left, bottom-center), `icon` (arrow-up,
+  arrow-up-circle, chevron-up, rocket: Remixicon paths, inline SVG),
+  `shape` (circle, rounded-square, pill-with-label, text-arrow), `label`,
+  the colours (`background`, `foreground`, `hoverBackground`,
+  `hoverForeground`, `border`, `ring`, `halo`), `offset`, `showAfter` and the
+  design language (`radius`, `size`, `fontFamily`, `fontWeight`,
+  `textTransform`, `letterSpacing`, `fontSize`, `borderWidth`,
+  `borderStyle`, `shadow`, `duration`, `easing`) - resolved from three
+  layers: base's neutral fallback, the home SDK's registered style (new
+  registry `components/custom/landing/back-to-top-style.ts`, marker
+  `// @rokct-sdk-back-to-top-style-start`, the site-metadata contract) and
+  the shell's `data/theme.json` `backToTop` (new, validated; local and
+  hybrid data modes). Unset fields fall back to the site's tokens through
+  the `--back-to-top-*` variables (`--radius` for a rounded square).
+* New `components/custom/site-back-to-top.ts` resolves the layers on the
+  server; the theme seam is now an async server component that hands the
+  result to every button through `<BackToTopProvider>`, so the root and
+  framed copies read the same config and `enabled: false` removes both.
+* `shape: "text-arrow"`: an upward arrow whose shaft is the site's words
+  (its name - data/site.json, else the site-metadata copy - unless
+  `label` says otherwise), set vertically under a ri-arrow-up-s-fill head,
+  with no fill, border or shadow, in the primary colour with a soft halo
+  of the page's background.
+* fix: the glyph keeps at least 3:1 against its fill (WCAG 1.4.11). The
+  button measures its painted colours (`contrastTone`) and, when the
+  derived pair falls short - a yellow primary on a white circle read
+  1.6:1 on the hosting sign-in page - switches to the primary as the fill
+  with primary-foreground as the glyph, else to black or white ink.
+* fix: on a short page the button shows after half the scrollable
+  distance when that is less than a screen (`resolveThreshold`'s new
+  `scrollable`), so a sign-in page still gets it.
+* `floatingLift` takes the position and clears the button's own place
+  (left corner, bottom middle).
+* docs: `docs/downloads-and-install.md` "Per site" and "How to customise"
+  (with JSON); `docs/site-data.md` lists `backToTop` on the theme kind.
+* test: `tests/back-to-top.test.mts` covers the scope rule, the corner
+  lift, the insets, the layered config (defaults, every option, disabled,
+  left and centre), the shapes' words, the icons, the contrast guarantee
+  and the short-page threshold (59 cases); `tests/site-data.test.mts`
+  validates `backToTop`; `test_manifest.py` checks the seam mount, the
+  registry, the resolver and the provider, and type-checks the seam with
+  the button, the resolver and the registry staged.
+
 ## 1.55.0
 
 * feat(site-shots): every site serves its own pictures of its first screen

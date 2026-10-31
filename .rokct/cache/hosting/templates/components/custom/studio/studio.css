@@ -42,13 +42,22 @@
   color-scheme:dark;
 }
 
+/* base_sdk >= 1.56.0's "Back to top" button, mounted inside .st by
+   studio-home.tsx. Its look is ../landing/hosting-back-to-top.ts (the
+   studio's registered style, naming these tokens); the .st button reset
+   below skips it (`:where()`, so every other button keeps the reset at the
+   same weight), since `.st button` (0,1,1) outranks the button's own
+   utility classes (0,1,0) and drew it transparent, borderless and in
+   plain text colour - a bare white arrow over the pricing cards in dark
+   mode at 390. */
+
 .st *,.st *::before,.st *::after{box-sizing:border-box}
 html:has(.st){scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 .st{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 var(--serif);overflow-x:clip}
 .st::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
 .st img{max-width:100%;height:auto;display:block}
 .st a{color:inherit}
-.st button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.st button:where(:not([data-back-to-top])){font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 .st :focus-visible{outline:2px solid var(--acc-text);outline-offset:3px}
 .st ::selection{background:var(--acc);color:var(--acc-ink)}
 .st .wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}

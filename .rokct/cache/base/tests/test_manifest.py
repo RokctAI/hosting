@@ -157,6 +157,15 @@ DOWNLOADS_INSTALLS = {
 BACK_TO_TOP = os.path.join(SDK_ROOT, "templates", "components", "custom", "back-to-top.tsx")
 BACK_TO_TOP_RULES = os.path.join(LANDING, "back-to-top.ts")
 BACK_TO_TOP_TESTS = os.path.join(HERE, "back-to-top.test.mts")
+# base_sdk 1.56.0: per-site config - the home SDK style registry and the
+# server resolver the theme seam hands every button.
+BACK_TO_TOP_STYLE_REGISTRY = os.path.join(LANDING, "back-to-top-style.ts")
+SITE_BACK_TO_TOP = os.path.join(SDK_ROOT, "templates", "components", "custom", "site-back-to-top.ts")
+# Remixicon's ri-arrow-up-line, the only shape the button draws (1.56.0).
+RI_ARROW_UP_LINE_PATH = (
+    "M13.0001 7.82843V20H11.0001V7.82843L5.63614 13.1924L4.22192 11.7782L12.0001 4"
+    "L19.7783 11.7782L18.3641 13.1924L13.0001 7.82843Z"
+)
 LANDING_CONTENT = os.path.join(SDK_ROOT, "templates", "components", "custom", "landing-content.tsx")
 # base_sdk 1.54.0: the site credit (Ray, 2026-10-31: "all site will be
 # copyright sitename then built with love (as heart) by ROKCT"), pure rules
@@ -303,8 +312,27 @@ declare namespace JSX {
 declare module "react" {
   export type ReactNode = unknown;
   export function createElement(...args: unknown[]): JSX.Element;
+  export interface MouseEvent<T = Element> { currentTarget: T }
+  export type CSSProperties = { [key: string]: string | number | undefined };
+  export interface Context<T> { Provider: (props: { value: T; children?: ReactNode }) => JSX.Element }
+  export function createContext<T>(initial: T): Context<T>;
+  export function useContext<T>(context: Context<T>): T;
+  export function useRef<T>(initial: T): { current: T };
+  export function useMemo<T>(factory: () => T, deps: readonly unknown[]): T;
+  export function useState<S>(initial: S | (() => S)): [S, (next: S | ((prev: S) => S)) => void];
+  export function useEffect(effect: () => void | (() => void), deps?: readonly unknown[]): void;
+  export function useSyncExternalStore<T>(
+    subscribe: (listener: () => void) => () => void, getSnapshot: () => T, getServerSnapshot?: () => T,
+  ): T;
+  const React: {
+    useState: typeof useState; useEffect: typeof useEffect; useSyncExternalStore: typeof useSyncExternalStore;
+    createContext: typeof createContext; useContext: typeof useContext; useRef: typeof useRef; useMemo: typeof useMemo;
+  };
+  namespace React { type ReactNode = unknown }
+  export default React;
 }
 declare module "server-only" {}
+declare module "@/app/config/platform" { export const PLATFORM_NAME: string; }
 declare module "next-themes" {
   import type { ReactNode } from "react";
   export type Attribute = `data-${string}` | "class";
@@ -744,7 +772,12 @@ class TestManifest(unittest.TestCase):
         self.assertIn('from "@/components/custom/theme-provider.client";', entry)
         self.assertIn('from "@/components/custom/site-theme";', entry)
         self.assertIn("<SiteTheme />", entry)
-        self.assertIn("<ThemeProviderClient {...props}>{children}</ThemeProviderClient>", entry)
+        self.assertIn(
+            "<ThemeProviderClient {...props}>\n        <BackToTopProvider value={backToTop}>\n"
+            "          {children}\n          <BackToTop scope=\"root\" />\n        </BackToTopProvider>\n"
+            "      </ThemeProviderClient>",
+            entry,
+        )
         self.assertIn("export { DEFAULT_THEME, THEME_ATTRIBUTE };", entry)
         self.assertIn("export default ThemeProvider;", entry)
         self.assertNotRegex(entry, r'defaultTheme = "(light|system)"')
@@ -783,14 +816,24 @@ class TestManifest(unittest.TestCase):
             raise unittest.SkipTest("no tsc reachable (set ROKCT_TSC to a tsc binary)")
         rewrites = {
             'from "@/components/custom/theme-provider.client"': 'from "./theme-provider.client"',
+            'from "@/components/custom/back-to-top"': 'from "./back-to-top"',
+            'from "@/components/custom/landing/back-to-top"': 'from "./back-to-top-rules"',
             'from "@/components/custom/site-theme"': 'from "./site-theme"',
             'from "@/lib/site-data/read-site-data"': 'from "./read-site-data"',
             'from "@/lib/site-data/site-theme"': 'from "./site-theme-css"',
             'from "@/lib/site-data/kinds"': 'from "./kinds"',
+            'from "@/components/custom/site-back-to-top"': 'from "./site-back-to-top"',
+            'from "@/components/custom/landing/back-to-top-style"': 'from "./back-to-top-style"',
+            'from "@/components/custom/landing/site-metadata"': 'from "./site-metadata"',
         }
         staged = {
+            "site-back-to-top.ts": SITE_BACK_TO_TOP,
+            "back-to-top-style.ts": BACK_TO_TOP_STYLE_REGISTRY,
+            "site-metadata.ts": os.path.join(LANDING, "site-metadata.ts"),
             "theme-provider.tsx": THEME_PROVIDER_TEMPLATE,
             "theme-provider.client.tsx": THEME_PROVIDER_CLIENT_TEMPLATE,
+            "back-to-top.tsx": BACK_TO_TOP,
+            "back-to-top-rules.ts": BACK_TO_TOP_RULES,
             "site-theme.tsx": SITE_THEME_COMPONENT,
             "site-theme-css.ts": os.path.join(SITE_DATA_DIR, "site-theme.ts"),
             "read-site-data.ts": os.path.join(SITE_DATA_DIR, "read-site-data.ts"),
@@ -800,6 +843,9 @@ class TestManifest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             for name, src in staged.items():
                 text = read(src)
+                if name == "back-to-top-style.ts":
+                    # The registry's sibling import names the rules.
+                    text = text.replace('from "./back-to-top"', 'from "./back-to-top-rules"')
                 for old, new in rewrites.items():
                     text = text.replace(old, new)
                 with open(os.path.join(tmp, name), "w", encoding="utf-8") as f:
@@ -3363,7 +3409,12 @@ class TestRegistryMarkers(unittest.TestCase):
         self.assertTrue(button.lstrip().startswith("/*"), "licence header first")
         self.assertIn('"use client";', button)
         self.assertLess(button.index('"use client";'), button.index("import React"))
-        self.assertIn('import { RiArrowUpLine } from "@remixicon/react";', button)
+        # 1.56.0: the arrow is Remixicon's ri-arrow-up-line drawn inline
+        # (the paths live beside the rules, the component draws them).
+        self.assertNotIn("@remixicon/react", button)
+        self.assertNotIn("material", button.lower())
+        self.assertIn(RI_ARROW_UP_LINE_PATH, read(BACK_TO_TOP_RULES))
+        self.assertIn("<path d={BACK_TO_TOP_ICON_PATHS[config.icon]} />", button)
         for needle in (
             "export function BackToTop({",
             "export interface BackToTopProps {",
@@ -3372,7 +3423,8 @@ class TestRegistryMarkers(unittest.TestCase):
             "  className?: string;",
             "label = BACK_TO_TOP_LABEL,",
             "const [visible, setVisible] = React.useState(false);",
-            "setVisible(isPastThreshold(window.scrollY, resolveThreshold(threshold, window.innerHeight)));",
+            "const showAfter = threshold ?? config.showAfter;",
+            "setVisible(isPastThreshold(window.scrollY, resolveThreshold(showAfter, window.innerHeight, scrollable)));",
             "frame = window.requestAnimationFrame(check);",
             'window.addEventListener("scroll", onScroll, { passive: true });',
             'window.addEventListener("resize", onScroll, { passive: true });',
@@ -3387,40 +3439,46 @@ class TestRegistryMarkers(unittest.TestCase):
             "      aria-hidden={!visible}",
             "      tabIndex={visible ? 0 : -1}",
             '      data-back-to-top={visible ? "shown" : "hidden"}',
-            '${visible ? "opacity-100" : "pointer-events-none opacity-0"}',
-            '<RiArrowUpLine className="h-5 w-5" aria-hidden="true" />',
+            '${visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"}',
             "export default BackToTop;",
         ):
             self.assertIn(needle, button, needle)
         # Fixed bottom right, under the header (z-50) and its mobile panel
-        # (z-40), in theme tokens only.
+        # (z-40), in the site's variables over theme tokens only (1.56.0).
         for token in (
-            "fixed bottom-4 right-4 z-30", "md:bottom-6 md:right-6", "rounded-full",
-            "border border-border bg-background text-primary", "hover:bg-muted",
-            "focus-visible:ring-2 focus-visible:ring-ring", "motion-safe:transition-opacity",
+            "fixed z-30", "min-h-11 min-w-11",
+            "[--back-to-top-gap:1rem] md:[--back-to-top-gap:1.5rem]",
+            "bg-[color:var(--back-to-top-bg,hsl(var(--background)))]",
+            "text-[color:var(--back-to-top-fg,hsl(var(--primary)))]",
+            "border-[color:var(--back-to-top-border,hsl(var(--border)))]",
+            "focus-visible:ring-2",
+            "focus-visible:ring-[color:var(--back-to-top-ring,hsl(var(--ring)))]",
+            "motion-safe:transition-",
         ):
             self.assertIn(token, button, token)
         header = read(HEADER)
         self.assertIn('className="sticky top-0 z-50 w-full"', header)
         self.assertIn("fixed inset-x-0 bottom-0 top-16 z-40", header)
         code = LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", button))
-        self.assertEqual(code.count("React.useEffect("), 1)
+        self.assertEqual(code.count("React.useEffect("), 3)
         self.assertNotIn("window", code.split("React.useEffect(")[0], "no window read at render")
         self.assertNotRegex(code, re.compile(r"#[0-9a-fA-F]{3,8}\b"), "no colour is named")
         rules = read(BACK_TO_TOP_RULES)
         for needle in (
             'export const BACK_TO_TOP_LABEL = "Back to top";',
             'export const REDUCED_MOTION_MEDIA_QUERY = "(prefers-reduced-motion: reduce)";',
-            "export function resolveThreshold(threshold: number | undefined, viewportHeight: number): number {",
+            "export function resolveThreshold(\n  threshold: number | undefined,\n  viewportHeight: number,\n  scrollable?: number,\n): number {",
             "export function isPastThreshold(scrollY: number, threshold: number): boolean {",
             "return Number.isFinite(scrollY) && scrollY > threshold;",
             "export function scrollBehaviour(reducedMotion: boolean): ScrollBehavior {",
-            'return reducedMotion ? "auto" : "smooth";',
+            'return reducedMotion ? "instant" : "smooth";',
         ):
             self.assertIn(needle, rules, needle)
         plain = LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", rules + button)).lower()
         for word in ("rokct.ai", "supacharge", ".school", "https://", "document.", "localstorage", "window"):
-            if word == "window":
+            # 1.56.0: the button measures floating elements through
+            # document; the rules still never touch the DOM.
+            if word in ("window", "document."):
                 self.assertNotIn(word, LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", rules)).lower())
             else:
                 self.assertNotIn(word, plain, word)
@@ -3448,6 +3506,146 @@ class TestRegistryMarkers(unittest.TestCase):
             head,
         )
 
+    def test_back_to_top_is_on_every_page_of_every_shell(self):
+        """1.56.0 (Ray, 2026-10-31: "every app shell need the button to go
+        up"): base's theme seam, which every shell's root layout wraps its
+        page in, mounts the root button after the page; the landing shell
+        and the site frame keep their framed button, which the root one
+        yields to; the colours are the site's variables over shadcn tokens;
+        right and bottom clear the safe-area insets and a floating element
+        in the corner lifts the button; the manifest, CHANGELOG and doc say
+        so."""
+        manifest = load_manifest()
+        self.assertGreaterEqual(tuple(int(p) for p in manifest["version"].split(".")), (1, 56, 0))
+        seam = read(THEME_PROVIDER_TEMPLATE)
+        self.assertIn('import { BackToTop, BackToTopProvider } from "@/components/custom/back-to-top";', seam)
+        seam_code = LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", seam))
+        self.assertEqual(seam_code.count("<BackToTop "), 1)
+        self.assertIn('<BackToTop scope="root" />', seam_code)
+        self.assertLess(seam_code.index("{children}"), seam_code.index('<BackToTop scope="root" />'))
+        self.assertLess(seam_code.index('<BackToTop scope="root" />'), seam_code.index("</ThemeProviderClient>"))
+        # The framed mounts stay, at the default scope.
+        for path in (LANDING_CONTENT, SITE_FRAME):
+            code = LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", read(path)))
+            self.assertEqual(code.count("<BackToTop />"), 1, path)
+        button = read(BACK_TO_TOP)
+        for needle in (
+            "  scope?: BackToTopScope;",
+            'scope = "frame",',
+            "React.useSyncExternalStore(subscribeFrames, framesNow, framesOnServer);",
+            "const yielded = yieldsToFrame(scope, frames);",
+            'React.useEffect(() => (scope === "frame" ? registerFrame() : undefined), [scope]);',
+            "if (!drawn) return null;",
+            "document.querySelectorAll(FLOATING_SELECTOR)",
+            "setLift(floatingLift(boxes, window.innerWidth, window.innerHeight, config.position));",
+            "...horizontalFor(config.position),",
+            "bottom: bottomFor(lift),",
+            "data-back-to-top-scope={scope}",
+            "hover:bg-[color:var(--back-to-top-hover-bg,hsl(var(--primary)))]",
+            "hover:text-[color:var(--back-to-top-hover-fg,hsl(var(--primary-foreground)))]",
+        ):
+            self.assertIn(needle, button, needle)
+        rules = read(BACK_TO_TOP_RULES)
+        for needle in (
+            'export type BackToTopScope = "frame" | "root";',
+            "export function yieldsToFrame(scope: BackToTopScope, framesMounted: number): boolean {",
+            'export const FLOATING_ATTRIBUTE = "data-rokct-floating";',
+            "export function floatingLift(",
+            "env(safe-area-inset-bottom, 0px)",
+            "env(safe-area-inset-right, 0px)",
+            "var(--back-to-top-offset, 0px)",
+            "export function bottomFor(lift: number): string {",
+        ):
+            self.assertIn(needle, rules, needle)
+        self.assertIn("_comment_version_1_56_0", manifest)
+        changelog = read(os.path.join(SDK_ROOT, "CHANGELOG.md"))
+        head = re.sub(r"\s+", " ", changelog.split("## 1.55.0", 1)[0])
+        self.assertIn("## 1.56.0", head)
+        self.assertIn('Ray, 2026-10-31: "every app shell need the button to go up"', head)
+        doc = read(DOWNLOADS_DOC)
+        for needle in ('<BackToTop scope="root" />', "data-rokct-floating", "--back-to-top-bg",
+                       "safe-area-inset-right", "ri-arrow-up-line"):
+            self.assertIn(needle, doc, needle)
+
+    def test_back_to_top_is_configured_per_site(self):
+        """1.56.0 (Ray, 2026-10-31: the button is customisable per site -
+        colour, position, icon, on/off - and must not look the same on every
+        site): base ships the mechanism and a neutral fallback; a home SDK
+        registers its own style at one marker (the site-metadata contract);
+        data/theme.json `backToTop` overrides it; the theme seam resolves the
+        layers once on the server and hands them to every button, root and
+        framed, through one provider; the shapes, icons, positions and the
+        contrast guarantee are in the component; the manifest installs the
+        two new files, and the CHANGELOG and docs carry a how-to with JSON."""
+        manifest = load_manifest()
+        installs = {e["from"]: e["to"] for e in manifest["installs"]}
+        for src in (BACK_TO_TOP_STYLE_REGISTRY, SITE_BACK_TO_TOP):
+            rel = os.path.relpath(src, SDK_ROOT).replace(os.sep, "/")
+            self.assertEqual(installs.get(rel), rel.replace("templates/", "", 1), rel)
+        registry = read(BACK_TO_TOP_STYLE_REGISTRY)
+        self.assertTrue(registry.lstrip().startswith("/*"), "licence header first")
+        for needle in (
+            "export const BACK_TO_TOP_STYLES: BackToTopStyleEntry[] = [",
+            "  // @rokct-sdk-back-to-top-style-start\n  // @rokct-sdk-back-to-top-style-end\n];",
+            "export async function loadBackToTopStyles(",
+            'import type { BackToTopConfig } from "./back-to-top";',
+        ):
+            self.assertIn(needle, registry, needle)
+        resolver = read(SITE_BACK_TO_TOP)
+        for needle in (
+            "export async function loadSiteBackToTop(): Promise<SiteBackToTop> {",
+            "loadBackToTopStyles(), loadSiteMetadata()",
+            'const theme = hasSiteData("theme") ? readSiteData("theme") : undefined;',
+            "config: resolveBackToTop(...styles, theme?.backToTop),",
+            "siteName: (site?.name || metadata.siteName || metadata.title || \"\").trim(),",
+            "return { config: { ...DEFAULT_BACK_TO_TOP }, siteName: \"\" };",
+        ):
+            self.assertIn(needle, resolver, needle)
+        seam = read(THEME_PROVIDER_TEMPLATE)
+        for needle in (
+            "export async function ThemeProvider(",
+            "const backToTop = await loadSiteBackToTop();",
+            "<BackToTopProvider value={backToTop}>",
+        ):
+            self.assertIn(needle, seam, needle)
+        button = read(BACK_TO_TOP)
+        for needle in (
+            "export function BackToTopProvider(",
+            "const site = React.useContext(BackToTopContext);",
+            "const drawn = config.enabled && !yielded;",
+            "if (!drawn) return null;",
+            "const next = contrastTone({ fg, bg }, solid, page);",
+            "data-back-to-top-shape={config.shape}",
+            "data-back-to-top-position={config.position}",
+            "data-back-to-top-tone={tone.tone}",
+            'writingMode: "vertical-rl", transform: "rotate(180deg)"',
+            "<path d={TEXT_ARROW_HEAD_PATH} />",
+            "bg-transparent border-0",
+            "motion-safe:[transition-duration:var(--back-to-top-duration,200ms)]",
+            "var(--back-to-top-radius, ${defaultRadius(config.shape)})",
+            "      aria-label={label}",
+        ):
+            self.assertIn(needle, button, needle)
+        code = LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", button))
+        self.assertNotRegex(code, re.compile(r"#[0-9a-fA-F]{3,8}\b"), "no colour is named in the component")
+        # The data validator and the rules agree on every enum.
+        rules = read(BACK_TO_TOP_RULES)
+        validator = read(os.path.join(SITE_DATA_DIR, "validate-site.mjs"))
+        for const in ("BACK_TO_TOP_POSITIONS", "BACK_TO_TOP_ICONS", "BACK_TO_TOP_SHAPES"):
+            in_rules = re.search(const + r"[^=]*= \[([^\]]*)\]", rules).group(1)
+            in_validator = re.search(const + r" = \[([^\]]*)\]", validator).group(1)
+            self.assertEqual(re.findall(r'"([^"]+)"', in_rules), re.findall(r'"([^"]+)"', in_validator), const)
+        kinds = read(os.path.join(SITE_DATA_DIR, "kinds.ts"))
+        self.assertIn("backToTop?: SiteBackToTop;", kinds)
+        changelog = read(os.path.join(SDK_ROOT, "CHANGELOG.md"))
+        head = changelog.split("## 1.55.0", 1)[0]
+        for needle in ("backToTop", "@rokct-sdk-back-to-top-style-start", "text-arrow", "3:1"):
+            self.assertIn(needle, head, needle)
+        doc = read(DOWNLOADS_DOC)
+        for needle in ("How to customise", '"backToTop": {', "data/theme.json", "back-to-top-style.ts",
+                       '"shape": "pill-with-label"', '"enabled": false'):
+            self.assertIn(needle, doc, needle)
+
     def test_back_to_top_rules_under_node(self):
         """The rules executed (tests/back-to-top.test.mts): the words, the
         threshold (configured, else one viewport height, else 0), strictly
@@ -3469,7 +3667,7 @@ class TestRegistryMarkers(unittest.TestCase):
         self.assertRegex(run.stdout, re.compile(r"^# fail 0$", re.M), run.stdout)
         passed = re.search(r"^# pass (\d+)$", run.stdout, re.M)
         self.assertIsNotNone(passed, run.stdout)
-        self.assertGreaterEqual(int(passed.group(1)), 11)
+        self.assertGreaterEqual(int(passed.group(1)), 59)
 
     def test_back_to_top_type_checks_under_tsc(self):
         """The component and its rules under tsc, strict and
@@ -3486,14 +3684,25 @@ declare namespace JSX {
   interface IntrinsicElements { [name: string]: unknown }
 }
 declare module "react" {
+  export type ReactNode = unknown;
   export interface MouseEvent<T = Element> { currentTarget: T }
+  export type CSSProperties = { [key: string]: string | number | undefined };
+  export interface Context<T> { Provider: (props: { value: T; children?: ReactNode }) => JSX.Element }
+  export function createContext<T>(initial: T): Context<T>;
+  export function useContext<T>(context: Context<T>): T;
+  export function useRef<T>(initial: T): { current: T };
+  export function useMemo<T>(factory: () => T, deps: readonly unknown[]): T;
   export function useState<S>(initial: S | (() => S)): [S, (next: S | ((prev: S) => S)) => void];
   export function useEffect(effect: () => void | (() => void), deps?: readonly unknown[]): void;
-  const React: { useState: typeof useState; useEffect: typeof useEffect };
+  export function useSyncExternalStore<T>(
+    subscribe: (listener: () => void) => () => void, getSnapshot: () => T, getServerSnapshot?: () => T,
+  ): T;
+  const React: {
+    useState: typeof useState; useEffect: typeof useEffect; useSyncExternalStore: typeof useSyncExternalStore;
+    createContext: typeof createContext; useContext: typeof useContext; useRef: typeof useRef; useMemo: typeof useMemo;
+  };
+  namespace React { type ReactNode = unknown }
   export default React;
-}
-declare module "@remixicon/react" {
-  export function RiArrowUpLine(props: { className?: string; "aria-hidden"?: boolean | "true" | "false" }): JSX.Element;
 }
 """
         with tempfile.TemporaryDirectory() as tmp:

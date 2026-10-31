@@ -222,6 +222,54 @@ export function validateThemeExtras(problems, value) {
     c.bool("fonts.displayItalic", value.fonts.displayItalic);
     c.bool("fonts.displayUppercase", value.fonts.displayUppercase);
   }
+  if (value.backToTop !== undefined) validateBackToTop(problems, "backToTop", value.backToTop);
+}
+
+// ------------------------------------------------------------- backToTop --
+
+// data/theme.json `backToTop` (1.56.0): the shell's own settings for the
+// floating Back to top button, laid over the home SDK's registered style.
+// Mirrors BackToTopConfig in components/custom/landing/back-to-top.ts.
+export const BACK_TO_TOP_POSITIONS = ["bottom-right", "bottom-left", "bottom-center"];
+export const BACK_TO_TOP_ICONS = ["arrow-up", "arrow-up-circle", "chevron-up", "rocket"];
+export const BACK_TO_TOP_SHAPES = ["circle", "rounded-square", "pill-with-label", "text-arrow"];
+export const BACK_TO_TOP_COLOURS = ["background", "foreground", "hoverBackground", "hoverForeground", "border", "ring", "halo"];
+export const BACK_TO_TOP_CSS = ["radius", "size", "fontFamily", "letterSpacing", "fontSize", "borderWidth", "shadow", "duration", "easing"];
+export const BACK_TO_TOP_FIELDS = [
+  "enabled", "position", "icon", "shape", "label", ...BACK_TO_TOP_COLOURS, "offset", "showAfter",
+  ...BACK_TO_TOP_CSS, "fontWeight", "textTransform", "borderStyle",
+];
+const SAFE_CSS = /^[^;{}<>\\]{1,160}$/;
+const CSS_COLOUR = /^(#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})|(?:rgba?|hsla?|oklch|oklab|color-mix|var)\(.*\)|transparent|currentColor)$/i;
+
+export function validateBackToTop(problems, at, value) {
+  const c = checker(problems);
+  if (!c.object(at, value)) return;
+  c.only(at, value, BACK_TO_TOP_FIELDS);
+  c.bool(`${at}.enabled`, value.enabled);
+  c.oneOf(`${at}.position`, value.position, BACK_TO_TOP_POSITIONS);
+  c.oneOf(`${at}.icon`, value.icon, BACK_TO_TOP_ICONS);
+  c.oneOf(`${at}.shape`, value.shape, BACK_TO_TOP_SHAPES);
+  if (c.str(`${at}.label`, value.label) && value.label.length > 40) problems.push(`${at}.label must be at most 40 characters`);
+  for (const key of BACK_TO_TOP_COLOURS) {
+    const v = value[key];
+    if (v === undefined) continue;
+    if (typeof v !== "string" || /\/\*/.test(v) || !SAFE_CSS.test(v) || !CSS_COLOUR.test(v.trim())) {
+      problems.push(`${at}.${key} must be a CSS colour such as "#e4333b" or "hsl(var(--primary))", got ${JSON.stringify(v)}`);
+    }
+  }
+  for (const key of BACK_TO_TOP_CSS) {
+    const v = value[key];
+    if (v === undefined) continue;
+    if (typeof v !== "string" || /\/\*/.test(v) || !SAFE_CSS.test(v)) problems.push(`${at}.${key} must be a short CSS value with no ; { } < > or comments`);
+  }
+  if (value.fontWeight !== undefined && !(typeof value.fontWeight === "number" ? [100, 200, 300, 400, 500, 600, 700, 800, 900].includes(value.fontWeight) : typeof value.fontWeight === "string" && SAFE_CSS.test(value.fontWeight))) {
+    problems.push(`${at}.fontWeight must be 100..900 in steps of 100, or a CSS value`);
+  }
+  c.oneOf(`${at}.textTransform`, value.textTransform, ["none", "uppercase", "lowercase", "capitalize"]);
+  c.oneOf(`${at}.borderStyle`, value.borderStyle, ["solid", "dashed", "dotted", "double", "none"]);
+  c.int(`${at}.offset`, value.offset, 0);
+  c.int(`${at}.showAfter`, value.showAfter, 0);
 }
 
 // ------------------------------------------------------------------- site --

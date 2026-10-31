@@ -183,6 +183,7 @@ next-env.d.ts
 /components/custom/hosting-pricing-section.tsx
 /components/custom/install-offer.tsx
 /components/custom/landing-content.tsx
+/components/custom/landing/back-to-top-style.ts
 /components/custom/landing/back-to-top.ts
 /components/custom/landing/brand-marks.ts
 /components/custom/landing/download-platform.ts
@@ -192,6 +193,7 @@ next-env.d.ts
 /components/custom/landing/hero-copy.ts
 /components/custom/landing/hero-form.ts
 /components/custom/landing/hero-sections.ts
+/components/custom/landing/hosting-back-to-top.ts
 /components/custom/landing/hosting-header-menu.ts
 /components/custom/landing/hosting-hero-copy.ts
 /components/custom/landing/hosting-hero-form.tsx
@@ -229,6 +231,7 @@ next-env.d.ts
 /components/custom/rpanel/stat-card.tsx
 /components/custom/rpanel/status-badge.tsx
 /components/custom/session-provider.tsx
+/components/custom/site-back-to-top.ts
 /components/custom/site-credit.tsx
 /components/custom/site-frame.tsx
 /components/custom/site-theme.tsx

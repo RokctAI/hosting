@@ -129,7 +129,7 @@ describe("validators", () => {
     ]);
     assert.deepEqual(validateSiteData("theme", { secondary: "#fff" }), ["primary is required"]);
     assert.deepEqual(validateSiteData("theme", { primary: "#fff", tertiary: "#000" }), [
-      "tertiary is not a theme field (primary, secondary, accent, palette, paletteDark, fonts)",
+      "tertiary is not a theme field (primary, secondary, accent, palette, paletteDark, fonts, backToTop)",
     ]);
     assert.deepEqual(validateSiteData("team", { members: [{ name: "A. Acme" }] }), [
       "members[0].role is required",
@@ -442,5 +442,59 @@ describe("the generator", () => {
     assert.equal(result.mode, "backend");
     assert.deepEqual(result.kinds, []);
     assert.equal(fs.readFileSync(result.out, "utf8"), fs.readFileSync(NEUTRAL, "utf8"));
+  });
+});
+
+// base_sdk 1.56.0: data/theme.json `backToTop`, the shell's own settings for
+// the floating Back to top button over its home SDK's registered style.
+describe("theme.json backToTop", () => {
+  it("accepts every option, each optional", () => {
+    assert.deepEqual(validateSiteData("theme", { primary: "#0a7", backToTop: {} }), []);
+    assert.deepEqual(
+      validateSiteData("theme", {
+        primary: "#0a7",
+        backToTop: {
+          enabled: true, position: "bottom-left", icon: "rocket", shape: "pill-with-label", label: "Top",
+          background: "#123456", foreground: "hsl(var(--primary-foreground))", hoverBackground: "var(--brand)",
+          hoverForeground: "#fff", border: "transparent", ring: "rgb(0 0 0 / 0.4)", offset: 24, showAfter: 600,
+          radius: "var(--radius)", size: "3rem", fontFamily: "var(--font-display), serif", fontWeight: 700,
+          textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "12px", borderWidth: "2px",
+          borderStyle: "dashed", shadow: "0 8px 24px -12px rgb(0 0 0 / 0.4)", duration: "160ms", easing: "ease-out",
+        },
+      }),
+      [],
+    );
+    for (const shape of ["circle", "rounded-square", "pill-with-label", "text-arrow"]) {
+      assert.deepEqual(validateSiteData("theme", { primary: "#0a7", backToTop: { shape } }), [], shape);
+    }
+    assert.deepEqual(validateSiteData("theme", { primary: "#0a7", backToTop: { enabled: false } }), []);
+  });
+
+  it("names the field of a bad value", () => {
+    const bad = validateSiteData("theme", {
+      primary: "#0a7",
+      backToTop: {
+        enabled: "no", position: "top-left", icon: "material-arrow", shape: "star", colour: "#fff",
+        background: "red; } body { x", radius: "4px; color: red", offset: -3, showAfter: 1.5, label: "",
+      },
+    });
+    for (const needle of [
+      "backToTop.enabled must be true or false",
+      'backToTop.position must be one of "bottom-right", "bottom-left", "bottom-center", got "top-left"',
+      'backToTop.icon must be one of "arrow-up", "arrow-up-circle", "chevron-up", "rocket", got "material-arrow"',
+      'backToTop.shape must be one of "circle", "rounded-square", "pill-with-label", "text-arrow", got "star"',
+      "backToTop.background must be a CSS colour",
+      "backToTop.radius must be a short CSS value",
+      "backToTop.offset must be a whole number of at least 0",
+      "backToTop.showAfter must be a whole number of at least 0",
+      "backToTop.label must be a non-empty string",
+      "colour",
+    ]) {
+      assert.ok(bad.some((p) => p.includes(needle)), `${needle} in ${JSON.stringify(bad)}`);
+    }
+  });
+
+  it("must be an object", () => {
+    assert.deepEqual(validateSiteData("theme", { primary: "#0a7", backToTop: true }), ["backToTop must be an object"]);
   });
 });

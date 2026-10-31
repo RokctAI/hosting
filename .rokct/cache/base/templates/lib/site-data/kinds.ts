@@ -69,6 +69,42 @@ export type SiteDisplayFont = "montserrat" | "fraunces" | "space-grotesk" | "pla
 /** The text faces a theme may choose (1.53.0). */
 export type SiteTextFont = "figtree" | "inter" | "dm-sans";
 
+/**
+ * `data/theme.json` `backToTop` (1.56.0): the shell's own settings for the
+ * floating Back to top button, laid over its home SDK's registered style.
+ * The same shape as BackToTopConfig in
+ * components/custom/landing/back-to-top.ts (kept separate so this module
+ * imports nothing); validated by ./validate-site.mjs validateBackToTop.
+ */
+export interface SiteBackToTop {
+  enabled?: boolean;
+  position?: "bottom-right" | "bottom-left" | "bottom-center";
+  icon?: "arrow-up" | "arrow-up-circle" | "chevron-up" | "rocket";
+  shape?: "circle" | "rounded-square" | "pill-with-label" | "text-arrow";
+  label?: string;
+  background?: string;
+  foreground?: string;
+  hoverBackground?: string;
+  hoverForeground?: string;
+  border?: string;
+  ring?: string;
+  halo?: string;
+  offset?: number;
+  showAfter?: number;
+  radius?: string;
+  size?: string;
+  fontFamily?: string;
+  fontWeight?: string | number;
+  textTransform?: "none" | "uppercase" | "lowercase" | "capitalize";
+  letterSpacing?: string;
+  fontSize?: string;
+  borderWidth?: string;
+  borderStyle?: "solid" | "dashed" | "dotted" | "double" | "none";
+  shadow?: string;
+  duration?: string;
+  easing?: string;
+}
+
 /** `data/theme.json`: the shell's colours, as hex strings (`#rgb` or `#rrggbb`). */
 export interface SiteTheme {
   primary: string;
@@ -89,6 +125,8 @@ export interface SiteTheme {
     displayItalic?: boolean;
     displayUppercase?: boolean;
   };
+  /** The Back to top button's settings (1.56.0). */
+  backToTop?: SiteBackToTop;
 }
 
 /** One link on a team member's card. */
