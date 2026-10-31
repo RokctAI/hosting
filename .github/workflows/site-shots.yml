@@ -291,7 +291,7 @@ jobs:
           AUTH_SECRET="$(openssl rand -hex 32)" AUTH_TRUST_HOST=true \
             env -u ROKCT_BASE_URL -u NEXT_PUBLIC_ROKCT_BASE_URL -u GITHUB_TOKEN \
             node node_modules/next/dist/bin/next start -p 3000 > "$RUNNER_TEMP/next-start.log" 2>&1 &
-          for i in $(seq 1 60); do
+          for _ in $(seq 1 60); do
             curl -s -o /dev/null "http://127.0.0.1:3000/" && break
             sleep 1
           done
@@ -334,7 +334,10 @@ jobs:
           cp "$OUT"/*.webp "shots/$SHOTS_COMMIT/"
           cp "$OUT/manifest.json" manifest.json
           # The five newest sets stay in the tree; older ones live on in history.
-          { echo "$SHOTS_COMMIT"; [ -f history.txt ] && grep -vx "$SHOTS_COMMIT" history.txt || true; } | head -5 > history.next
+          {
+            echo "$SHOTS_COMMIT"
+            if [ -f history.txt ]; then grep -vx "$SHOTS_COMMIT" history.txt || true; fi
+          } | head -5 > history.next
           mv history.next history.txt
           for d in shots/*/; do
             c="$(basename "$d")"
