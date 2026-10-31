@@ -227,6 +227,16 @@ next-env.d.ts
 /components/custom/session-provider.tsx
 /components/custom/site-frame.tsx
 /components/custom/site-theme.tsx
+/components/custom/studio/fonts/OFL.txt
+/components/custom/studio/fonts/big-shoulders-display-500.woff2
+/components/custom/studio/fonts/big-shoulders-display-600.woff2
+/components/custom/studio/fonts/big-shoulders-display-700.woff2
+/components/custom/studio/fonts/big-shoulders-display-800.woff2
+/components/custom/studio/studio-client.tsx
+/components/custom/studio/studio-copy.ts
+/components/custom/studio/studio-fonts.ts
+/components/custom/studio/studio-home.tsx
+/components/custom/studio/studio.css
 /components/custom/submit-button.tsx
 /components/custom/theme-provider.client.tsx
 /components/ui/date-range-picker.tsx
@@ -248,6 +258,7 @@ next-env.d.ts
 /lib/site-data/kinds.ts
 /lib/site-data/read-site-data.ts
 /lib/site-data/site-theme.ts
+/lib/site-data/validate-site.mjs
 /lib/site-data/validate.mjs
 /middleware.ts
 /public/brand/marks/app-gallery.svg
@@ -255,5 +266,9 @@ next-env.d.ts
 /public/brand/marks/chrome-web-store.svg
 /public/brand/marks/google-play.svg
 /public/brand/marks/windows.svg
+/public/studio/work/polaris-desktop.webp
+/public/studio/work/polaris-phone.webp
+/public/studio/work/supacharge-desktop.webp
+/public/studio/work/supacharge-phone.webp
 /types/next-auth.d.ts
 # @rokct-composed-end

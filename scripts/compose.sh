@@ -109,7 +109,13 @@ ROOT = os.getcwd()
 PROTOCOL_GIT = "https://github.com/RokctAI/The-Rokct-Protocol"
 PROTOCOL_FILES = ("sdk_composer.py", "sdk_installer_base.py")
 PROTOCOL_UTILS_REL = os.path.join("core", "utils", "nextjs")
-PROTOCOL_TEMPLATES_REL = os.path.join("core", "utils", "frappe", "composer")
+# The composer reads the Next.js registry first and falls back to the legacy
+# frappe template's sdks[] during the rollout; the sibling guard must read the
+# same files or it checks a template the composer no longer uses.
+PROTOCOL_TEMPLATES_RELS = (
+    os.path.join("core", "utils", "nextjs", "composer"),
+    os.path.join("core", "utils", "frappe", "composer"),
+)
 
 ROKCT_DIR = os.path.join(ROOT, ".rokct")
 CACHE_DIR = os.path.join(ROKCT_DIR, "cache")
@@ -431,11 +437,24 @@ def guard_sibling_checkouts(protocol_dir, app_type):
     a sibling checkout present unless explicitly allowed."""
     if os.environ.get("ROKCT_REFRESH_ALLOW_SIBLINGS", "").lower() in ("1", "true", "yes"):
         return
-    template = os.path.join(protocol_dir, PROTOCOL_TEMPLATES_REL, f"{app_type}.json")
-    if not os.path.exists(template):
-        die(f"registry template '{app_type}' is missing from the protocol checkout ({PROTOCOL_TEMPLATES_REL}/{app_type}.json)")
-    urls = {s.get("git") for s in load_json(template).get("sdks", [])
-            if isinstance(s, dict) and s.get("enabled", True) and s.get("git")}
+    urls = set()
+    found = []
+    for rel in PROTOCOL_TEMPLATES_RELS:
+        template = os.path.join(protocol_dir, rel, f"{app_type}.json")
+        if not os.path.exists(template):
+            continue
+        found.append(template)
+        sdks = load_json(template).get("sdks")
+        if isinstance(sdks, list):
+            urls |= {s.get("git") for s in sdks
+                     if isinstance(s, dict) and s.get("enabled", True) and s.get("git")}
+    if not found:
+        die(f"registry template '{app_type}' is missing from the protocol checkout "
+            f"({' or '.join(os.path.join(r, app_type + '.json') for r in PROTOCOL_TEMPLATES_RELS)})")
+    if not urls:
+        # Fail closed: a guard that finds no SDK URLs cannot vouch that the
+        # composer will clone rather than read a stale sibling checkout.
+        die(f"registry template '{app_type}' names no git SDKs in any of: {', '.join(found)}")
     parent = os.path.dirname(ROOT)
     siblings = sorted(os.path.join(parent, repo_name(u)) for u in urls
                       if os.path.exists(os.path.join(parent, repo_name(u))))
@@ -650,7 +669,13 @@ def stage_cache():
     starts from a fresh checkout with no record, which is exactly right -
     nothing is ever skipped as \"modified by a developer\" - and leaving it
     uncommitted is also what keeps `git status` clean after a compose."""
-    git("add", "-f", "--", CACHE_DIR, f":(exclude){os.path.relpath(STATE_FILE, ROOT)}", LOCK_FILE)
+    # Bytecode is excluded too: an upstream repo that commits tests/__pycache__
+    # would otherwise be staged by -f, then deleted from the tree by the
+    # wrapper's cleanup trap, leaving an add/delete pair in the index.
+    # cache_dir_hash() already ignores it, so the lock never depends on it.
+    git("add", "-f", "--", CACHE_DIR, f":(exclude){os.path.relpath(STATE_FILE, ROOT)}",
+        ":(exclude,glob).rokct/cache/**/__pycache__/**", ":(exclude,glob).rokct/cache/**/*.pyc",
+        LOCK_FILE)
     print("[*] git add -f .rokct/cache .rokct/lock.json (both are .gitignore'd on purpose - see the root .gitignore).")
 
 

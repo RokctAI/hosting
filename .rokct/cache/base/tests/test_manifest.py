@@ -258,6 +258,7 @@ SITE_DATA_DIR = os.path.join(SDK_ROOT, "templates", "lib", "site-data")
 SITE_DATA_INSTALLS = {
     "templates/lib/site-data/kinds.ts": "lib/site-data/kinds.ts",
     "templates/lib/site-data/validate.mjs": "lib/site-data/validate.mjs",
+    "templates/lib/site-data/validate-site.mjs": "lib/site-data/validate-site.mjs",
     "templates/lib/site-data/generate.mjs": "lib/site-data/generate.mjs",
     "templates/lib/site-data/generated.ts": "lib/site-data/generated.ts",
     "templates/lib/site-data/read-site-data.ts": "lib/site-data/read-site-data.ts",
@@ -267,6 +268,8 @@ SITE_DATA_INSTALLS = {
 }
 SITE_DATA_TESTS = os.path.join(HERE, "site-data.test.mts")
 SITE_DATA_FIXTURE = os.path.join(HERE, "fixtures", "site-data", "acme")
+SITE_PAGE_TESTS = os.path.join(HERE, "site-page.test.mts")
+SITE_PAGE_FIXTURE = os.path.join(HERE, "fixtures", "site-data", "site-page")
 SITE_DATA_DOC = os.path.join(SDK_ROOT, "docs", "site-data.md")
 
 # What the theme-provider stage stands in for `react` and `next-themes`: the
@@ -873,6 +876,31 @@ class TestManifest(unittest.TestCase):
         passed = re.search(r"^# pass (\d+)$", run.stdout, re.M)
         self.assertIsNotNone(passed, run.stdout)
         self.assertGreaterEqual(int(passed.group(1)), 23)
+
+    def test_site_page_behaviour_under_node(self):
+        """tests/site-page.test.mts (1.53.0), run in place: the site-page
+        kinds' validators, the cross-kind rule, the home block's required
+        kinds and the generator against tests/fixtures/site-data/site-page."""
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "node (22.6+) is needed to execute the site-page suite")
+        self.assertTrue(os.path.isdir(SITE_PAGE_FIXTURE))
+        run = subprocess.run(
+            [node, "--experimental-strip-types", "--no-warnings", "--test", SITE_PAGE_TESTS],
+            capture_output=True, text=True, timeout=180, cwd=HERE,
+        )
+        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+        self.assertRegex(run.stdout, re.compile(r"^# fail 0$", re.M), run.stdout)
+        passed = re.search(r"^# pass (\d+)$", run.stdout, re.M)
+        self.assertIsNotNone(passed, run.stdout)
+        self.assertGreaterEqual(int(passed.group(1)), 12)
+
+    def test_site_page_fixture_names_no_real_thing(self):
+        """The site-page fixture is a made-up bakery: no brand, nobody real."""
+        for root, _, files in os.walk(SITE_PAGE_FIXTURE):
+            for name in files:
+                text = read(os.path.join(root, name)).lower()
+                for word in ("rokct", "supacharge", "south river", "southriver", "musina", "lorem"):
+                    self.assertNotIn(word, text, f"{name} carries {word}")
 
     def test_fixture_data_folder_names_no_real_thing(self):
         """The fixture data/ is acme.school's: no brand, nobody real."""

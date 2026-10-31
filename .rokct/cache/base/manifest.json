@@ -1,6 +1,7 @@
 {
   "name": "base_sdk",
-  "version": "1.52.1",
+  "version": "1.53.0",
+  "_comment_version_1_53_0": "1.52.1 -> 1.53.0: site-page data kinds for local-data sites (site, sections, pricing, order, css; theme palette, paletteDark and fonts) with validators in lib/site-data/validate-site.mjs; the home SDK's home.site_data.requires is enforced in a local build; HeroConfig.formData hands a hero copy module's data to its hero form.",
   "_comment_version_1_52_1": "1.52.0 -> 1.52.1: components/ui/select.tsx is prettier-formatted, so the fleet linter no longer rewrites it in every app that tracks it.",
   "_comment_version_1_52_0": "1.51.0 -> 1.52.0: buildSiteMetadata() stops stamping canonical \"/\" on every page; a path option sets the canonical, and the landing page passes /landing.",
   "_comment_version_1_51_0": "1.50.1 -> 1.51.0: the 25 shadcn primitives every host carried verbatim (components/ui/alert ... tooltip) ship as templates and leave requires; textarea and theme-toggle stay host-owned.",
@@ -156,6 +157,10 @@
     {
       "from": "templates/lib/site-data/validate.mjs",
       "to": "lib/site-data/validate.mjs"
+    },
+    {
+      "from": "templates/lib/site-data/validate-site.mjs",
+      "to": "lib/site-data/validate-site.mjs"
     },
     {
       "from": "templates/lib/site-data/generate.mjs",
