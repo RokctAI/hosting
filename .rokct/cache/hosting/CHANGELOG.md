@@ -1,5 +1,76 @@
 # Changelog
 
+## 1.5.2
+
+* "How we design" (Ray's review): every option A, B and C is one of our
+  own finished proposals in the client's identity. No option is a bare
+  shell, a near-duplicate or a frame caught mid-animation, and each
+  caption names its direction's idea (see 1.5.0 for the four cases). The
+  footnote says every option is a working page our team built and
+  rendered.
+* The hero and "Our work" proofs show Polaris v3 and Supacharge with its
+  milestone pill folded.
+* The footer's copyright names the studio as its brand is set: the studio
+  passes `siteName={STUDIO_FOOTER.siteName}` ("ROKCT") to `SiteCredit`,
+  because the host's `PLATFORM_NAME` is "Rokct". The line reads "© 2026
+  ROKCT · Built with ♥ by ROKCT · Prices in US dollars, shown in rand at
+  R18.50". The footer test follows.
+
+## 1.5.1
+
+* The studio footer's fine line reads `© <year> <site name> · Built with ♥
+  by ROKCT · Prices in US dollars, shown in rand at R18.50` (Ray,
+  2026-10-31: "all site will be copyright sitename then built with love
+  (as heart) by ROKCT") instead of "© 2026 ROKCT INTELLIGENCE (PTY) LTD ·
+  ...". The copyright and credit are base_sdk 1.54.0's `SiteCredit`
+  (`@/components/custom/site-credit`): the site's name is the host's
+  `PLATFORM_NAME`, the year the current one, the heart a `role="img"`
+  named "love", in the studio's own `.fine` type and middle dot.
+  `STUDIO_FOOTER.legal` becomes `STUDIO_FOOTER.prices` (the note alone).
+  Needs base_sdk >= 1.54.0.
+* test: `tests/test_studio_footer.py`, the first tests for this half.
+
+## 1.5.0
+
+* The studio home gains a "How we design" section (`#design`), between
+  the work and the prices, built after Ray's note that the site renders
+  could show the design process "as options", the way the logo service
+  hands over four logos to choose from. A four-step rail (the brief comes
+  in, three options, you pick one, we build it) sits over one tab per
+  project: Polaris, South River, Supacharge and the studio itself. Each
+  tab shows an example brief (client, what they sell, who to, the ask),
+  stamped "Example brief" and footnoted as written for the page; options
+  A, B and C as proofs, with the picked one in crop marks, an accent ring
+  and a "Picked" tag; and one line on why it won.
+* Every option is one of our own proposals to the client: a finished
+  direction in that client's identity, never a bare shell or template
+  page, and never a frame caught mid-animation. Each is a render of a
+  working page's first screen, cropped to the top viewport and saved as an
+  800 x 500 WebP in light and dark under
+  `templates/public/studio/process/`, installed to `public/studio/process/`
+  (a new install entry). The picked option is always the site that was
+  built.
+  * Polaris: calculator first (v1), an itemised statement, and product
+    first (v3, picked).
+  * South River: range first (the first round), the river-blue poster, and
+    the label-red poster (picked).
+  * Supacharge: session first, a type poster ("Taught twice."), and
+    outcome first (the live site, picked; its milestone pill shown folded).
+  * ROKCT: offer first (v1), editorial (v2), and the proof sheet (v3,
+    picked).
+* The "Our work" and hero proofs show the current sites: Polaris v3
+  instead of a v2 frame caught mid-way through its rotating headline, and
+  Supacharge with its milestone pill in the folded state a still image
+  should show. The Polaris case copy and alt text describe the v3 first
+  screen.
+* The tabs are `StudioDesignTabs` in `studio-client.tsx`: a WAI-ARIA
+  tablist (arrow keys, Home and End) over server-rendered panels, so the
+  first case reads without script. The copy is in `studio-copy.ts`
+  (`STUDIO_DESIGN_*`), the layout in `studio.css` (`.dz-*`, `.brief`,
+  `.opt`, `.verdict`). On a phone the tabs sit two by two and the picked
+  option leads, full width, above the other two.
+* No price changed.
+
 ## 1.4.0
 
 * `/` is now the ROKCT studio home ("Your brand, taken seriously."), built

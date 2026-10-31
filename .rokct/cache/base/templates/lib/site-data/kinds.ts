@@ -221,8 +221,9 @@ export interface SiteIdentity {
   /** `links` absent: one link per section with a nav label. */
   /**
    * The footer: its links (else one per section with a nav label), a line
-   * under the motto, and `legal`, the copyright holder (else the shell's
-   * LEGAL_COMPANY_NAME).
+   * under the motto, and `legal`, the legal holder. Since 1.54.0 the
+   * footer's copyright line is the site credit, which names the site
+   * (`name`), so no shipped footer draws `legal`; it stays valid data.
    */
   footer?: { links?: SiteDataLink[]; line?: string; legal?: string };
 }

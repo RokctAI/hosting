@@ -16,12 +16,12 @@
 
 // The interactive parts of the studio home: the currency every price reads
 // (rand first, the visitor's switch kept in localStorage), the header (its
-// rule on scroll, the theme switch, the currency pill, the phone menu) and
-// the contact block's copy-the-number button.
+// rule on scroll, the theme switch, the currency pill, the phone menu), the
+// contact block's copy-the-number button and the "how we design" case tabs.
 "use client";
 
 import { useTheme } from "next-themes";
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import {
   STUDIO_CONTACT,
@@ -241,5 +241,73 @@ export function StudioCopyNumber() {
     <button className="btn btn-line" type="button" onClick={copy}>
       {label}
     </button>
+  );
+}
+
+/**
+ * The "how we design" case switcher: an ARIA tablist over server-rendered
+ * panels. Every panel is in the HTML; the inactive ones carry `hidden`, so
+ * the first case reads without script. Arrow keys, Home and End move between
+ * tabs, as the WAI-ARIA tabs pattern asks.
+ */
+export function StudioDesignTabs({
+  tabs,
+  panels,
+}: {
+  tabs: { id: string; label: string; sub: string }[];
+  panels: ReactNode[];
+}) {
+  const [active, setActive] = useState(0);
+  const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const go = (i: number) => {
+    const n = (i + tabs.length) % tabs.length;
+    setActive(n);
+    refs.current[n]?.focus();
+  };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === "ArrowRight") go(active + 1);
+    else if (e.key === "ArrowLeft") go(active - 1);
+    else if (e.key === "Home") go(0);
+    else if (e.key === "End") go(tabs.length - 1);
+    else return;
+    e.preventDefault();
+  };
+  return (
+    <div className="dz">
+      <div className="dz-tabs" role="tablist" aria-label="Projects" onKeyDown={onKey}>
+        {tabs.map((t, i) => (
+          <button
+            key={t.id}
+            ref={(el) => {
+              refs.current[i] = el;
+            }}
+            type="button"
+            role="tab"
+            id={`dz-tab-${t.id}`}
+            aria-controls={`dz-panel-${t.id}`}
+            aria-selected={i === active}
+            tabIndex={i === active ? 0 : -1}
+            onClick={() => setActive(i)}
+          >
+            <span className="dz-ti">{String(i + 1).padStart(2, "0")}</span>
+            <span className="dz-tl">{t.label}</span>
+            <span className="dz-ts">{t.sub}</span>
+          </button>
+        ))}
+      </div>
+      {panels.map((p, i) => (
+        <div
+          key={tabs[i].id}
+          role="tabpanel"
+          id={`dz-panel-${tabs[i].id}`}
+          aria-labelledby={`dz-tab-${tabs[i].id}`}
+          hidden={i !== active}
+          tabIndex={0}
+          className="dz-panel"
+        >
+          {p}
+        </div>
+      ))}
+    </div>
   );
 }

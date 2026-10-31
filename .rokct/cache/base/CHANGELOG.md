@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.54.0
+
+* feat(footer): the site credit (Ray, 2026-10-31: "all site will be
+  copyright sitename then built with love (as heart) by ROKCT"). Every
+  site's footer now ends `© <year> <site name> · Built with ♥ by ROKCT`:
+  the SITE's own name, never the legal entity (Polaris read "© Copyright
+  2026 - ROKCT INTELLIGENCE (PTY) LTD"; it now reads "© 2026 Polaris ·
+  Built with ♥ by ROKCT"). New `components/custom/site-credit.tsx`
+  (`SiteCredit`: server-safe, `siteName` defaulting to the host's
+  `PLATFORM_NAME`, `year` defaulting to the current one, the footer's own
+  `separator` and type `className`, the heart a `role="img"` named `love`)
+  and its pure rules `components/custom/landing/site-credit.ts`
+  (`siteCopyright`, `siteCreditText`, `siteCreditLine`,
+  `resolveCreditYear`). A home SDK footer that draws its own markup imports
+  `SiteCredit` from `@/components/custom/site-credit`.
+* feat(footer-chrome): `FooterChromeRow` draws the credit in place of
+  `© Copyright <year> - <holder>`, naming `config.siteName`, else
+  `PLATFORM_NAME`; the credit is always drawn (a nameless site carries the
+  credit alone). `FooterChromeConfig` gains `siteName` and
+  `creditSeparator`; `copyrightHolder` is optional, deprecated and no
+  longer drawn, and `FOOTER_CHROME_CONFIG` no longer reads
+  `NEXT_PUBLIC_COPYRIGHT_HOLDER`.
+* docs(site-data): `site.json` `footer.legal` stays valid, but the credit
+  names the site's `name`, so no shipped footer draws it any more.
+* test: `tests/site-credit.test.mts` (run by test_manifest.py) drives the
+  rules; `TestSiteCredit` checks the installs, the component and the row.
+
 ## 1.53.0
 
 * feat(site-data): a local-data site's whole page is data (Ray, 2026-10-31:
