@@ -67,7 +67,10 @@ import {
 
 export { DEFAULT_THEME, THEME_ATTRIBUTE };
 
-export async function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+export async function ThemeProvider({
+  children,
+  ...props
+}: ThemeProviderProps) {
   const backToTop = await loadSiteBackToTop();
   return (
     <>
