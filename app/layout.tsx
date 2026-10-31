@@ -2,6 +2,8 @@
 // base_sdk's landing pulls its own extra sheets on top (the platform
 // scrollbar); this is the one the root layout owns.
 import "./globals.css";
+// The shared platform scrollbar (base_sdk), on every route, not only /landing.
+import "./styles/rokct-scroll.css";
 
 import type { Viewport } from "next";
 import { buildSiteMetadata } from "@/app/lib/site-metadata";
