@@ -1,5 +1,59 @@
 # Changelog
 
+## 1.4.0
+
+* `/` is now the ROKCT studio home ("Your brand, taken seriously."), built
+  from the v3 design Ray approved on 2026-10-31 ("build").
+  `templates/app/page.tsx` renders it instead of redirecting to
+  `/landing`; the control-site plans storefront stays at base_sdk's
+  composed `/landing`. The page ships as installs under
+  `components/custom/studio/`: `studio-home.tsx` (server component: the
+  hero, six services with their prices, two portfolio proofs, the price
+  table, the five phases with a sample status page and the refund rule,
+  the ten intake questions, the WhatsApp contact block and the footer),
+  `studio-client.tsx` (the currency every price reads, the header's
+  scroll rule, theme switch, currency pill and phone menu, and the
+  copy-the-number button), `studio-copy.ts` (every word and price on the
+  page) and `studio.css` (light and dark tokens and the layout, scoped to
+  `.st`; dark follows the shell's next-themes class; all motion off under
+  `prefers-reduced-motion`).
+* Three faces through `next/font`, loaded in `studio-fonts.ts`:
+  Newsreader for running text and Hanken Grotesk for labels from
+  `next/font/google`, and Big Shoulders Display for titles and figures from
+  `next/font/local`, shipped as its four OFL woff2 weights under
+  `components/custom/studio/fonts/` with the licence beside it, because
+  `next/font/google` only carries the newer optical-size Big Shoulders
+  family, whose widths differ from the Display cut.
+* The website and brand bundle carries Ray's advert deal (Ray 2026-10-30,
+  `website-service/offer-and-intake.md`): R8,500 is the normal price,
+  shown struck through, and R2,500 is the offer price, with the R6,000
+  saving beside it and free lifetime hosting for the first 1,000
+  businesses. The deal shows in both the services ledger and the price
+  table. It is set in rand. Outside South Africa the rule is Ray's "dollar
+  is fine for outsiders": each rand figure is converted once at the fixed
+  R18.50 = $1 and rounded to whole dollars ($459 struck through, $135),
+  and the saving is normal minus offer in the shown currency ($324), so
+  the three figures always add up. The earlier $700, $499 and
+  R2,500-in-dollars figures are superseded.
+* Every other price is set in US dollars and shown in rand first at the
+  same fixed R18.50 = $1 (no live rate), with the other currency beside
+  each figure: business plans $100, $250 and $500 (Ray approved). The
+  starter kit, pitch decks, design and print, and social post packs are
+  priced on WhatsApp; the starter kit's proposed $120 is not confirmed.
+  A ZAR/USD switch in the header and above the price table changes every
+  price at once; the choice is kept in localStorage, wrapped in try/catch.
+* Contact copy says the team replies in office hours, with no times.
+* It replaces the website-service landing (`components/custom/website-service/`)
+  that this version carried while it was still a draft; that landing was
+  never released, so nothing composed ever installed it.
+* WhatsApp is +27 15 000 6069 throughout, with a prefilled message per
+  service.
+* The portfolio proofs (Polaris and Supacharge, desktop and phone) are
+  WebP files under `templates/public/studio/work/`, installed to
+  `public/studio/work/`.
+* The manifest declares `next-themes` ^0.4.6, the version the hosting
+  shell already pins, because the theme switch calls `useTheme()`.
+
 ## 1.3.1
 
 * fix(icons): the rpanel pages, nav, server header, status badge and toast

@@ -14,22 +14,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// The page that serves `/` in a shell whose home SDK is hosting_sdk. Same
-// role as lms_sdk's app/page.tsx for Supacharge and agent_sdk's
-// app/(chat)/page.tsx for rokctapp: the home SDK owns the root route (Ray,
-// 2026-09-03: each home SDK holds its own landing page). This product is a
-// storefront on the control site and nothing more - rpanel stays a
-// standalone product (hosting/docs/spec.md), so there is no signed-in home
-// to send a visitor to - and every visitor goes to base_sdk's composed
-// landing at /landing. Installed on the shell's own app/page.tsx so the
-// composer overwrites the shell's holding page, the way base_sdk's host
-// files overwrite the shell copies; a shell that is NOT composed keeps its
-// own `/`.
+// `/` in a shell whose home SDK is hosting_sdk: the ROKCT studio home
+// ("Your brand, taken seriously."): every service with its price, the work,
+// the price table, the five phases and the WhatsApp line. The control-site
+// plans storefront stays on base_sdk's composed /landing. The page lives in
+// components/custom/studio/ (copy in studio-copy.ts, the three faces in
+// studio-fonts.ts through next/font).
 
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+import { studioFontClassName } from "@/components/custom/studio/studio-fonts";
+import { StudioHome } from "@/components/custom/studio/studio-home";
+
+export const metadata: Metadata = {
+  title: { absolute: "ROKCT Studio" },
+  description:
+    "ROKCT: a design and hosting studio for small businesses. Websites, logos, business plans, pitch decks, print and social posts, with one price before work starts.",
+};
 
 export default function Page() {
-  redirect("/landing");
+  return <StudioHome fontClassName={studioFontClassName} />;
 }
