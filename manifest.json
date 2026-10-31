@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "repo": "RokctAI/hosting",
-  "commit": "c77f0a286c38dd67c0accf257a7588844e0ae5fc",
-  "taken_at": "2026-10-31T14:16:50Z",
-  "dir": "shots/c77f0a286c38dd67c0accf257a7588844e0ae5fc",
+  "commit": "473c8b262e1aee70dad4aed45ad774745371b553",
+  "taken_at": "2026-10-31T14:50:41Z",
+  "dir": "shots/473c8b262e1aee70dad4aed45ad774745371b553",
   "files": {
     "desktop-light.webp": {
       "width": 1200,
