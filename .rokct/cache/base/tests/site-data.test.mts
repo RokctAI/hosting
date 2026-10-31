@@ -129,7 +129,7 @@ describe("validators", () => {
     ]);
     assert.deepEqual(validateSiteData("theme", { secondary: "#fff" }), ["primary is required"]);
     assert.deepEqual(validateSiteData("theme", { primary: "#fff", tertiary: "#000" }), [
-      "tertiary is not a theme field (primary, secondary, accent)",
+      "tertiary is not a theme field (primary, secondary, accent, palette, paletteDark, fonts)",
     ]);
     assert.deepEqual(validateSiteData("team", { members: [{ name: "A. Acme" }] }), [
       "members[0].role is required",
@@ -254,7 +254,7 @@ describe("the mode rule", () => {
   });
 
   it("names every kind and its file", () => {
-    assert.deepEqual([...SITE_DATA_KINDS], ["theme", "team", "stockists", "products", "about", "legal", "network"]);
+    assert.deepEqual([...SITE_DATA_KINDS], ["theme", "team", "stockists", "products", "about", "legal", "network", "site", "sections", "pricing", "order", "css"]);
     assert.equal(SITE_DATA_FILES.network, "data/network.json");
     for (const kind of SITE_DATA_KINDS) assert.match(SITE_DATA_FILES[kind], /^data\//);
   });

@@ -258,6 +258,7 @@ next-env.d.ts
 /lib/site-data/kinds.ts
 /lib/site-data/read-site-data.ts
 /lib/site-data/site-theme.ts
+/lib/site-data/validate-site.mjs
 /lib/site-data/validate.mjs
 /middleware.ts
 /public/brand/marks/app-gallery.svg

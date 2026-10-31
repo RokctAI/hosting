@@ -32,9 +32,9 @@
       "path": "../core/base/nextjs",
       "ref": "main",
       "commit": "c8bd4993a23c5eabea81cf0d289f6f73f9763289",
-      "version": "1.52.1",
+      "version": "1.53.0",
       "install_py_sha256": "b6c434a1c05611d29f1018f68b9423383f7ecfbf9cc1efe74825ba6c4df98fff",
-      "content_sha256": "9c541d78a15a2a52ba2cbb1e053a127302301ac54688efce06b27069e7a0d82c"
+      "content_sha256": "bb0ec234b7a186c7d251822451bcf5afeb1273efb715a3557ac15f9b407c1cbc"
     },
     {
       "name": "auth_sdk",
