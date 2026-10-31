@@ -346,3 +346,104 @@ html:has(.st){scroll-behavior:auto}
 .st .save{display:inline-block;margin-top:6px;font:700 11px/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--acc-ink);background:var(--acc);padding:6px 9px;border-radius:3px}
 .st .pr .v .was{display:block;margin-bottom:5px}
 .st .pr .v .was s{font-size:21px}
+
+
+/* How we design: the logo-job process on four real sites. A four-step
+   rail, a tab per project, then per project the example brief, three
+   option proofs (the picked one in crop marks and the accent) and why it
+   won. Thumbnails follow the theme: .th-l in light, .th-d in dark. */
+.st .dz-steps{list-style:none;margin:0 0 clamp(36px,5vw,56px);padding:0;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--ink)}
+@media (min-width:900px){
+.st .dz-steps{grid-template-columns:repeat(4,1fr)}
+}
+.st .dz-steps li{display:flex;flex-direction:column;gap:4px;padding:18px 20px 20px 0;position:relative}
+.st .dz-steps li+li{padding-left:20px;border-left:1px solid var(--rule)}
+@media (max-width:899px){
+.st .dz-steps li:nth-child(3){padding-left:0;border-left:0}
+.st .dz-steps li:nth-child(n+3){border-top:1px solid var(--rule)}
+}
+.st .dz-steps .n{font:700 30px/1 var(--disp);color:var(--acc-text);font-variant-numeric:tabular-nums;margin-bottom:6px}
+.st .dz-steps b{font:700 16px/1.25 var(--sans);letter-spacing:-.01em}
+.st .dz-steps li>span:last-child{font:400 14px/1.45 var(--sans);color:var(--ink-2)}
+
+.st .dz-tabs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--rule)}
+.st .dz-tabs [role="tab"]{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;row-gap:4px;align-items:baseline;text-align:left;padding:18px 16px 18px 0;position:relative;color:var(--ink-3);transition:color .2s}
+.st .dz-tabs [role="tab"]+[role="tab"]{padding-left:16px}
+.st .dz-tabs [role="tab"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--acc-text);transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+.st .dz-tabs [role="tab"]:hover{color:var(--ink)}
+.st .dz-tabs [aria-selected="true"]{color:var(--ink)}
+.st .dz-tabs [aria-selected="true"]::after{transform:none}
+.st .dz-ti{font:600 11.5px/1 var(--sans);letter-spacing:.12em;color:var(--acc-text);grid-row:1/3;align-self:start;padding-top:8px}
+.st .dz-tl{font:700 clamp(24px,2.6vw,36px)/1 var(--disp);text-transform:uppercase;letter-spacing:.005em}
+.st .dz-ts{font:500 13px/1.3 var(--sans);color:var(--ink-3);grid-column:2}
+@media (max-width:720px){
+.st .dz-tabs{grid-template-columns:1fr 1fr;border-bottom:0}
+.st .dz-tabs [role="tab"],.st .dz-tabs [role="tab"]+[role="tab"]{padding:14px 10px 14px 0;border-bottom:1px solid var(--rule)}
+.st .dz-tabs [role="tab"]:nth-child(even){padding-left:12px;border-left:1px solid var(--rule)}
+.st .dz-ti{padding-top:6px}
+.st .dz-ts{font-size:12px}
+}
+
+.st .dz-panel{padding-top:clamp(28px,4vw,44px);display:grid;gap:clamp(28px,4vw,44px);animation:st-fade .45s ease both}
+.st .dz-panel[hidden]{display:none}
+.st .dz-panel:focus-visible{outline-offset:8px}
+@keyframes st-fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.st .dz-step{display:inline-flex;align-items:baseline;gap:10px;font:600 11.5px/1.3 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:0}
+.st .dz-step i{font:700 11.5px/1 var(--sans);font-style:normal;color:var(--acc-text);letter-spacing:.08em}
+
+/* 01 the brief: a card on the page's paper, stamped as an example. */
+.st .brief{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:22px 22px 24px}
+@media (min-width:900px){
+.st .brief{padding:26px 30px 28px}
+}
+.st .brief-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px dashed var(--rule-2)}
+.st .stamp{font:700 10.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--acc-text);border:1.5px solid currentColor;border-radius:3px;padding:6px 8px 5px;transform:rotate(-2deg)}
+.st .brief-dl{margin:18px 0 0;display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:640px){
+.st .brief-dl{grid-template-columns:1fr 1fr;gap:18px 28px}
+}
+@media (min-width:1100px){
+.st .brief-dl{grid-template-columns:repeat(3,1fr) 1.35fr}
+}
+.st .brief-dl dt{font:600 11px/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.st .brief-dl dd{margin:0;font:400 15px/1.5 var(--sans);color:var(--ink)}
+.st .brief-ask dd{font:italic 400 clamp(18px,1.5vw,21px)/1.35 var(--serif);letter-spacing:-.005em;text-wrap:pretty}
+@media (min-width:1100px){
+.st .brief-ask{padding-left:28px;border-left:1px solid var(--rule)}
+}
+
+/* 02 the options: three mini proofs; the picked one in the accent. */
+.st .opt-row{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:28px 18px}
+@media (min-width:900px){
+.st .opt-row{grid-template-columns:repeat(3,1fr);gap:0 28px}
+}
+@media (max-width:899px){
+.st .opt.on{grid-column:1/-1;order:-1}
+}
+.st .opt .proof{transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.st .opt .mini{position:relative;background:var(--frame);border-radius:8px;padding:20px 0 0;overflow:hidden;box-shadow:0 18px 36px -24px rgba(23,22,27,.45),0 1px 3px rgba(23,22,27,.08)}
+.st .opt .mini::before{content:"";position:absolute;top:8px;left:10px;width:5px;height:5px;border-radius:50%;background:#5A5962;box-shadow:9px 0 0 #5A5962,18px 0 0 #5A5962}
+.st .opt img{width:100%;aspect-ratio:8/5;object-fit:cover;object-position:top}
+.st .opt .th-d{display:none}
+.dark .st .opt .th-l{display:none}
+.dark .st .opt .th-d{display:block}
+.st .opt:not(.on) .proof::before,.st .opt:not(.on) .proof::after,.st .opt:not(.on) .proof .cm::before,.st .opt:not(.on) .proof .cm::after{border-color:transparent}
+.st .opt:not(.on):hover .proof::before,.st .opt:not(.on):hover .proof::after,.st .opt:not(.on):hover .proof .cm::before,.st .opt:not(.on):hover .proof .cm::after{border-color:var(--rule-2)}
+.st .opt.on .proof::before,.st .opt.on .proof::after,.st .opt.on .proof .cm::before,.st .opt.on .proof .cm::after{border-color:var(--acc-text)}
+.st .opt.on .mini{box-shadow:0 0 0 2px var(--acc-text),var(--shadow)}
+.st .opt:hover .proof{transform:translateY(-3px)}
+.st .opt figcaption{display:flex;justify-content:flex-start;align-items:baseline;gap:10px;margin-top:14px;flex-wrap:wrap;text-transform:none;letter-spacing:0}
+.st .opt-k{font:700 30px/.8 var(--disp);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.st .opt.on .opt-k{color:var(--acc-text)}
+.st .opt-n{font:500 14px/1.35 var(--sans);color:var(--ink-2);flex:1;min-width:8em}
+.st .opt.on .opt-n{color:var(--ink);font-weight:600}
+.st .picked{display:inline-flex;align-items:center;gap:6px;font:700 10.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-ink);background:var(--acc);padding:6px 9px 6px 8px;border-radius:999px;align-self:center}
+
+/* 03 and 04: why it won, then the build. */
+.st .verdict{display:grid;gap:14px;padding-top:24px;border-top:1px solid var(--ink)}
+@media (min-width:900px){
+.st .verdict{grid-template-columns:3fr 9fr;column-gap:28px;align-items:baseline}
+.st .verdict .built{grid-column:2}
+}
+.st .why{margin:0;font:400 clamp(21px,2vw,28px)/1.3 var(--serif);letter-spacing:-.01em;max-width:34em;text-wrap:pretty}
+.st .built{margin:4px 0 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}

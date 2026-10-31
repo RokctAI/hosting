@@ -1,6 +1,7 @@
 {
   "name": "base_sdk",
-  "version": "1.53.0",
+  "version": "1.54.0",
+  "_comment_version_1_54_0": "1.53.0 -> 1.54.0: the site credit (Ray, 2026-10-31: every site's footer reads `© <year> <site name> · Built with ♥ by ROKCT`). New components/custom/site-credit.tsx (SiteCredit) and its pure rules components/custom/landing/site-credit.ts; FooterChromeRow draws it, naming config.siteName else the host's PLATFORM_NAME, never the legal entity; copyrightHolder is optional and no longer drawn.",
   "_comment_version_1_53_0": "1.52.1 -> 1.53.0: site-page data kinds for local-data sites (site, sections, pricing, order, css; theme palette, paletteDark and fonts) with validators in lib/site-data/validate-site.mjs; the home SDK's home.site_data.requires is enforced in a local build; HeroConfig.formData hands a hero copy module's data to its hero form.",
   "_comment_version_1_52_1": "1.52.0 -> 1.52.1: components/ui/select.tsx is prettier-formatted, so the fleet linter no longer rewrites it in every app that tracks it.",
   "_comment_version_1_52_0": "1.51.0 -> 1.52.0: buildSiteMetadata() stops stamping canonical \"/\" on every page; a path option sets the canonical, and the landing page passes /landing.",
@@ -33,6 +34,10 @@
     {
       "from": "templates/components/custom/footer-chrome.tsx",
       "to": "components/custom/footer-chrome.tsx"
+    },
+    {
+      "from": "templates/components/custom/site-credit.tsx",
+      "to": "components/custom/site-credit.tsx"
     },
     {
       "from": "templates/components/custom/install-offer.tsx",
@@ -93,6 +98,10 @@
     {
       "from": "templates/components/custom/landing/footer-chrome-config.ts",
       "to": "components/custom/landing/footer-chrome-config.ts"
+    },
+    {
+      "from": "templates/components/custom/landing/site-credit.ts",
+      "to": "components/custom/landing/site-credit.ts"
     },
     {
       "from": "templates/components/custom/landing/download-platform.ts",

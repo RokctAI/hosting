@@ -24,11 +24,14 @@ import "./studio.css";
 
 import { Fragment } from "react";
 
+import { SiteCredit } from "@/components/custom/site-credit";
+
 import {
   StudioCopyNumber,
   StudioCurrencyBar,
   StudioCurrencyProvider,
   StudioDeal,
+  StudioDesignTabs,
   StudioDealAlt,
   StudioHeader,
   StudioPrice,
@@ -36,6 +39,9 @@ import {
 import {
   STUDIO_CASES,
   STUDIO_CONTACT,
+  STUDIO_DESIGN_CASES,
+  STUDIO_DESIGN_HEAD,
+  STUDIO_DESIGN_STEPS,
   STUDIO_FOOTER,
   STUDIO_HERO,
   STUDIO_IMAGES,
@@ -47,7 +53,9 @@ import {
   STUDIO_WHATSAPP_DISPLAY,
   STUDIO_WHATSAPP_URL,
   STUDIO_WORK_HEAD,
+  studioDesignImage,
   studioWhatsApp,
+  type StudioDesignCase,
   type StudioServicePrice,
 } from "./studio-copy";
 
@@ -193,6 +201,97 @@ function TablePrice({ price }: { price: StudioServicePrice }) {
   );
 }
 
+// One "how we design" case: the example brief, the three options with the
+// chosen one marked, and why it won. Each thumbnail ships in both themes and
+// follows the page's theme (studio.css shows one, hides the other; a hidden
+// lazy image is never fetched).
+function DesignCase({ c }: { c: StudioDesignCase }) {
+  const letter = c.chosen.toUpperCase();
+  return (
+    <>
+      <div className="brief">
+        <div className="brief-top">
+          <span className="dz-step">
+            <i>01</i> The brief
+          </span>
+          <span className="stamp">Example brief</span>
+        </div>
+        <dl className="brief-dl">
+          <div>
+            <dt>Client</dt>
+            <dd>{c.brief.client}</dd>
+          </div>
+          <div>
+            <dt>What they sell</dt>
+            <dd>{c.brief.sells}</dd>
+          </div>
+          <div>
+            <dt>Who to</dt>
+            <dd>{c.brief.to}</dd>
+          </div>
+          <div className="brief-ask">
+            <dt>The ask</dt>
+            <dd>&ldquo;{c.brief.ask}&rdquo;</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div className="opts">
+        <p className="dz-step">
+          <i>02</i> Three options, side by side
+        </p>
+        <ol className="opt-row">
+          {c.options.map((o) => {
+            const on = o.key === c.chosen;
+            return (
+              <li key={o.key} className={on ? "opt on" : "opt"}>
+                <figure>
+                  <div className="proof">
+                    <div className="mini">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
+                      <img className="th-l" src={studioDesignImage(c.id, o, "light")} alt={o.alt} width={800} height={500} loading="lazy" decoding="async" />
+                      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
+                      <img className="th-d" src={studioDesignImage(c.id, o, "dark")} alt={o.alt} width={800} height={500} loading="lazy" decoding="async" />
+                    </div>
+                    <span className="cm" aria-hidden="true" />
+                  </div>
+                  <figcaption>
+                    <span className="opt-k">{o.key.toUpperCase()}</span>
+                    <span className="opt-n">{o.name}</span>
+                    {on && (
+                      <span className="picked">
+                        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+                          <path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Picked
+                      </span>
+                    )}
+                  </figcaption>
+                </figure>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      <div className="verdict">
+        <p className="dz-step">
+          <i>03</i> Why {letter} won
+        </p>
+        <p className="why">{c.why}</p>
+        <p className="built">
+          <span className="dz-step">
+            <i>04</i> Built
+          </span>
+          <span className="sm">
+            Option {letter} is the one our team built out, for desktop and phone, in light and dark.
+          </span>
+        </p>
+      </div>
+    </>
+  );
+}
+
 export function StudioHome({ fontClassName }: { fontClassName: string }) {
   const H = STUDIO_HERO;
   const P = STUDIO_PROCESS;
@@ -252,7 +351,7 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
             <div className="wrap collage">
               <DeskProof
                 src={STUDIO_IMAGES.polarisDesk}
-                alt="Polaris: a lender's website with the loan calculator on the home page, on a desktop"
+                alt="Polaris: a lender's website with the full cost in the headline and the loan application beside it, on a desktop"
                 url="polaris · public site and loan calculator"
                 caption="Our work · Polaris"
                 side="Proof · desktop"
@@ -341,6 +440,29 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
                   </div>
                 </article>
               ))}
+            </div>
+          </section>
+
+          {/* ------------------------------------------------- how we design */}
+          <section className="sec" id="design">
+            <div className="wrap">
+              <SectionHead kicker={STUDIO_DESIGN_HEAD.kicker} title={STUDIO_DESIGN_HEAD.title} aside={STUDIO_DESIGN_HEAD.aside} />
+              <ol className="dz-steps">
+                {STUDIO_DESIGN_STEPS.map((st, i) => (
+                  <li key={st.h}>
+                    <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                    <b>{st.h}</b>
+                    <span>{st.p}</span>
+                  </li>
+                ))}
+              </ol>
+              <StudioDesignTabs
+                tabs={STUDIO_DESIGN_CASES.map((c) => ({ id: c.id, label: c.tab, sub: c.sector }))}
+                panels={STUDIO_DESIGN_CASES.map((c) => (
+                  <DesignCase key={c.id} c={c} />
+                ))}
+              />
+              <p className="fine ledger-foot">{STUDIO_DESIGN_HEAD.foot}</p>
             </div>
           </section>
 
@@ -472,7 +594,11 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
             </div>
             <div className="r">
               <span className="motto">{STUDIO_FOOTER.motto}</span>
-              <span className="fine">{STUDIO_FOOTER.legal}</span>
+              {/* base_sdk 1.54.0's site credit: `© <year> <PLATFORM_NAME> · Built
+                  with ♥ by ROKCT`, in the studio's own fine type and middle dot. */}
+              <span className="fine">
+                <SiteCredit as="span" siteName={STUDIO_FOOTER.siteName} /> · {STUDIO_FOOTER.prices}
+              </span>
             </div>
           </div>
         </footer>

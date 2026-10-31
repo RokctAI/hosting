@@ -227,14 +227,14 @@ export const STUDIO_CASES: StudioCase[] = [
   {
     desk: {
       src: STUDIO_IMAGES.polarisDesk,
-      alt: "Polaris home page on a desktop: a loan calculator showing the full cost before you apply",
+      alt: "Polaris home page on a desktop: 'The full cost, shown before you apply' beside step one of the loan application",
       url: "polaris · home",
       caption: "Polaris · Home",
     },
     phone: { src: STUDIO_IMAGES.polarisPhone, alt: "Polaris home page on a phone" },
     kicker: "Polaris · Lender",
     title: "A loan with the full cost on the page before anyone applies.",
-    body: "A short-term lender's public site. The calculator is the hero: the amount, the term, the interest, the fees and the total to repay, each one itemised under the ceiling the National Credit Act sets. Light and dark themes and a single green accent, every figure in tabular numerals.",
+    body: "A short-term lender's public site. The first screen puts the full cost in the headline, with step one of the application beside it; the calculator below itemises the amount, the term, the interest, the fees and the total to repay, each under the ceiling the National Credit Act sets. Light and dark themes and a single green accent, every figure in tabular numerals.",
     made: "Public website, loan calculator, phone and desktop layouts, light and dark themes",
     look: "Light and dark themes, one accent, a display serif for the headlines",
   },
@@ -251,6 +251,124 @@ export const STUDIO_CASES: StudioCase[] = [
     body: "The public site for a South African learning app. The home page carries the brand's black and orange, the accelerator milestone, the download buttons for every store, and an explanation of how a lesson runs in two teaching styles.",
     made: "Public website, phone and desktop layouts, light and dark themes",
     look: "Black ground, the brand's orange, a heavy italic display face",
+  },
+];
+
+// ---- How we design ------------------------------------------------------
+// The studio's design process shown the way a logo job runs: a brief comes
+// in, the client sees three options side by side, picks one, and we build
+// it. Each case is a real project. Every option is a finished direction in
+// that client's own identity, shown as a render of a working page's first
+// screen (light and dark, under public/studio/process/); the picked one is
+// the site that was built. No option is a bare shell or a template page.
+// The briefs are EXAMPLES written for this page, and the page says so.
+export const STUDIO_DESIGN_HEAD = {
+  kicker: "How we design",
+  title: "You see three. You choose one.",
+  aside:
+    "It works like choosing a logo. A brief comes in, our team puts three directions side by side, you pick one, and we build the one you picked. Here is how it went on four real sites.",
+  foot: "The briefs are examples, written for this page to show how a job starts. Every option is a working page our team built and rendered; the picked one is the site we went on to build.",
+};
+
+export const STUDIO_DESIGN_STEPS = [
+  { h: "The brief comes in", p: "Your answers, turned into one page." },
+  { h: "Three options", p: "Three directions for the first screen, side by side." },
+  { h: "You pick one", p: "Tell us which, and why, on WhatsApp." },
+  { h: "We build it", p: "The direction you picked becomes the real site." },
+] as const;
+
+export interface StudioDesignOption {
+  key: "a" | "b" | "c";
+  name: string;
+  alt: string;
+}
+
+export interface StudioDesignCase {
+  id: string;
+  tab: string;
+  sector: string;
+  brief: { client: string; sells: string; to: string; ask: string };
+  options: StudioDesignOption[];
+  chosen: "a" | "b" | "c";
+  why: string;
+}
+
+/** Thumbnail path for one option in one theme. */
+export const studioDesignImage = (id: string, o: StudioDesignOption, theme: "light" | "dark") =>
+  `/studio/process/${id}-${o.key}-${theme}.webp`;
+
+export const STUDIO_DESIGN_CASES: StudioDesignCase[] = [
+  {
+    id: "polaris",
+    tab: "Polaris",
+    sector: "Online lender",
+    brief: {
+      client: "Polaris, an online short-term lender",
+      sells: "Loans from R500 to R8\u202F000, repaid over one to six months, applied for online.",
+      to: "Working people short for the rent, the car or a tight month.",
+      ask: "Show the full cost before anyone applies, and feel as steady as a bank.",
+    },
+    options: [
+      { key: "a", name: "Calculator first", alt: "Option A for Polaris: a centred serif headline over the loan calculator, with a green italic line" },
+      { key: "b", name: "Itemised statement", alt: "Option B for Polaris: 'Four lines. Nothing else to pay.' beside a dark statement of every fee on a R3 000 loan" },
+      { key: "c", name: "Product first", alt: "Option C for Polaris: 'The full cost, shown before you apply' beside a loan application that checks affordability" },
+    ],
+    chosen: "c",
+    why: "It answers the brief in one screen: the full cost is the headline, and the affordability check sits beside it before anyone applies.",
+  },
+  {
+    id: "southriver",
+    tab: "South River",
+    sector: "Bottled water",
+    brief: {
+      client: "South River, a water bottler in Musina, Limpopo",
+      sells: "Private-label bottled water: 500 ml bottles with the customer's logo on the label, by the case.",
+      to: "Shops, spazas, offices, weddings and events. Orders come in on WhatsApp.",
+      ask: "Make it plain in one screen that your logo can go on our bottle, and send every order to WhatsApp.",
+    },
+    options: [
+      { key: "a", name: "Range first", alt: "Option A for South River: 'Water for the road, purified and bottled in Musina' over the three bottle sizes, on pale blue" },
+      { key: "b", name: "River poster", alt: "Option B for South River: 'Your brand on every bottle' in tall yellow and white capitals on deep river blue, a bottle wearing the client's label" },
+      { key: "c", name: "Label poster", alt: "Option C for South River: 'Your brand on every bottle' in heavy italic capitals on the red of South River's own label, with two bottles" },
+    ],
+    chosen: "c",
+    why: "It wears the red of South River's own label, so the site and the bottle read as one brand, and every claim on it comes from that label: alkaline, pH 8, bottled in Musina since 2021.",
+  },
+  {
+    id: "supacharge",
+    tab: "Supacharge",
+    sector: "Online school",
+    brief: {
+      client: "Supacharge, an online school",
+      sells: "Lessons online with its tutors, term by term, with a focus on Grade\u00A0R to\u00A03.",
+      to: "Parents of young learners across South Africa.",
+      ask: "Feel like a school parents can trust, and get families into the app from the first screen.",
+    },
+    options: [
+      { key: "a", name: "Session first", alt: "Option A for Supacharge: 'One lesson. Two ways to get it.' beside a card of tonight's session: the expert, the break, the simplifier" },
+      { key: "b", name: "Type poster", alt: "Option B for Supacharge: 'Taught twice.' in giant italic capitals on full-bleed orange, with the three store buttons" },
+      { key: "c", name: "Outcome first", alt: "Option C for Supacharge: 'Pass with confidence' over an orange glow, with the three store buttons" },
+    ],
+    chosen: "c",
+    why: "It leads with the outcome parents want and keeps every store button in the first screen, so a family goes from the headline to the app in one tap.",
+  },
+  {
+    id: "studio",
+    tab: "ROKCT",
+    sector: "Our own studio",
+    brief: {
+      client: "ROKCT, our own design and hosting studio",
+      sells: "Websites, logos, business plans, pitch decks, print and social posts.",
+      to: "Small business owners in South Africa, most of whom reach us on WhatsApp.",
+      ask: "Look like a studio worth paying, and put the prices on the page.",
+    },
+    options: [
+      { key: "a", name: "Offer first", alt: "Option A for ROKCT: 'Your brand, taken seriously.' in heavy black type with a yellow highlight, beside the website deal card" },
+      { key: "b", name: "Editorial", alt: "Option B for ROKCT: 'Your brand, taken seriously.' in a heavy grotesk on cream, with a serif lede" },
+      { key: "c", name: "Proof sheet", alt: "Option C for ROKCT: 'Your brand, taken seriously.' in tall condensed capitals, with an oxblood button" },
+    ],
+    chosen: "c",
+    why: "The tall type carries the confidence the brief asked for, and the price table sits on the page in rand, with the dollar beside it.",
   },
 ];
 
@@ -379,5 +497,11 @@ export const STUDIO_FOOTER = {
   about:
     "A design and hosting studio for small businesses: websites, logos and brands, business plans, pitch decks, print and social posts, made by our team and approved by you at every phase.",
   motto: "Your brand, taken seriously.",
-  legal: "© 2026 ROKCT INTELLIGENCE (PTY) LTD · Prices in US dollars, shown in rand at R18.50",
+  // The copyright and credit come from base_sdk's SiteCredit (1.5.1, Ray,
+  // 2026-10-31: "all site will be copyright sitename then built with love
+  // (as heart) by ROKCT"); this is the note the fine line carries after it.
+  prices: "Prices in US dollars, shown in rand at R18.50",
+  // The copyright names the brand as it is set, in capitals. The host's
+  // PLATFORM_NAME is "Rokct", so the studio passes its own name (1.5.2).
+  siteName: "ROKCT",
 };
