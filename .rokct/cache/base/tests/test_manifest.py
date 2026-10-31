@@ -164,6 +164,15 @@ LANDING_CONTENT = os.path.join(SDK_ROOT, "templates", "components", "custom", "l
 SITE_CREDIT = os.path.join(SDK_ROOT, "templates", "components", "custom", "site-credit.tsx")
 SITE_CREDIT_RULES = os.path.join(LANDING, "site-credit.ts")
 SITE_CREDIT_TESTS = os.path.join(HERE, "site-credit.test.mts")
+# base_sdk 1.55.0: site shots - every site serves its own pictures of its
+# first screen at /site-shots/, read from its repo's site-shots branch.
+SITE_SHOTS_RULES = os.path.join(LANDING, "site-shots.ts")
+SITE_SHOTS_ROUTE = os.path.join(SDK_ROOT, "templates", "app", "site-shots", "[file]", "route.ts")
+SITE_SHOTS_TESTS = os.path.join(HERE, "site-shots.test.mts")
+SITE_SHOTS_INSTALLS = {
+    "templates/components/custom/landing/site-shots.ts": "components/custom/landing/site-shots.ts",
+    "templates/app/site-shots": "app/site-shots",
+}
 SITE_CREDIT_INSTALLS = {
     "templates/components/custom/site-credit.tsx": "components/custom/site-credit.tsx",
     "templates/components/custom/landing/site-credit.ts": "components/custom/landing/site-credit.ts",
@@ -1735,6 +1744,10 @@ class TestRegistryMarkers(unittest.TestCase):
         "www.gnu.org",
         "twitter.com", "linkedin.com", "instagram.com", "facebook.com",
         "tenant-a.rokct.ai", "example.app", "tenant.localhost",
+        # 1.55.0: where a shell's own site-shots branch is read from, server
+        # side only (app/site-shots/[file]/route.ts). It is the shell's own
+        # repo, not a placeholder asset, and no browser ever loads from it.
+        "raw.githubusercontent.com",
     }
 
     def test_no_base_default_references_a_third_party_cdn(self):
@@ -3739,6 +3752,65 @@ class TestSiteCredit(unittest.TestCase):
         passed = re.search(r"^# pass (\d+)$", run.stdout, re.M)
         self.assertIsNotNone(passed, run.stdout)
         self.assertGreaterEqual(int(passed.group(1)), 12)
+
+
+class TestSiteShots(unittest.TestCase):
+    """1.55.0: every site serves its own pictures of its first screen at
+    /site-shots/, read from the shell repo's site-shots branch, checked, and
+    kept: a failed regeneration throws so the last good picture stays."""
+
+    def test_installed(self):
+        manifest = json.loads(read(MANIFEST))
+        self.assertGreaterEqual(tuple(int(p) for p in manifest["version"].split(".")), (1, 55, 0))
+        self.assertIn("_comment_version_1_55_0", manifest)
+        installs = {e["from"]: e["to"] for e in manifest["installs"]}
+        for src, dst in SITE_SHOTS_INSTALLS.items():
+            self.assertEqual(installs.get(src), dst, src)
+            self.assertTrue(os.path.exists(os.path.join(SDK_ROOT, src)), src)
+        head = read(os.path.join(SDK_ROOT, "CHANGELOG.md")).split("## 1.54.0")[0]
+        self.assertIn("## 1.55.0", head)
+
+    def test_route(self):
+        route = read(SITE_SHOTS_ROUTE)
+        self.assertTrue(route.lstrip().startswith("/*"), "licence header first")
+        for needle in (
+            "export const revalidate = 3600;",
+            "export const dynamicParams = false;",
+            "return siteShotPaths().map((file) => ({ file }));",
+            "{ params }: { params: Promise<{ file: string }> }",
+            "const { file } = await params;",
+            "const repo = resolveSiteShotsRepo(process.env);",
+            "parseSiteShotsManifest(JSON.parse(new TextDecoder().decode(raw)), repo)",
+            "checkSiteShot(file, await readRaw(repo, `${manifest.dir}/${file}`), manifest)",
+            "next: { revalidate: SITE_SHOTS_REVALIDATE_SECONDS },",
+            'if (process.env.NEXT_PHASE === "phase-production-build") {',
+            "status: 404",
+            "throw error;",
+        ):
+            self.assertIn(needle, route, needle)
+        rules = read(SITE_SHOTS_RULES)
+        self.assertTrue(rules.lstrip().startswith("/*"), "licence header first")
+        self.assertNotIn('from "next', rules, "pure: no Next import")
+        self.assertIn('export const SITE_SHOTS_BRANCH = "site-shots";', rules)
+        self.assertIn("export const SITE_SHOTS_REVALIDATE_SECONDS = 3600;", rules)
+
+    def test_rules_run(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("node not on PATH")
+        with tempfile.TemporaryDirectory() as tmp:
+            shutil.copy(SITE_SHOTS_RULES, os.path.join(tmp, "site-shots.ts"))
+            shutil.copy(SITE_SHOTS_TESTS, os.path.join(tmp, "site-shots.test.mts"))
+            run = subprocess.run(
+                [node, "--experimental-strip-types", "--no-warnings", "--test",
+                 os.path.join(tmp, "site-shots.test.mts")],
+                capture_output=True, text=True, timeout=120, cwd=tmp,
+            )
+        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+        self.assertRegex(run.stdout, re.compile(r"^# fail 0$", re.M), run.stdout)
+        passed = re.search(r"^# pass (\d+)$", run.stdout, re.M)
+        self.assertIsNotNone(passed, run.stdout)
+        self.assertGreaterEqual(int(passed.group(1)), 10)
 
 
 if __name__ == "__main__":

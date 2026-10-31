@@ -427,6 +427,10 @@ html:has(.st){scroll-behavior:auto}
 .st .opt .th-d{display:none}
 .dark .st .opt .th-l{display:none}
 .dark .st .opt .th-d{display:block}
+/* 1.6.0: the live proofs follow the theme the same way. */
+.st .shot .th-d{display:none}
+.dark .st .shot .th-l{display:none}
+.dark .st .shot .th-d{display:inline}
 .st .opt:not(.on) .proof::before,.st .opt:not(.on) .proof::after,.st .opt:not(.on) .proof .cm::before,.st .opt:not(.on) .proof .cm::after{border-color:transparent}
 .st .opt:not(.on):hover .proof::before,.st .opt:not(.on):hover .proof::after,.st .opt:not(.on):hover .proof .cm::before,.st .opt:not(.on):hover .proof .cm::after{border-color:var(--rule-2)}
 .st .opt.on .proof::before,.st .opt.on .proof::after,.st .opt.on .proof .cm::before,.st .opt.on .proof .cm::after{border-color:var(--acc-text)}

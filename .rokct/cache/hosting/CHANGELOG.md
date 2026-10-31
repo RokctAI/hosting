@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.6.0
+
+* Live site shots (Ray, 2026-10-31: the studio's pictures of each client
+  site come automatically from that site's latest good build). Each shell
+  repo's "Site shots" workflow photographs its own first screen after a
+  health gate and commits the set to its `site-shots` branch; base_sdk
+  1.55.0 serves it from the site itself at `/site-shots/`. The studio asks
+  each client's live site through the new static route
+  `app/studio/shots/[site]/[file]/route.ts` (regenerated at most hourly).
+  The manifest must name the client's repo, and each image must be a WebP
+  of the listed size, length and SHA-256. A failed regeneration throws, so
+  the last good picture stays. Before the first good one (at build), and
+  always for a site with no known address, the route serves the committed
+  picture under `public/studio/`.
+* Only the picked option of each "How we design" case and the "Our work"
+  and hero proofs are live. Options A and B stay fixed. The live proofs
+  follow the page's theme (`.th-l` / `.th-d`, as the options already did).
+* The sites are in `components/custom/studio/studio-shots.ts`
+  (`STUDIO_SHOT_SITES`). Supacharge reads from https://supacharge.school.
+  Polaris, South River and the studio itself have no address set yet:
+  Polaris's public address is not recorded anywhere (its main serves the
+  v3 landing since polaris_sdk 1.8.0); southriver-web main has no home
+  page; the hosting shell has no domain. Set `STUDIO_SHOTS_ORIGIN_<SITE>` (`POLARIS`, `SUPACHARGE`,
+  `SOUTHRIVER`, `STUDIO`) on a deployment to set an address, or `off` to
+  turn a site's live pictures off.
+* `StudioCase` gains `site`. `DeskProof` and `PhoneProof` take a `site`
+  instead of a `src`.
+* Needs base_sdk >= 1.55.0. The manifest's `requires` now lists base's
+  `components/custom/landing/site-shots.ts` and the site credit files
+  (base_sdk >= 1.54.0) the footer has drawn since 1.5.1.
+* test: `tests/test_studio_shots.py`. The stray
+  `tests/__pycache__/*.pyc` is gone and `__pycache__/` is ignored.
+
 ## 1.5.2
 
 * "How we design" (Ray's review): every option A, B and C is one of our
