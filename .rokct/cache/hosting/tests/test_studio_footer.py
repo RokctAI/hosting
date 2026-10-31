@@ -66,7 +66,7 @@ class TestStudioFooterCredit(unittest.TestCase):
 
     def test_version_and_changelog(self):
         manifest = json.loads(read(os.path.join(SDK_ROOT, "manifest.json")))
-        self.assertEqual(manifest["version"], "1.5.2")
+        self.assertGreaterEqual(tuple(int(p) for p in manifest["version"].split(".")), (1, 5, 2))
         head = read(os.path.join(SDK_ROOT, "CHANGELOG.md")).split("## 1.5.0")[0]
         self.assertIn("## 1.5.1", head)
         self.assertIn("Built with", head)

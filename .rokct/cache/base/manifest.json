@@ -1,6 +1,7 @@
 {
   "name": "base_sdk",
-  "version": "1.54.0",
+  "version": "1.55.0",
+  "_comment_version_1_55_0": "1.54.0 -> 1.55.0: site shots. Every site serves its own pictures of its first screen at /site-shots/manifest.json and /site-shots/<desktop|option|phone>-<light|dark>.webp (new app/site-shots/[file]/route.ts), read from the shell repo's orphan `site-shots` branch (SITE_SHOTS_REPO, else Vercel's VERCEL_GIT_REPO_OWNER/SLUG), checked (new components/custom/landing/site-shots.ts: the manifest names this repo and all six files at their sizes; each image is a WebP matching its manifest entry's size, length and SHA-256) and regenerated at most hourly; a failed regeneration throws, so the last good picture keeps being served. hosting_sdk >= 1.6.0's studio reads them from each client's live site.",
   "_comment_version_1_54_0": "1.53.0 -> 1.54.0: the site credit (Ray, 2026-10-31: every site's footer reads `© <year> <site name> · Built with ♥ by ROKCT`). New components/custom/site-credit.tsx (SiteCredit) and its pure rules components/custom/landing/site-credit.ts; FooterChromeRow draws it, naming config.siteName else the host's PLATFORM_NAME, never the legal entity; copyrightHolder is optional and no longer drawn.",
   "_comment_version_1_53_0": "1.52.1 -> 1.53.0: site-page data kinds for local-data sites (site, sections, pricing, order, css; theme palette, paletteDark and fonts) with validators in lib/site-data/validate-site.mjs; the home SDK's home.site_data.requires is enforced in a local build; HeroConfig.formData hands a hero copy module's data to its hero form.",
   "_comment_version_1_52_1": "1.52.0 -> 1.52.1: components/ui/select.tsx is prettier-formatted, so the fleet linter no longer rewrites it in every app that tracks it.",
@@ -102,6 +103,14 @@
     {
       "from": "templates/components/custom/landing/site-credit.ts",
       "to": "components/custom/landing/site-credit.ts"
+    },
+    {
+      "from": "templates/components/custom/landing/site-shots.ts",
+      "to": "components/custom/landing/site-shots.ts"
+    },
+    {
+      "from": "templates/app/site-shots",
+      "to": "app/site-shots"
     },
     {
       "from": "templates/components/custom/landing/download-platform.ts",

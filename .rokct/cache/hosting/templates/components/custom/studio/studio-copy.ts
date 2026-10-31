@@ -207,6 +207,8 @@ export const STUDIO_SERVICES: StudioService[] = [
 ];
 
 export interface StudioCase {
+  /** The site whose live pictures the proofs show (studio-shots.ts); `src` is the committed fallback. */
+  site: "polaris" | "supacharge";
   desk: { src: string; alt: string; url: string; caption: string };
   phone: { src: string; alt: string };
   kicker: string;
@@ -225,6 +227,7 @@ export const STUDIO_WORK_HEAD = {
 
 export const STUDIO_CASES: StudioCase[] = [
   {
+    site: "polaris",
     desk: {
       src: STUDIO_IMAGES.polarisDesk,
       alt: "Polaris home page on a desktop: 'The full cost, shown before you apply' beside step one of the loan application",
@@ -239,6 +242,7 @@ export const STUDIO_CASES: StudioCase[] = [
     look: "Light and dark themes, one accent, a display serif for the headlines",
   },
   {
+    site: "supacharge",
     desk: {
       src: STUDIO_IMAGES.supaDesk,
       alt: "Supacharge home page on a desktop: 'Pass with confidence', with store download buttons",

@@ -154,6 +154,8 @@ next-env.d.ts
 /app/services/control/rpanel/ftp/ftp.ts
 /app/services/control/rpanel/logs/logs.ts
 /app/services/control/rpanel/websites/websites.ts
+/app/site-shots/\[file\]/route.ts
+/app/studio/shots/\[site\]/\[file\]/route.ts
 /app/styles/rokct-marquee.css
 /app/styles/rokct-scroll.css
 /app/team/page.tsx
@@ -208,6 +210,7 @@ next-env.d.ts
 /components/custom/landing/site-credit.ts
 /components/custom/landing/site-frame.ts
 /components/custom/landing/site-metadata.ts
+/components/custom/landing/site-shots.ts
 /components/custom/landing/testimonials-marquee.tsx
 /components/custom/legal/legal-doc.tsx
 /components/custom/legal/legal-frame.tsx
@@ -238,6 +241,7 @@ next-env.d.ts
 /components/custom/studio/studio-copy.ts
 /components/custom/studio/studio-fonts.ts
 /components/custom/studio/studio-home.tsx
+/components/custom/studio/studio-shots.ts
 /components/custom/studio/studio.css
 /components/custom/submit-button.tsx
 /components/custom/theme-provider.client.tsx

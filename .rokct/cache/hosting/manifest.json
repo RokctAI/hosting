@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "installs": [],
   "dependencies": {},
   "devDependencies": {},
@@ -30,6 +30,14 @@
         {
           "from": "templates/components/custom/studio/studio-fonts.ts",
           "to": "components/custom/studio/studio-fonts.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-shots.ts",
+          "to": "components/custom/studio/studio-shots.ts"
+        },
+        {
+          "from": "templates/app/studio/shots",
+          "to": "app/studio/shots"
         },
         {
           "from": "templates/components/custom/studio/fonts",
@@ -198,7 +206,10 @@
         "components/custom/landing/landing-config.ts",
         "components/custom/landing/page-sections.ts",
         "components/custom/landing/plans-query.ts",
+        "components/custom/landing/site-credit.ts",
         "components/custom/landing/site-metadata.ts",
+        "components/custom/landing/site-shots.ts",
+        "components/custom/site-credit.tsx",
         "components/ui/breadcrumb.tsx",
         "components/ui/button.tsx",
         "components/ui/card.tsx",
@@ -225,6 +236,9 @@
     "components/custom/landing/plans-query.ts": "installed by base_sdk >= 1.9.0 (the plans-query registry the hosting-plans integration targets)",
     "app/landing/page.tsx": "installed by base_sdk >= 1.5.0 (the composed plans storefront; until 1.3.1 app/page.tsx redirected every visitor here, since 1.4.0 app/page.tsx is the studio home)",
     "app_type": "Since 1.2.0 the manifest carries ONE app_type block, 'hosting' (1.1.0 had a second, 'rokctapp', which installed the rpanel pages into RokctAI_frontend; Ray, 2026-09-26: \"rokctai_frontend loses hosting sdk. hosting web app shell gets it\", so that block is gone and its installs moved here). 'hosting' is the storefront exactly as 1.0.x shipped it (templates/app, templates/components) plus the rpanel control panel under templates/rpanel/ at their host paths: app/handson/control/rpanel/** (pages and a layout.tsx that gates on HOSTING_ROLES and renders the nav and toaster), app/actions/handson/control/rpanel/**, app/services/control/rpanel/**, app/services/control/base.ts, components/custom/rpanel/**, components/custom/nav/rpanel-nav.tsx and components/ui/toast.tsx + use-toast.ts. The seven Hosting nav entries are injected at the // @rokct-sdk-control-nav-start marker in rpanel-nav.tsx, which this SDK installs itself (the shell has no /handson layout to host it); HOSTING_ROLES and the Remixicon icons are imported there. A rokctapp host is not a persona here, so this SDK installs nothing top-level into one.",
+    "components/custom/site-credit.tsx": "installed by base_sdk >= 1.54.0 (SiteCredit, which the studio footer draws since hosting_sdk 1.5.1)",
+    "components/custom/landing/site-credit.ts": "installed by base_sdk >= 1.54.0 (the site credit's rules, imported by site-credit.tsx)",
+    "components/custom/landing/site-shots.ts": "installed by base_sdk >= 1.55.0 (the site-shots manifest and image checks app/studio/shots/[site]/[file]/route.ts applies to each client site's /site-shots/). hosting_sdk 1.6.0 therefore needs base_sdk >= 1.55.0",
     "app/services/control/base.ts": "shipped by this SDK for the hosting shell (in rokctapp the file is host-owned). Same ControlBaseService / routeControlCmd surface as RokctAI_frontend's copy, but over base_sdk's platformCall pinned to the control site (NEXT_PUBLIC_FRAPPE_URL or ROKCT_BASE_URL), because the hosting shell has no app/lib/gateway-rpc.ts and its getControlClient() returns a { app, call } adapter rather than a FrappeApp."
   }
 }

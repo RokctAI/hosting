@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.55.0
+
+* feat(site-shots): every site serves its own pictures of its first screen
+  (Ray, 2026-10-31: the ROKCT studio's picture of each client site comes
+  from that site's latest good build, served by the site itself). Each
+  shell repo's "Site shots" workflow builds main, photographs the first
+  screen at 1440 and 390 wide in light and dark, runs a health gate, and
+  only on a pass commits `manifest.json` and `shots/<commit>/*.webp` to
+  the orphan `site-shots` branch. New `app/site-shots/[file]/route.ts`
+  serves `/site-shots/manifest.json` and the six
+  `/site-shots/<desktop|option|phone>-<light|dark>.webp` from that branch
+  (raw.githubusercontent.com). The repo is `SITE_SHOTS_REPO`, else the one
+  Vercel built from (`VERCEL_GIT_REPO_OWNER` / `VERCEL_GIT_REPO_SLUG`).
+* Each path is static and regenerated at most hourly. A regeneration
+  that fails (the branch is unreachable, the manifest is malformed or
+  names another repo, an image does not match its entry) throws, and Next
+  keeps serving the last good response. At build time a failure answers
+  404 until the first good regeneration.
+* New pure rules `components/custom/landing/site-shots.ts`
+  (`SITE_SHOT_FILES`, `resolveSiteShotsRepo`, `siteShotsRawUrl`,
+  `parseSiteShotsManifest`, `webpSize`, `checkSiteShot`,
+  `siteShotHeaders`). hosting_sdk >= 1.6.0 applies the same checks to a
+  client's `/site-shots/` for the studio page.
+* test: `tests/site-shots.test.mts` (run by test_manifest.py);
+  `TestSiteShots` checks the installs and the route.
+
 ## 1.54.0
 
 * feat(footer): the site credit (Ray, 2026-10-31: "all site will be

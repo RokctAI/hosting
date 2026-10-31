@@ -44,7 +44,6 @@ import {
   STUDIO_DESIGN_STEPS,
   STUDIO_FOOTER,
   STUDIO_HERO,
-  STUDIO_IMAGES,
   STUDIO_PRICE_ROWS,
   STUDIO_PRICES_HEAD,
   STUDIO_PROCESS,
@@ -58,6 +57,7 @@ import {
   type StudioDesignCase,
   type StudioServicePrice,
 } from "./studio-copy";
+import { isStudioShotSite, studioShotSrc, type StudioShotSiteId } from "./studio-shots";
 
 function WhatsAppGlyph() {
   return (
@@ -79,15 +79,30 @@ function SectionHead({ kicker, title, aside }: { kicker: string; title: string; 
   );
 }
 
+// A proof of a live site (hosting_sdk 1.6.0): the site's own picture of its
+// first screen in each theme, through /studio/shots/ (studio-shots.ts), and
+// following the page's theme like the design options do. The route serves
+// the committed picture until the site has a good live one.
+function ShotImages({ site, kind, alt, width, height, eager }: { site: StudioShotSiteId; kind: "desktop" | "phone"; alt: string; width: number; height: number; eager?: boolean }) {
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
+      <img className="th-l" src={studioShotSrc(site, `${kind}-light.webp`)} alt={alt} width={width} height={height} loading={eager ? "eager" : "lazy"} decoding="async" />
+      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
+      <img className="th-d" src={studioShotSrc(site, `${kind}-dark.webp`)} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+    </>
+  );
+}
+
 function DeskProof({
-  src,
+  site,
   alt,
   url,
   caption,
   side,
   eager,
 }: {
-  src: string;
+  site: StudioShotSiteId;
   alt: string;
   url: string;
   caption: string;
@@ -97,8 +112,7 @@ function DeskProof({
   return (
     <figure className="proof desk">
       <div className="shot" data-url={url}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
-        <img src={src} alt={alt} width={1200} height={833} loading={eager ? "eager" : "lazy"} decoding="async" />
+        <ShotImages site={site} kind="desktop" alt={alt} width={1200} height={833} eager={eager} />
         <span className="cm" aria-hidden="true" />
       </div>
       <figcaption>
@@ -109,12 +123,11 @@ function DeskProof({
   );
 }
 
-function PhoneProof({ src, alt, caption, side, eager }: { src: string; alt: string; caption: string; side: string; eager?: boolean }) {
+function PhoneProof({ site, alt, caption, side, eager }: { site: StudioShotSiteId; alt: string; caption: string; side: string; eager?: boolean }) {
   return (
     <figure className="proof phone">
       <div className="shot">
-        {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
-        <img src={src} alt={alt} width={560} height={1149} loading={eager ? "eager" : "lazy"} decoding="async" />
+        <ShotImages site={site} kind="phone" alt={alt} width={560} height={1149} eager={eager} />
         <span className="cm" aria-hidden="true" />
       </div>
       <figcaption>
@@ -243,15 +256,17 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
         <ol className="opt-row">
           {c.options.map((o) => {
             const on = o.key === c.chosen;
+            // The picked option is the built site: its live picture.
+            const live = on && isStudioShotSite(c.id) ? c.id : null;
             return (
               <li key={o.key} className={on ? "opt on" : "opt"}>
                 <figure>
                   <div className="proof">
                     <div className="mini">
                       {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
-                      <img className="th-l" src={studioDesignImage(c.id, o, "light")} alt={o.alt} width={800} height={500} loading="lazy" decoding="async" />
+                      <img className="th-l" src={live ? studioShotSrc(live, "option-light.webp") : studioDesignImage(c.id, o, "light")} alt={o.alt} width={800} height={500} loading="lazy" decoding="async" />
                       {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
-                      <img className="th-d" src={studioDesignImage(c.id, o, "dark")} alt={o.alt} width={800} height={500} loading="lazy" decoding="async" />
+                      <img className="th-d" src={live ? studioShotSrc(live, "option-dark.webp") : studioDesignImage(c.id, o, "dark")} alt={o.alt} width={800} height={500} loading="lazy" decoding="async" />
                     </div>
                     <span className="cm" aria-hidden="true" />
                   </div>
@@ -350,7 +365,7 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
 
             <div className="wrap collage">
               <DeskProof
-                src={STUDIO_IMAGES.polarisDesk}
+                site="polaris"
                 alt="Polaris: a lender's website with the full cost in the headline and the loan application beside it, on a desktop"
                 url="polaris · public site and loan calculator"
                 caption="Our work · Polaris"
@@ -358,7 +373,7 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
                 eager
               />
               <PhoneProof
-                src={STUDIO_IMAGES.supaPhone}
+                site="supacharge"
                 alt="Supacharge: a learning app's website on a phone"
                 caption="Supacharge"
                 side="Phone"
@@ -421,8 +436,8 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
               <SectionHead {...STUDIO_WORK_HEAD} />
               {STUDIO_CASES.map((c) => (
                 <article className="case" key={c.kicker}>
-                  <DeskProof {...c.desk} side="Proof · desktop" />
-                  <PhoneProof {...c.phone} caption="Phone" side="390" />
+                  <DeskProof site={c.site} alt={c.desk.alt} url={c.desk.url} caption={c.desk.caption} side="Proof · desktop" />
+                  <PhoneProof site={c.site} alt={c.phone.alt} caption="Phone" side="390" />
                   <div className="case-text">
                     <div>
                       <p className="kick">{c.kicker}</p>

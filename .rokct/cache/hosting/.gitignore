@@ -41,3 +41,7 @@ yarn-error.log*
 .svn/
 .swiftpm/
 migrate_working_dir/
+
+# Python
+__pycache__/
+*.pyc
