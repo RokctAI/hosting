@@ -460,3 +460,88 @@ html:has(.st){scroll-behavior:auto}
 }
 .st .why{margin:0;font:400 clamp(21px,2vw,28px)/1.3 var(--serif);letter-spacing:-.01em;max-width:34em;text-wrap:pretty}
 .st .built{margin:4px 0 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+
+
+/* 1.8.0: each case in its own colours (Ray: "each tab shows that case's own
+   colour scheme"). A case panel (.dz-panel, .pf-slide) carries `.cs` and
+   its scheme as --cl-* (light) and --cd-* (dark) inline properties
+   (studio-copy.ts studioSchemeVars); `.cs` points the studio's own tokens
+   at them, so everything inside - the paper, the cards, the rules, the
+   type, the accent, the mock browser frame, the buttons - wears the case's
+   scheme and the rest of the page keeps the studio's. Every text pair is
+   AA in both modes (tests/test_studio_schemes.py). */
+.st .cs{--bg:var(--cl-bg);--bg-2:var(--cl-card);--card:var(--cl-card);--ink:var(--cl-ink);--ink-2:var(--cl-ink-2);--ink-3:var(--cl-ink-3);--rule:var(--cl-rule);--rule-2:var(--cl-rule-2);--acc:var(--cl-acc);--acc-deep:var(--cl-acc-deep);--acc-ink:var(--cl-acc-ink);--acc-text:var(--cl-acc-text);--frame:var(--cl-frame);background:var(--bg);color:var(--ink)}
+.dark .st .cs{--bg:var(--cd-bg);--bg-2:var(--cd-card);--card:var(--cd-card);--ink:var(--cd-ink);--ink-2:var(--cd-ink-2);--ink-3:var(--cd-ink-3);--rule:var(--cd-rule);--rule-2:var(--cd-rule-2);--acc:var(--cd-acc);--acc-deep:var(--cd-acc-deep);--acc-ink:var(--cd-acc-ink);--acc-text:var(--cd-acc-text);--frame:var(--cd-frame)}
+.st .cs ::selection{background:var(--acc);color:var(--acc-ink)}
+/* The tab rows sit on the studio's paper; only their marker takes the
+   active case's accent (each accent is >= 4.5:1 on the studio paper too). */
+.st .dz,.st .pf{--mark:var(--cl-acc-text)}
+.dark .st .dz,.dark .st .pf{--mark:var(--cd-acc-text)}
+.st .dz-tabs [role="tab"]::after{background:var(--mark,var(--acc-text));transition:transform .35s cubic-bezier(.2,.7,.2,1),background-color .35s ease}
+.st .dz-ti{color:var(--mark,var(--acc-text));transition:color .35s ease}
+.st .dz-panel{margin-top:clamp(18px,2.5vw,28px);padding:clamp(18px,3vw,36px);border-radius:16px}
+.st .cs .opt .mini::before{background:color-mix(in srgb,var(--frame) 55%,#fff);box-shadow:9px 0 0 color-mix(in srgb,var(--frame) 55%,#fff),18px 0 0 color-mix(in srgb,var(--frame) 55%,#fff)}
+.st .cs .desk .shot::before{background:color-mix(in srgb,var(--frame) 55%,#fff);box-shadow:14px 0 0 color-mix(in srgb,var(--frame) 55%,#fff),28px 0 0 color-mix(in srgb,var(--frame) 55%,#fff)}
+.st .cs .desk .shot::after{background:color-mix(in srgb,var(--frame) 80%,#fff);color:color-mix(in srgb,var(--frame) 25%,#fff)}
+
+/* The swatches: the brand's own colours, under the brief. */
+.st .sw{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;margin-top:18px;padding-top:16px;border-top:1px dashed var(--rule-2)}
+.st .sw-h{font:600 11px/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0}
+.st .sw-row{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:10px 20px}
+.st .sw-row li{display:flex;align-items:center;gap:8px;font:500 13.5px/1.2 var(--sans);color:var(--ink)}
+.st .sw-chip{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
+.dark .st .sw-chip{box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.st .sw-x{font:500 12px/1.2 var(--sans);color:var(--ink-3);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.st .dz-cta{margin:4px 0 0}
+@media (min-width:900px){
+.st .dz-cta{grid-column:2}
+}
+
+/* The portfolio row: tabs and controls over a sideways track of full-width
+   flip cards (studio-client.tsx StudioWorkTabs; the track follows lms_sdk's
+   card deck). */
+.st .pf-bar{display:flex;align-items:flex-end;gap:16px;border-bottom:1px solid var(--rule)}
+.st .pf-tabs{flex:1;grid-template-columns:repeat(2,minmax(0,1fr));border-bottom:0}
+.st .pf-run .pf-tabs [aria-selected="true"]::after{opacity:.25}
+.st .pf-prog{position:absolute;left:0;right:0;bottom:-1px;height:3px;z-index:1;background:var(--mark);transform:scaleX(0);transform-origin:left;animation:pf-fill var(--pf-ms,8s) linear forwards}
+.st .pf-tabs [role="tab"]+[role="tab"] .pf-prog{left:16px}
+.st .pf[data-paused="true"] .pf-prog{animation-play-state:paused}
+@keyframes pf-fill{to{transform:scaleX(1)}}
+.st .pf-ctl{display:flex;gap:8px;padding:0 0 14px}
+.st .pf-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--rule-2);display:grid;place-items:center;color:var(--ink);transition:border-color .2s,background .2s}
+.st .pf-btn:hover{border-color:var(--ink)}
+.st .pf-track{display:flex;gap:16px;margin-top:clamp(18px,2.5vw,28px);overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.st .pf-track::-webkit-scrollbar{display:none}
+.st .pf-slide{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always}
+.st .pf-slide.cs{background:none}
+.st .pf-card{border-radius:16px}
+.st .pf-card>div>div{background:var(--bg);border-radius:16px;transition:background-color .35s ease}
+.st .pf-slide .case{border-top:0;padding:clamp(18px,3vw,40px)}
+.st .pf-turn{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font:700 11.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--acc-ink);background:var(--acc);padding:9px 13px;border-radius:999px}
+.st .pf-hint{margin-top:12px;display:none}
+@media (max-width:899px){
+.st .pf-slide{flex-basis:calc(100% - 28px)}
+.st .pf-hint{display:block}
+.st .pf-tabs [role="tab"]{border-bottom:0}
+}
+@media (max-width:599px){
+.st .pf-bar{flex-direction:column;align-items:stretch;gap:0}
+.st .pf-ctl{justify-content:flex-end;padding:10px 0 12px}
+}
+
+/* The back: the logo process, only the stages with real material. */
+.st .lg{padding:clamp(18px,3vw,40px);height:100%;display:flex;flex-direction:column}
+.st .lg-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;padding-bottom:16px;border-bottom:1px solid var(--rule)}
+.st .lg-top h3{font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em}
+.st .lg-top .pf-turn{margin:0 0 0 auto}
+.st .lg-stages{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:28px;flex:1;align-content:center}
+@media (min-width:900px){
+.st .lg-stages{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:28px}
+.st .lg-versions{grid-column:span 2}
+}
+.st .lg-pics{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+.st .lg-pic{margin:0;flex:1 1 150px;min-width:0}
+.st .lg-tile{height:clamp(170px,24vw,340px);padding:clamp(18px,2.2vw,32px);border-radius:12px;background:var(--frame);overflow:hidden}
+.st .lg-tile img{width:100%;height:100%;object-fit:contain}
+.st .lg-pic figcaption{margin-top:10px;font:400 13.5px/1.45 var(--sans);color:var(--ink-2)}
+.st .pf-card>.case{background:var(--bg);border-radius:16px}

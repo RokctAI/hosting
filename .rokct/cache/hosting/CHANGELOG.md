@@ -1,5 +1,57 @@
 # Changelog
 
+## 1.8.0
+
+* Each case in its own colours (Ray: the "how we design" tabs did not
+  show each case's colour scheme). Before, every panel drew with the
+  studio's own oxblood tokens and the cases carried no colours at all.
+  New `STUDIO_SCHEMES` in `studio-copy.ts`: each brand's colours in light
+  and dark, from its own code - Polaris from polaris_sdk 1.8.0
+  `polaris-theme.css` (lime on forest), Supacharge from lms_sdk 1.39.0
+  `lms-theme.css` (orange #ff6600 on #101010), South River from
+  southriver-web `data/theme.json` (#e4333b) with the label's deep red
+  and the river blue from its renders, ROKCT from `studio.css`. Each
+  panel carries `.cs` and its scheme as `--cl-*` / `--cd-*` properties
+  (`studioSchemeVars`); `.cs` re-points the studio tokens, so the panel's
+  paper, brief card, rules, type, accent, the mock browser frame, the
+  "Picked" badge and the buttons wear the case's colours, and the rest of
+  the page keeps the studio's. The tab marker and number take the active
+  case's accent, with a colour transition (off under reduced motion).
+  Every text pair is AA (4.5:1) in both modes; where the brand pair is
+  not (white on Supacharge orange 2.9:1, white on #e4333b 4.3:1) labels
+  on the orange are ink and the red fills use the label's deeper #c40019.
+* The brief shows the brand's swatches ("Their colours": name and hex),
+  and the verdict a "Start a brief like this" WhatsApp button in the
+  case's accent.
+* The portfolio is one row (Ray: "give it tabs ... so the portfolio
+  becomes one row"). New `StudioWorkTabs` in `studio-client.tsx`: a
+  tablist over a sideways scroll-snap track of full-width cards, after
+  lms_sdk's card deck (native touch and trackpad swipes, `scroll-snap-stop:
+  always`, hidden scrollbar, the next card's edge on a phone; arrows and
+  the tab keys on a desktop). It moves on every 8 s with a progress bar on
+  the active tab, paused while hovered, focused, off screen or the page is
+  hidden, never under reduced motion, and stopped for good by a tab, an
+  arrow, a swipe or a flip; a Pause / Play button is always there. The
+  track is `aria-live="off"` while it runs and "polite" once stopped;
+  hidden cards are `inert`. Each card wears its case's scheme.
+  `StudioCase` gains `tab`, `sector` and `logo`.
+* The portfolio card flips to the logo process (Ray). The card is
+  base_sdk's `FlipCard` (>= 1.58.0; the Supacharge tutor card's flip,
+  moved to base), `layout="stack"`, hover-intent 450 ms, a crossfade under
+  reduced motion. The front is the case as it was; the back lists only
+  the stages that have real material, from the client's own repos, under
+  `public/studio/logo/` (new install). Polaris: versions (the four-point
+  star of polaris_sdk 1.7.0, dropped at Ray's word, and the ember P on a
+  horizon line), the one chosen (the P) and in use (the app's opening
+  screen). Supacharge: the one chosen (the wordmark and the S) and in use
+  (the store feature graphic). No sketch exists for either, so none is
+  shown; a case with no stage does not flip.
+* Needs base_sdk >= 1.58.0 (`components/custom/flip-card.tsx` in
+  `requires`).
+* test: `tests/test_studio_schemes.py` (schemes, AA in both modes, the
+  row's tab and auto-advance rules, the flip, real logo files only);
+  `test_studio_shots.py` accepts versions from 1.6.0 up.
+
 ## 1.7.0
 
 * The studio home has the "Back to top" button (Ray, 2026-10-31: "every

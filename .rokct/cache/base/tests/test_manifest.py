@@ -182,6 +182,8 @@ SITE_SHOTS_INSTALLS = {
     "templates/components/custom/landing/site-shots.ts": "components/custom/landing/site-shots.ts",
     "templates/app/site-shots": "app/site-shots",
 }
+# base_sdk 1.58.0: the shared flip card, lms_sdk's LmsFlipCard moved here.
+FLIP_CARD = os.path.join(SDK_ROOT, "templates", "components", "custom", "flip-card.tsx")
 SITE_CREDIT_INSTALLS = {
     "templates/components/custom/site-credit.tsx": "components/custom/site-credit.tsx",
     "templates/components/custom/landing/site-credit.ts": "components/custom/landing/site-credit.ts",
@@ -291,6 +293,7 @@ SITE_DATA_INSTALLS = {
     "templates/lib/site-data/generated.ts": "lib/site-data/generated.ts",
     "templates/lib/site-data/read-site-data.ts": "lib/site-data/read-site-data.ts",
     "templates/lib/site-data/site-theme.ts": "lib/site-data/site-theme.ts",
+    "templates/lib/site-data/order-email.ts": "lib/site-data/order-email.ts",
     "templates/components/custom/site-theme.tsx": "components/custom/site-theme.tsx",
     "templates/components/custom/theme-provider.client.tsx": "components/custom/theme-provider.client.tsx",
 }
@@ -3871,6 +3874,60 @@ declare module "@/components/custom/landing/brand-marks" {
                 [tsc, "-p", tmp], capture_output=True, text=True, timeout=300, cwd=tmp,
             )
         self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+
+class TestFlipCard(unittest.TestCase):
+    """1.58.0: the Supacharge tutor-card flip, shared by every shell."""
+
+    def test_flip_card_is_installed(self):
+        manifest = json.loads(read(MANIFEST))
+        self.assertGreaterEqual(tuple(int(p) for p in manifest["version"].split(".")), (1, 57, 0))
+        installs = {e["from"]: e["to"] for e in manifest["installs"]}
+        self.assertEqual(
+            installs.get("templates/components/custom/flip-card.tsx"),
+            "components/custom/flip-card.tsx",
+        )
+
+    def test_flip_card_keeps_the_tutor_card_behaviour(self):
+        src = read(FLIP_CARD)
+        self.assertTrue(src.lstrip().startswith("/*"), "licence header first")
+        self.assertIn('"use client";', src)
+        for needle in (
+            "export function useMediaQuery(query: string): boolean {",
+            "export const stopFlip = (event: React.SyntheticEvent) => event.stopPropagation();",
+            "export function FlipCard({",
+            "export default FlipCard;",
+            'role="button"',
+            "aria-pressed={flipped}",
+            "aria-label={flipped ? flipBackLabel : flipLabel}",
+            'useMediaQuery("(hover: hover) and (pointer: fine)")',
+            'useMediaQuery("(prefers-reduced-motion: reduce)")',
+            'transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)"',
+            "opacity: (isBack ? flipped : !flipped) ? 1 : 0",
+            'backfaceVisibility: "hidden"',
+            "inert={flipped}",
+            "inert={!flipped}",
+            'event.key === "Enter" || event.key === " "',
+            'event.key === "Escape" && flipped',
+            "export const FLIP_DURATION_MS = 420;",
+        ):
+            self.assertIn(needle, src, needle)
+
+    def test_flip_card_layouts_and_hooks(self):
+        src = read(FLIP_CARD)
+        for needle in (
+            'layout?: "fill" | "stack";',
+            'layout = "fill",',
+            "hoverDelayMs = 0,",
+            'gridArea: "1 / 1"',
+            "onFlip?.(next, \"press\");",
+            "onFlip?.(true, \"hover\");",
+            "ringClassName = FLIP_RING_CLASSES,",
+        ):
+            self.assertIn(needle, src, needle)
+        code = LINE_COMMENT_RE.sub("", BLOCK_COMMENT_RE.sub("", src))
+        self.assertNotRegex(code, re.compile(r"#[0-9a-fA-F]{3,8}\b"), "no colour is named")
+        self.assertNotIn("--sc-", code, "no shell's tokens in base")
+
 
 class TestSiteCredit(unittest.TestCase):
     """1.54.0: every site's footer reads `© <year> <site name> · Built with
