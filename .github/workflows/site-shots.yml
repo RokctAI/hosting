@@ -46,7 +46,8 @@ env:
   # looping animation that must be shown in one particular state.
   SHOTS_FREEZE: '{}'
   SHOTS_BRANCH: ${{ github.event_name == 'pull_request' && 'site-shots-preview' || 'site-shots' }}
-  SHOTS_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+  # The commit actually built (on a PR, the merge of the PR into main).
+  SHOTS_COMMIT: ${{ github.sha }}
   PLAYWRIGHT_VERSION: '1.56.1'
   SHARP_VERSION: '0.34.5'
   NEXT_TELEMETRY_DISABLED: '1'
