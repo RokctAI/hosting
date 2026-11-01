@@ -305,6 +305,35 @@ console.log(JSON.stringify({
         self.assertEqual(client.count("useShowcaseList(sites, rescue)"), 2)
 
 
+
+class TestSeeMoreCount(unittest.TestCase):
+    """1.12.0: "All N sites" on the See more card counts only the cards
+    that are actually shown; a site whose pictures 404 is not counted."""
+
+    def test_count_drops_the_failed_cards(self):
+        out = run_node("""
+import { showcaseMoreCount } from './studio-showcase.ts';
+console.log(JSON.stringify({
+  allShown: showcaseMoreCount(6, 6, 6, false, 3),
+  oneDropped: showcaseMoreCount(6, 6, 5, false, 3),
+  longListOneDropped: showcaseMoreCount(9, 6, 5, false, 3),
+  rescued: showcaseMoreCount(6, 3, 3, true, 3),
+  rescuedOneDropped: showcaseMoreCount(6, 3, 2, true, 3),
+  allDroppedNoRescue: showcaseMoreCount(6, 6, 0, false, 0),
+}));
+""", {})
+        self.assertEqual(out["allShown"], 6)
+        self.assertEqual(out["oneDropped"], 5)  # was "All 6" while 5 render
+        self.assertEqual(out["longListOneDropped"], 8)
+        self.assertEqual(out["rescued"], 3)
+        self.assertEqual(out["rescuedOneDropped"], 3)
+        self.assertEqual(out["allDroppedNoRescue"], 0)
+
+    def test_row_uses_the_rule(self):
+        client = read(CLIENT)
+        self.assertIn("const total = showcaseMoreCount(givenTotal, list.length, shown.length, rescued, rescue.length);", client)
+        self.assertNotIn("const total = rescued ? rescue.length : givenTotal;", client)
+
 RESCUE_PROBE = """
 import { loadShowcase } from './studio-showcase-load.ts';
 import { showcasePhase, showcaseRescueList, showcaseIsLocal, STUDIO_SHOWCASE_FALLBACK } from './studio-showcase.ts';
@@ -388,7 +417,8 @@ class TestAllDroppedAtRuntime(unittest.TestCase):
         self.assertIn("const cur: St = st.key === key ? st : { key, status: {}, ready: false };", client)
         section = client.split("export function StudioShowcaseSection(", 1)[1].split("\n}\n", 1)[0]
         self.assertIn('<section {...rest} data-showcase="" hidden={gone || undefined}>', section)
-        self.assertIn("const total = rescued ? rescue.length : givenTotal;", client)
+        # 1.12.0: the stand-in counts itself, through showcaseMoreCount.
+        self.assertIn("showcaseMoreCount(givenTotal, list.length, shown.length, rescued, rescue.length)", client)
         self.assertIn('<ol className="wk-grid" data-ready={ready ? "true" : undefined} hidden={gone || undefined}>', client)
         css = read(CSS)
         self.assertIn(".st [data-showcase][hidden],.st .wk-grid[hidden]{display:none!important}", css)
@@ -414,7 +444,8 @@ class TestAllDroppedAtRuntime(unittest.TestCase):
 class TestRowAndPage(unittest.TestCase):
     def test_version_installs_and_changelog(self):
         manifest = json.loads(read(os.path.join(SDK_ROOT, "manifest.json")))
-        self.assertEqual(manifest["version"], "1.11.0")
+        # 1.12.0 (the floating logos) builds on the row: a floor, not a pin.
+        self.assertGreaterEqual(tuple(int(p) for p in manifest["version"].split(".")), (1, 11, 0))
         self.assertIn("## 1.11.0", read(os.path.join(SDK_ROOT, "CHANGELOG.md")).split("## 1.10.0")[0])
         installs = {e["from"]: e["to"] for e in manifest["app_type"]["hosting"]["installs"]}
         for f in ("studio-showcase.ts", "studio-showcase-load.ts", "studio-showcase-client.tsx", "studio-work.tsx"):
@@ -495,13 +526,14 @@ class TestRowAndPage(unittest.TestCase):
 
     def test_flip_is_base_flip_card_and_only_for_a_known_back(self):
         client = read(CLIENT)
-        self.assertIn('import { FlipCard } from "@/components/custom/flip-card";', client)
+        # 1.12.0 also reads the turn's length (base_sdk >= 1.58.0) to lift as it ends.
+        self.assertIn('import { FLIP_DURATION_MS, FlipCard } from "@/components/custom/flip-card";', client)
         self.assertIn('layout="fill"', client)
         self.assertIn("flipped={flipped}", client)
         self.assertIn("const body = site.logoBack ? backs[site.logoBack] : undefined;", client)
         home = read(HOME)
-        self.assertIn("return { rokct: <ShowcaseMarkBack m={STUDIO_MARKS_ROKCT} /> };", home)
-        self.assertIn("<StudioSketchSheet title={STUDIO_MARK_COPY.sheetLabel(notes)} />", home)
+        # 1.12.0: the back is the floating logos (test_studio_floating_logo.py).
+        self.assertIn("return { rokct: <ShowcaseLiftBack m={STUDIO_MARKS_ROKCT} /> };", home)
         self.assertIn('export const SHOWCASE_LOGO_BACKS: readonly ShowcaseLogoBack[] = ["rokct"];', read(RULES))
 
     def test_grown_card_keeps_the_phone_height(self):

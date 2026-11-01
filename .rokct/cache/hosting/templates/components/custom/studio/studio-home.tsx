@@ -24,6 +24,15 @@ import "./studio.css";
 
 import { Fragment } from "react";
 
+import {
+  RiChat3Line,
+  RiEyeLine,
+  RiGlobalLine,
+  RiRefreshLine,
+  RiShieldCheckLine,
+  type RemixiconComponentType,
+} from "@remixicon/react";
+
 import { BackToTop } from "@/components/custom/back-to-top";
 import { SiteCredit } from "@/components/custom/site-credit";
 
@@ -44,7 +53,9 @@ import {
   STUDIO_DESIGN_STEPS,
   STUDIO_FOOTER,
   STUDIO_HERO,
-  STUDIO_MARK_COPY,
+  STUDIO_HOSTING_COST,
+  STUDIO_HOSTING_GROUPS,
+  STUDIO_HOSTING_HEAD,
   STUDIO_MARKS_ROKCT,
   STUDIO_PRICE_ROWS,
   STUDIO_PRICES_HEAD,
@@ -60,12 +71,13 @@ import {
   studioSchemeVars,
   studioWhatsApp,
   type StudioDesignCase,
-  type StudioMarkSet,
+  type StudioHostingGroup,
+  type StudioHostingIcon,
   type StudioServicePrice,
 } from "./studio-copy";
 import { StudioShowcaseRow, StudioShowcaseScope, StudioShowcaseSection, type ShowcaseBacks } from "./studio-showcase-client";
 import { SHOWCASE_HOME_COUNT, SHOWCASE_PAGE_HREF, type ShowcaseSite } from "./studio-showcase";
-import { StudioSketchSheet } from "./studio-sketch";
+import { ShowcaseLiftBack } from "./studio-showcase-lift";
 import { isStudioShotSite, studioShotSrc, type StudioShotSiteId } from "./studio-shots";
 
 function WhatsAppGlyph() {
@@ -244,37 +256,15 @@ function Swatches({ id }: { id: keyof typeof STUDIO_SCHEMES }) {
   );
 }
 
-// The ROKCT card's back in the portfolio row (1.11.0): the 1.10.0 logo
-// back cut to the card - the same sketch sheet (studio-sketch.tsx) and the
-// picked mark as the final file (a CSS mask in the panel's ink, as in the
-// .mk-* back), with the one line on why it won. The row turns the grown
-// card to it; `logo_back: "rokct"` in a showcase file asks for it.
-function ShowcaseMarkBack({ m }: { m: StudioMarkSet }) {
-  const letter = m.chosen.toUpperCase();
-  const picked = m.options.find((o) => o.key === m.chosen);
-  const notes = m.options.map((o) => `${o.key.toUpperCase()}, ${o.name}: ${o.note}`).join(" ");
-  const mark = { ["--mk" as string]: `url("${m.final.src}")` };
-  return (
-    <div className="sr-mk">
-      <div className="sr-mk-sheet">
-        <StudioSketchSheet title={STUDIO_MARK_COPY.sheetLabel(notes)} />
-      </div>
-      <div className="sr-mk-fin">
-        <span className="mk-av sr-mk-av">
-          <span className="mk-mark" role="img" aria-label={m.final.alt} style={mark} />
-        </span>
-        <span className="sr-mk-k">
-          {letter} · {picked ? picked.name : STUDIO_MARK_COPY.final}
-        </span>
-        <p>{STUDIO_MARK_COPY.picked}</p>
-      </div>
-    </div>
-  );
-}
-
+// The ROKCT card's back in the portfolio row: since 1.12.0 the floating
+// logos (studio-showcase-lift.tsx) - the logo sheet as committed pictures,
+// each drawing a cut-out that lifts and grows once the card has turned, the
+// red pen redrawn around C. `logo_back: "rokct"` in a showcase file asks
+// for it. (1.11.0 drew the vector sketch sheet, studio-sketch.tsx, here;
+// the pictures are renders of that sheet and the 1.10.0 logo page.)
 /** The backs a showcase card can turn to, by `logo_back` value. */
 export function studioShowcaseBacks(): ShowcaseBacks {
-  return { rokct: <ShowcaseMarkBack m={STUDIO_MARKS_ROKCT} /> };
+  return { rokct: <ShowcaseLiftBack m={STUDIO_MARKS_ROKCT} /> };
 }
 
 // One "how we design" case: the example brief, the three options with the
@@ -374,6 +364,64 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
         </p>
       </div>
     </>
+  );
+}
+
+// What you get with ROKCT hosting (1.13.0): the cost card in the studio's
+// red first, then one card per group, each line led by how often it
+// happens. Icons are Remixicon only.
+const HOSTING_ICONS: Record<StudioHostingIcon, RemixiconComponentType> = {
+  current: RiRefreshLine,
+  safe: RiShieldCheckLine,
+  online: RiGlobalLine,
+  right: RiEyeLine,
+  care: RiChat3Line,
+};
+
+function HostingGroup({ g, n }: { g: StudioHostingGroup; n: number }) {
+  const Icon = HOSTING_ICONS[g.icon];
+  return (
+    <article className="hb-card">
+      <div className="hb-top">
+        <span className="hb-ic">
+          <Icon size={20} aria-hidden />
+        </span>
+        <span className="hb-n">{String(n).padStart(2, "0")}</span>
+      </div>
+      <h3>{g.name}</h3>
+      <ul className="hb-lines">
+        {g.lines.map((l) => (
+          <li key={l.text}>
+            <span className="hb-when" data-when={l.when}>
+              {l.when}
+            </span>
+            <p>{l.text}</p>
+            {l.from && <span className="hb-from">From {l.from}</span>}
+          </li>
+        ))}
+      </ul>
+    </article>
+  );
+}
+
+function HostingBenefits() {
+  const C = STUDIO_HOSTING_COST;
+  return (
+    <div className="hb">
+      <article className="hb-cost">
+        <p className="kick">{C.kicker}</p>
+        <p className="big">{C.big}</p>
+        <ul>
+          {C.lines.map((l) => (
+            <li key={l}>{l}</li>
+          ))}
+        </ul>
+        <p className="hb-lasts">{C.lasts}</p>
+      </article>
+      {STUDIO_HOSTING_GROUPS.map((g, i) => (
+        <HostingGroup key={g.name} g={g} n={i + 1} />
+      ))}
+    </div>
   );
 }
 
@@ -596,6 +644,17 @@ export function StudioHome({
                 ))}
               </div>
               <p className="fine ledger-foot">{STUDIO_PRICES_HEAD.foot}</p>
+            </div>
+          </section>
+
+          {/* ------------------------------------------------------- hosting */}
+          {/* 1.13.0: what every hosted site gets, for as long as it is with
+              us (website-service/year-of-hosting.md, Ray 2026-11-01). */}
+          <section className="sec" id="hosting">
+            <div className="wrap">
+              <SectionHead {...STUDIO_HOSTING_HEAD} />
+              <HostingBenefits />
+              <p className="fine ledger-foot">{STUDIO_HOSTING_HEAD.foot}</p>
             </div>
           </section>
 

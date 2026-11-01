@@ -525,12 +525,86 @@
 .cs-drop {
   animation: cs-drop 4s ease-in-out infinite;
 }
+/* 1.5.0: drops form on the cold bottle, run down and leave a wet trail. */
+@keyframes cs-run {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.3);
+  }
+  14% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  42% {
+    transform: translateY(2px) scale(1);
+  }
+  86% {
+    opacity: 1;
+    transform: translateY(86px) scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(92px) scale(0.6);
+  }
+}
+@keyframes cs-run-trail {
+  0%,
+  42% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  50% {
+    opacity: 1;
+  }
+  86% {
+    opacity: 0.9;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+.cs-run,
+.cs-run-trail {
+  transform-box: fill-box;
+  animation: cs-run 7s cubic-bezier(0.5, 0, 0.75, 0.4) infinite both;
+}
+.cs-run {
+  transform-origin: center;
+}
+.cs-run-trail {
+  transform-origin: top;
+  animation-name: cs-run-trail;
+}
+/* 1.5.0: a bottle's label roll (keyframes per bottle, in its own <style>). */
+.cs-roll-face {
+  transform-box: view-box;
+  transform-origin: 20px 0;
+}
 @media (prefers-reduced-motion: reduce) {
   .cs-hero-stage .main,
   .cs-hero-stage .back,
   .cs-rise,
-  .cs-drop {
+  .cs-drop,
+  .cs-run,
+  .cs-run-trail,
+  .cs-roll-face {
     animation: none !important;
+  }
+  .cs-roll-face {
+    transform: none;
+  }
+  .cs-roll-next {
+    display: none;
+  }
+  /* The drops stay still, caught part-way down. */
+  .cs-run {
+    transform: translateY(34px);
+  }
+  .cs-run-trail {
+    opacity: 0.8;
+    transform: scaleY(0.4);
   }
   .cs-hero-stage .main {
     transform: rotate(-6deg);
@@ -632,6 +706,134 @@
 }
 .cs-tier.best .cs-btn-white {
   box-shadow: none;
+}
+.cs-tier p.fine {
+  font-size: 0.9rem;
+}
+.cs-tier p.fine b {
+  color: var(--cs-ink);
+}
+.cs-tier.best p.fine b {
+  color: #ffffff;
+}
+/* 1.5.0: a tier with art draws it the card's full height beside the words. */
+.cs-tier.has-art {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: 1rem;
+  overflow: hidden;
+  padding-right: 0;
+  padding-bottom: 0;
+}
+.cs-tier.has-art .words {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-bottom: 2rem;
+}
+.cs-tier.has-art .art {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-top: -1.25rem;
+}
+.cs-tier.has-art .art svg {
+  width: auto;
+  height: 100%;
+  max-height: 34rem;
+}
+/* 1.5.0: a tier's quantity slider and its running total. */
+.cs-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.25rem 1.25rem 1.1rem;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--cs-brand-deep) 70%, transparent);
+}
+.cs-slider .row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.cs-slider .k {
+  font-family: var(--cs-font-display-stack);
+  font-weight: 800;
+  text-transform: var(--cs-display-case);
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+}
+.cs-slider .count {
+  font-family: var(--cs-font-display-stack);
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-align: right;
+}
+.cs-slider input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  margin: 0.4rem 0 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--cs-highlight) 0 var(--fill, 0%),
+    rgba(255, 255, 255, 0.28) var(--fill, 0%) 100%
+  );
+  cursor: pointer;
+}
+.cs-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--cs-highlight);
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.5);
+}
+.cs-slider input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--cs-highlight);
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.5);
+}
+.cs-slider input[type="range"]:focus-visible {
+  outline: 2px solid var(--cs-highlight);
+  outline-offset: 6px;
+}
+.cs-slider .ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+.cs-slider .total {
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  padding-top: 0.9rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.cs-slider .total small {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+.cs-slider .total output {
+  font-family: var(--cs-font-display-stack);
+  font-weight: var(--cs-display-weight);
+  font-style: var(--cs-display-style);
+  font-size: clamp(2.4rem, 1.8rem + 2vw, 3.4rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
 }
 .cs-own {
   padding: 2rem 1.75rem 0;
@@ -1094,4 +1296,13 @@
   display: block;
   max-width: 100%;
   height: auto;
+}
+/* 1.5.0: data/site.json footer.logo, masked so it takes the brand text colour. */
+.cs-footer-logo {
+  display: block;
+  width: 9.5rem;
+  aspect-ratio: 2.1;
+  background: var(--cs-brand-text);
+  -webkit-mask: var(--cs-footer-logo) left center / contain no-repeat;
+  mask: var(--cs-footer-logo) left center / contain no-repeat;
 }

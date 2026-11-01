@@ -17,7 +17,7 @@
 
 // A local-data site's header for base_sdk's header-menu registry: the
 // brand slot data/site.json `header.logo` declares ("none" draws the
-// wordmark alone), one anchor per section with a nav label, in page order,
+// wordmark alone; `header.wordmark: false` the image alone), one anchor per section with a nav label, in page order,
 // and the one action `header.action` names.
 import type { HeaderMenu } from "@/components/custom/landing/header-menu";
 
@@ -27,7 +27,8 @@ function siteHeaderMenu(): HeaderMenu {
   const site = siteKind("site");
   const action = site?.header?.action;
   return {
-    brand: { logo: site?.header?.logo ?? "auto" },
+    // 1.5.0: `header.wordmark: false` draws the logo image alone (it already spells the name).
+    brand: { logo: site?.header?.logo ?? "auto", ...(site?.header?.wordmark === false ? { wordmark: false } : {}) },
     anchors: siteNav().map((n) => n.id),
     links: [],
     actions: action

@@ -333,6 +333,18 @@ export function visibleShowcase<T extends { repo: string }>(sites: T[], status: 
   return sites.filter((s) => status[s.repo] === "ok");
 }
 
+/**
+ * The number on the row's "See more" card (1.12.0): the whole list less the
+ * row's own sites whose pictures failed, so a card that dropped out is not
+ * counted ("All 6" while 5 render). Sites past the row are not checked on
+ * the home page and still count; never fewer than the row shows. Once the
+ * stand-in has taken over, it is the stand-in's own length.
+ */
+export function showcaseMoreCount(total: number, rowSites: number, rowShown: number, rescued: boolean, rescueTotal: number): number {
+  if (rescued) return rescueTotal;
+  return Math.max(rowShown, total - Math.max(0, rowSites - rowShown));
+}
+
 /** The words on the row and the /work page. */
 export const STUDIO_SHOWCASE_COPY = {
   rowLabel: "Our work, shown as phone screens; point at or focus a card to see the desktop site",

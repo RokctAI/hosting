@@ -82,6 +82,7 @@ export const STUDIO_NAV = [
   { href: "#services", label: "Services" },
   { href: "#work", label: "Our work" },
   { href: "#prices", label: "Prices" },
+  { href: "#hosting", label: "Hosting" },
   { href: "#process", label: "How it works" },
   { href: "#contact", label: "Contact" },
 ] as const;
@@ -306,6 +307,11 @@ export const STUDIO_MARK_COPY = {
   flip: (name: string) => `${name}: turn the card to see the logo sketches and the final mark`,
   flipBack: (name: string) => `${name}: turn the card back to the site`,
   sheetLabel: (notes: string) => `A sketch sheet split into four by a hand-ruled cross, one pencil logo sketch in each quarter. ${notes}`,
+  /** 1.12.0: the portfolio card's logo back (studio-showcase-lift.tsx), wide: the whole logo page. */
+  liftSheetAlt: (notes: string) =>
+    `The ROKCT logo page: the example brief, four pencil logo sketches on one sheet, C circled and ticked as the pick, and the final R in one colour. ${notes}`,
+  /** 1.12.0: the same back on a phone: the sketch sheet alone. */
+  liftSketchesAlt: (notes: string) => `Four pencil logo sketches for ROKCT on one sheet, C circled and ticked as the pick. ${notes}`,
 };
 
 export const STUDIO_MARKS_ROKCT: StudioMarkSet = {
@@ -721,6 +727,118 @@ export const STUDIO_PRICE_ROWS: StudioPriceRow[] = [
     price: { kind: "quoted", unit: "per job" },
   },
   { name: "Social post pack", what: "A month of posts, captions and a calendar.", price: { kind: "quoted", unit: "per pack" } },
+];
+
+// ---- What you get with ROKCT hosting (1.13.0) ---------------------------
+// The client list in website-service/year-of-hosting.md (1 Nov 2026). Only
+// lines that are true today, plus the weekly items that start in November
+// 2026 (`from`), and Ray's three yeses of 2026-11-01 11:01Z as "Looked
+// after": the WhatsApp reply time, two small edits a month, the yearly
+// message. Ray, 11:03Z: the benefits last for as long as the site is with
+// us; leaving is the only limit (`STUDIO_HOSTING_COST.lasts`). Never named
+// here: tools, providers or brands, and anything not running yet (scheduled
+// monthly security updates, leaked-key scanning, uptime alerts, backups of
+// form data).
+
+/** How often a line happens, shown as its tag. */
+export type StudioHostingWhen =
+  | "Every week"
+  | "Every change"
+  | "Always"
+  | "Every month"
+  | "Every year"
+  | "1 working day";
+
+/** A group's Remixicon glyph, by name (studio-home.tsx maps it). */
+export type StudioHostingIcon = "current" | "safe" | "online" | "right" | "care";
+
+export interface StudioHostingLine {
+  when: StudioHostingWhen;
+  text: string;
+  /** Set when the line starts later than today: shown as "From <from>". */
+  from?: string;
+}
+
+export interface StudioHostingGroup {
+  name: string;
+  icon: StudioHostingIcon;
+  lines: StudioHostingLine[];
+}
+
+export const STUDIO_HOSTING_HEAD = {
+  kicker: "Hosting",
+  title: "What you get with ROKCT hosting.",
+  aside: "For as long as your site is with us. Our team looks after it, week in, week out, and you hear from us when it matters.",
+  foot: "Lines marked “From November 2026” start this month. Everything else is how every site we host is looked after today.",
+};
+
+export const STUDIO_HOSTING_COST = {
+  kicker: "What it costs",
+  big: "Hosting is free for the life of your site, for the first 1,000 small business owners.",
+  lines: ["Fair use. No monthly hosting fee.", "Your domain name is yours. You pay its yearly renewal, and we never hold it for you."],
+  lasts:
+    "All of this lasts for as long as your site is hosted with us. If you ever move it elsewhere, it’s yours to take, and the weekly care stops.",
+};
+
+const NOV_2026 = "November 2026";
+
+export const STUDIO_HOSTING_GROUPS: StudioHostingGroup[] = [
+  {
+    name: "Kept current",
+    icon: "current",
+    lines: [
+      {
+        when: "Every week",
+        text: "We check the shared building blocks your site is made from for improvements, and apply them only when your site still builds cleanly.",
+        from: NOV_2026,
+      },
+      { when: "Every change", text: "Every change we make to your site goes through the same build and checks before it is accepted." },
+    ],
+  },
+  {
+    name: "Kept safe",
+    icon: "safe",
+    lines: [
+      { when: "Always", text: "Your site always opens with the secure padlock (https). The certificate renews automatically, so it never runs out." },
+      {
+        when: "Every change",
+        text: "We scan the software your site uses for known serious security weaknesses, and our team is alerted to anything found.",
+      },
+    ],
+  },
+  {
+    name: "Kept online",
+    icon: "online",
+    lines: [
+      { when: "Always", text: "Your site is delivered from a worldwide network of servers, so it loads quickly wherever your visitors are." },
+      { when: "Always", text: "Every version of your site is kept. If a change ever goes wrong, we can put back the last good version." },
+      {
+        when: "Every week",
+        text: "We open your live site in a real browser to check it is up and working, and any problem goes straight to our team.",
+        from: NOV_2026,
+      },
+    ],
+  },
+  {
+    name: "Kept looking right",
+    icon: "right",
+    lines: [
+      {
+        when: "Every change",
+        text: "We open your site in a real browser at phone and computer sizes, in light and dark mode, and check that it loads, shows your main heading, is not blank and has no errors.",
+      },
+      { when: "Every week", text: "We run the same check on your live site, plus a check for broken pictures.", from: NOV_2026 },
+    ],
+  },
+  {
+    name: "Looked after",
+    icon: "care",
+    lines: [
+      { when: "1 working day", text: "We reply within 1 working day on WhatsApp." },
+      { when: "Every month", text: "Two small text or photo edits a month are included. More edits than that are paid." },
+      { when: "Every year", text: "A short message from us on what we did for your site that year." },
+    ],
+  },
 ];
 
 export const STUDIO_PROCESS = {

@@ -37,6 +37,11 @@
 //     crossfades. A "Pause the motion" button stops it for anyone.
 //   * On a phone the row is a native swipe row with scroll snapping; a tap
 //     grows a card to the screen's width.
+//   * 1.12.0, the floating logos (Ray approved "Floating Logo Concept"):
+//     once a card has turned to its logo back, `lift` goes on the card and
+//     the back's drawings (studio-showcase-lift.tsx) lift and grow in place
+//     while the card keeps its size; turning back first lets them settle
+//     (LIFT_BACK), then turns. Reduced motion: nothing lifts.
 //
 // The row's last card is "See more": the full ranked list at /work.
 "use client";
@@ -59,12 +64,13 @@ import {
   type RefObject,
 } from "react";
 
-import { FlipCard } from "@/components/custom/flip-card";
+import { FLIP_DURATION_MS, FlipCard } from "@/components/custom/flip-card";
 
 import {
   STUDIO_SHOWCASE_COPY as T,
   showcaseHost,
   showcaseIsHost,
+  showcaseMoreCount,
   showcasePhase,
   visibleShowcase,
   type ShotStatus,
@@ -81,6 +87,10 @@ const SPEED = 26;
 const COPIES = 4;
 /** How long the pictures may take before the row shows what has loaded. */
 const READY_MS = 6000;
+/** The drawings lift once the turn has ended... */
+const LIFT_AFTER = FLIP_DURATION_MS + 60;
+/** ...and settle back for this long before the card turns back. */
+const LIFT_BACK = 700;
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -287,6 +297,90 @@ function Back({ site, body }: { site: ShowcaseSite; body: ReactNode }) {
   );
 }
 
+/**
+ * Before the drawings lift, each is nudged a little away from the sheet's
+ * middle (so they spread out as they grow) and, near the edge of the band
+ * the row shows, back inside it so none grows off screen.
+ */
+function placeLifts(card: HTMLElement, mobile: boolean, band: { l: number; r: number }) {
+  const spread = mobile ? 0.22 : 0.3;
+  const margin = mobile ? 4 : 12;
+  const boxEl = card.querySelector(mobile ? ".sr-sk" : ".sr-lsheet");
+  if (!boxEl) return;
+  const box = boxEl.getBoundingClientRect();
+  const scx = box.left + box.width / 2;
+  const scy = box.top + box.height / 2;
+  card.querySelectorAll<HTMLElement>(mobile ? ".sr-lb-m .sr-lg" : ".sr-lb-w .sr-lg").forEach((el) => {
+    const b = el.getBoundingClientRect();
+    if (!b.width || parseFloat(getComputedStyle(el).scale) > 1.01) return; // still settling: keep its place
+    const k0 = parseFloat(el.style.getPropertyValue("--k")) || 1.5;
+    const k = mobile ? 1 + (k0 - 1) * 0.8 : k0;
+    const cx = b.left + b.width / 2;
+    const cy = b.top + b.height / 2;
+    const mark = el.classList.contains("mk-av");
+    let dx = mark ? 0 : (cx - scx) * spread;
+    const dy = mark ? 0 : (cy - scy) * spread;
+    const half = (b.width * k) / 2;
+    const lo = band.l + margin;
+    const hi = band.r - margin;
+    if (cx + dx + half > hi) dx = hi - half - cx;
+    if (cx + dx - half < lo) dx = lo + half - cx;
+    el.style.setProperty("--dx", `${dx.toFixed(1)}px`);
+    el.style.setProperty("--dy", `${dy.toFixed(1)}px`);
+  });
+}
+
+/**
+ * One row's turned card and its lifted drawings. `turn(g, true)` turns the
+ * card and, once the turn has ended, lifts; `turn(g, false)` lets a lifted
+ * card's drawings settle for LIFT_BACK, then turns it back. `reset()` drops
+ * both at once (the card shrank or the row was rebuilt).
+ */
+function useTurn(find: (g: number) => HTMLElement | null, mobile: () => boolean, band: () => { l: number; r: number }, reduce: () => boolean) {
+  const [flipped, setFlipped] = useState<number | null>(null);
+  const [lifted, setLifted] = useState<number | null>(null);
+  const s = useRef({ flipped: null as number | null, lifted: null as number | null, t: 0 as ReturnType<typeof setTimeout> | 0 });
+  const clear = () => {
+    if (s.current.t) clearTimeout(s.current.t);
+    s.current.t = 0;
+  };
+  const put = (f: number | null, l: number | null) => {
+    s.current.flipped = f;
+    s.current.lifted = l;
+    setFlipped(f);
+    setLifted(l);
+  };
+  const reset = useCallback(() => {
+    clear();
+    put(null, null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reads refs only
+  }, []);
+  const turn = useCallback((g: number, on: boolean) => {
+    const S = s.current;
+    clear();
+    if (on) {
+      put(g, null);
+      if (reduce()) return;
+      S.t = setTimeout(() => {
+        S.t = 0;
+        if (S.flipped !== g) return;
+        const card = find(g);
+        if (card) placeLifts(card, mobile(), band());
+        put(g, g);
+      }, LIFT_AFTER);
+    } else if (S.lifted === g) {
+      put(g, null);
+      S.t = setTimeout(() => {
+        S.t = 0;
+        if (S.flipped === g && S.lifted === null) put(null, null);
+      }, LIFT_BACK);
+    } else put(null, null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reads refs and stable getters only
+  }, []);
+  useEffect(() => clear, []);
+  return { flipped, lifted, turn, reset };
+}
+
 type Item = { more: false; site: ShowcaseSite } | { more: true };
 
 interface CardProps {
@@ -295,6 +389,8 @@ interface CardProps {
   interactive: boolean;
   big: boolean;
   flipped: boolean;
+  /** 1.12.0: the back's drawings are lifted. */
+  lifted: boolean;
   dim: boolean;
   backs: ShowcaseBacks;
   total: number;
@@ -317,7 +413,7 @@ function Card(props: CardProps) {
   return <CardBody {...props} liRef={ref} />;
 }
 
-function CardBody({ item, g, interactive, big, flipped, dim, backs, total, moreHref, onFlipRequest, onError, liRef }: CardProps & { liRef: RefObject<HTMLLIElement | null> }) {
+function CardBody({ item, g, interactive, big, flipped, lifted, dim, backs, total, moreHref, onFlipRequest, onError, liRef }: CardProps & { liRef: RefObject<HTMLLIElement | null> }) {
   if (item.more) {
     return (
       <li ref={liRef} className="sr-card sr-more" data-g={g} data-more="true" aria-hidden={interactive ? undefined : true}>
@@ -334,7 +430,7 @@ function CardBody({ item, g, interactive, big, flipped, dim, backs, total, moreH
   const { site } = item;
   const body = site.logoBack ? backs[site.logoBack] : undefined;
   const flips = body !== undefined;
-  const cls = `sr-card${big ? " big" : ""}${flipped ? " flipped" : ""}${dim ? " dim" : ""}`;
+  const cls = `sr-card${big ? " big" : ""}${flipped ? " flipped" : ""}${lifted ? " lift" : ""}${dim ? " dim" : ""}`;
   const label = `${site.name}, ${site.kind}. ${site.tagline}`;
   const err = () => onError(site.repo);
   return (
@@ -397,8 +493,9 @@ export function StudioShowcaseRow({
   /** The stand-in if every site drops (showcaseRescueList), already cut to the row's length. */
   rescue?: ShowcaseSite[];
 }) {
-  const { shown, ready, fail, rescued } = useShowcaseList(sites, rescue);
-  const total = rescued ? rescue.length : givenTotal;
+  const { list, shown, ready, fail, rescued } = useShowcaseList(sites, rescue);
+  // A card that dropped out is not counted on See more (1.12.0).
+  const total = showcaseMoreCount(givenTotal, list.length, shown.length, rescued, rescue.length);
   const items: Item[] = [...shown.map((site) => ({ more: false as const, site })), { more: true as const }];
   const showKey = shown.map((s) => s.repo).join(",");
 
@@ -408,9 +505,7 @@ export function StudioShowcaseRow({
 
   const [reps, setReps] = useState(1);
   const [big, setBig] = useState<number | null>(null);
-  const [flipped, setFlipped] = useState<number | null>(null);
   const [mBig, setMBig] = useState<number | null>(null);
-  const [mFlipped, setMFlipped] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
 
   const stage = useRef<HTMLElement>(null);
@@ -418,6 +513,26 @@ export function StudioShowcaseRow({
   const rail = useRef<HTMLUListElement>(null);
   const probeEl = useRef<HTMLDivElement>(null);
   const mrow = useRef<HTMLUListElement>(null);
+
+  // The turned card and its lifted drawings, one per row.
+  const isReduce = () => r.current.reduce;
+  const desk = useTurn(
+    (g) => rail.current?.querySelector<HTMLElement>(`li[data-g="${g}"]`) ?? null,
+    () => false,
+    () => {
+      const b = stage.current?.getBoundingClientRect();
+      return b ? { l: b.left, r: b.left + r.current.stageW } : { l: 0, r: window.innerWidth };
+    },
+    isReduce,
+  );
+  const phone = useTurn(
+    (g) => mrow.current?.querySelector<HTMLElement>(`li[data-g="${g}"]`) ?? null,
+    () => true,
+    () => ({ l: 0, r: document.documentElement.clientWidth }),
+    isReduce,
+  );
+  const { flipped, lifted, turn: setFlip, reset: unturn } = desk;
+  const { flipped: mFlipped, lifted: mLifted, turn: setMFlip, reset: mUnturn } = phone;
 
   // Everything the animation loop reads lives in refs, so a frame never waits on React.
   const r = useRef({
@@ -430,7 +545,6 @@ export function StudioShowcaseRow({
     setW: 1,
     stageW: 1440,
     big: null as number | null,
-    flipped: null as number | null,
     mBig: null as number | null,
     hovering: false,
     focusing: false,
@@ -467,14 +581,15 @@ export function StudioShowcaseRow({
 
   const setShift = (px: number) => rail.current?.style.setProperty("--shift", `${px}px`);
 
-  const shrink = useCallback((keepShift = false) => {
-    const R = r.current;
-    R.big = null;
-    R.flipped = null;
-    setBig(null);
-    setFlipped(null);
-    if (!keepShift) setShift(0);
-  }, []);
+  const shrink = useCallback(
+    (keepShift = false) => {
+      r.current.big = null;
+      setBig(null);
+      unturn();
+      if (!keepShift) setShift(0);
+    },
+    [unturn],
+  );
 
   const grow = useCallback(
     (g: number) => {
@@ -482,20 +597,13 @@ export function StudioShowcaseRow({
       if (R.big === g) return;
       measure();
       R.big = g;
-      R.flipped = null;
       setBig(g);
-      setFlipped(null);
+      unturn();
       const dw = probeEl.current?.getBoundingClientRect().width || 600;
       setShift(-(dw - R.pw) / 2);
     },
-    [measure],
+    [measure, unturn],
   );
-
-  const setFlip = useCallback((g: number, on: boolean) => {
-    const R = r.current;
-    R.flipped = on ? g : null;
-    setFlipped(on ? g : null);
-  }, []);
 
   const cancelAuto = useCallback(() => {
     const R = r.current;
@@ -517,12 +625,11 @@ export function StudioShowcaseRow({
     R.focusing = false;
     R.lastAuto = null;
     R.big = null;
-    R.flipped = null;
     R.mBig = null;
     setBig(null);
-    setFlipped(null);
+    unturn();
     setMBig(null);
-    setMFlipped(null);
+    mUnturn();
     setShift(0);
     measure();
     R.x = R.setW + R.gap;
@@ -555,8 +662,8 @@ export function StudioShowcaseRow({
     if (r.current.big !== null) shrink();
     r.current.mBig = null;
     setMBig(null);
-    setMFlipped(null);
-  }, [mobile, shrink]);
+    mUnturn();
+  }, [mobile, shrink, mUnturn]);
 
   // The drift.
   useEffect(() => {
@@ -649,8 +756,8 @@ export function StudioShowcaseRow({
           await sleep(3800);
           if (!alive) return;
           if (g0 !== R.gen) continue;
-          setFlip(g, false);
-          await sleep(1100);
+          setFlip(g, false); // the drawings settle first, then the card turns back
+          await sleep(R.reduce ? 1100 : 1100 + LIFT_BACK);
           if (!alive) return;
           if (g0 !== R.gen) continue;
         }
@@ -786,7 +893,7 @@ export function StudioShowcaseRow({
     const R = r.current;
     R.mBig = on ? g : R.mBig === g ? null : R.mBig;
     setMBig(R.mBig);
-    setMFlipped(null);
+    mUnturn();
     if (!on) return;
     setTimeout(() => {
       const ul = mrow.current;
@@ -817,7 +924,7 @@ export function StudioShowcaseRow({
       mOpen(g, true);
       return;
     }
-    setMFlipped(next ? g : null);
+    setMFlip(g, next);
   };
 
   const rows: { item: Item; g: number; interactive: boolean }[] = [];
@@ -856,6 +963,7 @@ export function StudioShowcaseRow({
                 interactive={interactive}
                 big={big === g}
                 flipped={flipped === g}
+                lifted={lifted === g}
                 dim={big !== null && big !== g}
                 backs={backs}
                 total={total}
@@ -889,6 +997,7 @@ export function StudioShowcaseRow({
             interactive
             big={mBig === g}
             flipped={mFlipped === g}
+            lifted={mLifted === g}
             dim={false}
             backs={backs}
             total={total}

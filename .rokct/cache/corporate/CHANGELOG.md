@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.5.0
+
+* **The South River render Ray approved, drawn from data** (Ray,
+  2026-11-01: "south river site doesnt have what we discussed yet").
+  The renderer draws the fields base_sdk 1.59.0 adds; every one is
+  optional, so a site that sets none looks as before (apart from the
+  bottle, below). Floor: base_sdk >= 1.59.0.
+  * **The bottle** (`site-art.tsx`, every site): the water stops in the
+    neck under empty clear plastic; drops form on the cold bottle and run
+    down leaving a wet trail. A label's `mark` is a monogram in a ring
+    above the name. A bottle given `labels` rolls through them: the label
+    on show runs off round the left edge while the next wraps on from the
+    right (each holds 2.8 s and rolls in 1.1 s; the two faces always tile
+    the label). With reduced motion the first label stays on and the drops
+    stay caught part-way down.
+  * **Pricing** (`site-sections.tsx`): a tier's `fine` line (`strong` in
+    bold), its `art` drawn the card's full height beside the words, and its
+    `slider`: new `site-pricing-slider.client.tsx`, a range from `min` to
+    `max` with the count line and a running total ("10 cases · 240
+    bottles", "10 × R150 · R6.25 a bottle", "R1,500"). New `site-price.ts`
+    fills `{n}`, `{units}`, `{price}`, `{each}` and `{total}` and writes
+    money the way the price is written.
+  * **Header and footer**: `data/site.json` `header.wordmark: false`
+    passes `brand.wordmark: false`, so the header logo image stands alone;
+    `footer.logo` draws the site's own logo in place of the type wordmark,
+    masked so it takes `--cs-brand-text` in either theme.
+  * The `components/custom/site` directory install already carries the two
+    new files; the manifest's installs do not change.
+* test: `TestSouthRiverRender` in `tests/test_manifest.py`.
+
 ## 1.4.2
 
 * **Site fonts are bundled; the build no longer fetches Google Fonts.**
