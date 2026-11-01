@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.15.0",
+  "version": "1.17.0",
   "installs": [],
   "dependencies": {},
   "devDependencies": {},
@@ -258,6 +258,7 @@
         "components/custom/landing/site-metadata.ts",
         "components/custom/landing/site-shots.ts",
         "components/custom/flip-card.tsx",
+        "components/custom/header-auth-slot.tsx",
         "components/custom/site-credit.tsx",
         "components/ui/breadcrumb.tsx",
         "components/ui/button.tsx",
@@ -291,6 +292,7 @@
     "components/custom/landing/site-credit.ts": "installed by base_sdk >= 1.54.0 (the site credit's rules, imported by site-credit.tsx)",
     "components/custom/landing/site-shots.ts": "installed by base_sdk >= 1.55.0 (the site-shots manifest and image checks app/studio/shots/[site]/[file]/route.ts applies to each client site's /site-shots/). hosting_sdk 1.6.0 therefore needs base_sdk >= 1.55.0",
     "components/custom/flip-card.tsx": "installed by base_sdk >= 1.58.0 (FlipCard, the tutor-card flip lms_sdk drew as LmsFlipCard, moved to base so every shell shares it; the studio portfolio card turns over to its logo process with it, layout=\"stack\"). hosting_sdk 1.8.0 therefore needs base_sdk >= 1.58.0",
-    "app/services/control/base.ts": "shipped by this SDK for the hosting shell (in rokctapp the file is host-owned). Same ControlBaseService / routeControlCmd surface as RokctAI_frontend's copy, but over base_sdk's platformCall pinned to the control site (NEXT_PUBLIC_FRAPPE_URL or ROKCT_BASE_URL), because the hosting shell has no app/lib/gateway-rpc.ts and its getControlClient() returns a { app, call } adapter rather than a FrappeApp."
+    "app/services/control/base.ts": "shipped by this SDK for the hosting shell (in rokctapp the file is host-owned). Same ControlBaseService / routeControlCmd surface as RokctAI_frontend's copy, but over base_sdk's platformCall pinned to the control site (NEXT_PUBLIC_FRAPPE_URL or ROKCT_BASE_URL), because the hosting shell has no app/lib/gateway-rpc.ts and its getControlClient() returns a { app, call } adapter rather than a FrappeApp.",
+    "components/custom/header-auth-slot.tsx": "installed by base_sdk >= 1.60.0 (HeaderAuthSlot: the header's Log in / Sign up slot, filled by the SDK that owns sign-in - auth_sdk >= 1.11.0 - and empty without one). StudioHeader renders it on the bar (.hd-r, before WhatsApp us) and at the end of the phone menu (.mnav) with the studio's own classes (Ray, 2026-11-01: sites that compose auth_sdk show Log in / Sign up in the header). hosting_sdk 1.16.0 therefore needs base_sdk >= 1.60.0"
   }
 }

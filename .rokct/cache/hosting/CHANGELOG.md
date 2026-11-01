@@ -1,5 +1,45 @@
 # Changelog
 
+## 1.17.0
+
+* Award badge on showcase cards (Ray wants Supacharge's "Top 200 · GSE
+  2026 Digital Startup Accelerator" milestone on its card). The studio
+  writes no site's data: a site declares it in its own
+  `.rokct/showcase.json` and the robot copies it into the shell's
+  `showcase/` folder like every other field.
+* Showcase schema, backward compatible: optional `award`, a string (the
+  label, up to 40 characters, and an optional detail after its first
+  " · ") or `{"label", "detail"?}` (detail up to 90); both forms read the
+  same. A bad award (empty, too long, the wrong type) is dropped and the
+  card shows as if it had none; it never skips the card. The built-in
+  list carries no award.
+* Home row: a small pill under the card's caption (Remixicon award-line,
+  the studio's accent-soft and accent-text tokens, so it reads in light
+  and dark): the label at rest, the detail joined with " · " once the
+  card grows, the label alone on a phone. It is placed in the row's spare
+  room (absolute), so the live-site link, the turn chip and the row do not
+  move; it fades with the caption while a logo back lifts.
+* /work: the whole line ("Top 200 · GSE 2026 Digital Startup
+  Accelerator") as a pill under the card's line, above what we made;
+  below the picture, so the card's buttons stay where they are.
+* Cards without `award` render exactly as before.
+
+## 1.16.0
+
+* Log in and Sign up in the studio header (Ray, 2026-11-01: "sites that
+  have auth sdk i think they should get the login signup buttons in
+  header", and "we just moving login and signup buttons to injection").
+  `StudioHeader` renders base_sdk 1.60.0's `HeaderAuthSlot`: on the bar
+  before "WhatsApp us" (a quiet `.hd-login` link and a `btn btn-line
+  btn-sm` pill, hidden below 980px with the bar's other buttons; from
+  981px to 1099px the pill steps aside so the section links stay on one
+  line) and at the
+  end of the phone menu (`.mnav` rows; a tap closes the menu). The SDK that
+  owns sign-in fills the slot (auth_sdk >= 1.11.0); a shell without it
+  shows neither.
+* `components/custom/header-auth-slot.tsx` joins `requires`: needs
+  base_sdk >= 1.60.0.
+
 ## 1.15.0
 
 Ray's studio notes of 2026-11-01:
