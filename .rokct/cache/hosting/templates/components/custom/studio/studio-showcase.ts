@@ -68,14 +68,29 @@ export type ShowcaseLogoBack = "rokct";
 export const SHOWCASE_LOGO_BACKS: readonly ShowcaseLogoBack[] = ["rokct"];
 
 /** A service a card can declare (1.14.0), in the order the filter chips show them. */
-export type ShowcaseService = "website" | "logo" | "social-posts" | "business-plan" | "pitch-deck" | "print";
+export type ShowcaseService =
+  | "website"
+  | "logo"
+  | "social-posts"
+  | "business-plan"
+  | "starter-kit"
+  | "pitch-deck"
+  | "print";
 
-/** Every service a card may name, with its chip label; the studio's services (studio-copy.ts STUDIO_SERVICES). */
+/**
+ * Every service a card may name, with its chip label: every product the
+ * studio sells (studio-copy.ts STUDIO_SERVICES). 1.15.0 (Ray: "in
+ * portfolio add all products we do") adds the business starter kit, the
+ * one product that had no service here; "Website and brand" is website
+ * and logo. A chip shows only while at least one card names its service
+ * (showcaseFilters), so a product with no work to show yet has no chip.
+ */
 export const SHOWCASE_SERVICES: readonly { key: ShowcaseService; label: string }[] = [
   { key: "website", label: "Website" },
   { key: "logo", label: "Logo" },
   { key: "social-posts", label: "Social posts" },
   { key: "business-plan", label: "Business plan" },
+  { key: "starter-kit", label: "Starter kit" },
   { key: "pitch-deck", label: "Pitch deck" },
   { key: "print", label: "Print" },
 ];
@@ -338,6 +353,11 @@ export function buildShowcase(files: { name: string; text: string }[]): Showcase
  * (studio-shots.ts) and their pictures from the studio's own shots route,
  * which serves each site's live picture or the committed one under
  * public/studio/work/.
+ *
+ * 1.15.0 (Ray: "let polaris and studio be taken in dark mode"): the ROKCT
+ * and Polaris cards show their sites' dark first screens (the dark live
+ * picture, and committed pictures recaptured from the live sites with the
+ * dark scheme); Supacharge stays light.
  */
 export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
   {
@@ -347,8 +367,8 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     tagline: "Our own site, made the way we make yours.",
     url: "https://hosting-beta-one.vercel.app",
     rank: 10,
-    phone: "/studio/shots/studio/phone-light.webp",
-    desktop: "/studio/shots/studio/desktop-light.webp",
+    phone: "/studio/shots/studio/phone-dark.webp",
+    desktop: "/studio/shots/studio/desktop-dark.webp",
     logoBack: "rokct",
     logo: null,
     services: ["website", "logo"],
@@ -361,8 +381,8 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     tagline: "The full cost, on the page before anyone applies.",
     url: "https://polaris-web-nu.vercel.app",
     rank: 9,
-    phone: "/studio/shots/polaris/phone-light.webp",
-    desktop: "/studio/shots/polaris/desktop-light.webp",
+    phone: "/studio/shots/polaris/phone-dark.webp",
+    desktop: "/studio/shots/polaris/desktop-dark.webp",
     logoBack: null,
     logo: null,
     services: ["website"],

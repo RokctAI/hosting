@@ -102,10 +102,6 @@ export const STUDIO_HERO = {
     { b: "A status page for your order", t: "Each phase, its due date, any blocker." },
     { b: "Free hosting for life", t: "For the first 1,000 small business owners." },
   ],
-  note: {
-    kicker: "Built by our team",
-    text: "Two of the sites we made, as they render today. Each has its own identity. Nothing starts from a template.",
-  },
 };
 
 export const STUDIO_IMAGES = {
@@ -138,7 +134,7 @@ export const STUDIO_SERVICES_HEAD = {
   title: "Six things a small business needs. Done for you.",
   aside:
     "You answer a short form. Our team does the rest, and you approve the result at each step. Prices are shown in rand for South Africa, with the dollar figure beside.",
-  foot: "Free lifetime hosting is for the first 1,000 small business owners, for the life of the site, under fair use. Your domain name is yours: you register it and pay its yearly renewal, and we never hold it for you.",
+  foot: "Free lifetime hosting is for the first 1,000 small business owners, for the life of the site, under fair use. The first year of a standard domain name (.co.za, .com, .net or .org) is included in the fee. We register and hold it for you and renew it each year you pay the yearly renewal; if a renewal isn't paid, we don't renew it.",
 };
 
 export const STUDIO_SERVICES: StudioService[] = [
@@ -777,7 +773,7 @@ export const STUDIO_HOSTING_HEAD = {
 export const STUDIO_HOSTING_COST = {
   kicker: "What it costs",
   big: "Hosting is free for the life of your site, for the first 1,000 small business owners.",
-  lines: ["Fair use. No monthly hosting fee.", "Your domain name is yours. You pay its yearly renewal, and we never hold it for you."],
+  lines: ["Fair use. No monthly hosting fee.", "The first year of your domain name is included (.co.za, .com, .net or .org). After that you pay its yearly renewal, or we don't renew it."],
   lasts:
     "All of this lasts for as long as your site is hosted with us. If you ever move it elsewhere, it’s yours to take, and the weekly care stops.",
 };
@@ -853,7 +849,7 @@ export const STUDIO_PROCESS = {
     { h: "Colour system and logo", p: "Your brand colour becomes a full colour system, and the logo takes shape.", out: "A render to approve" },
     { h: "Page designs", p: "Every page, designed and written, shown as it will look on a phone and a computer.", out: "A render to approve" },
     { h: "Site build", p: "The real site, built and working, on a preview address for you to click through.", out: "A preview to approve" },
-    { h: "Launch", p: "The site goes live on your domain. Hosting is ours to run; the domain stays yours.", out: "Your site, live" },
+    { h: "Launch", p: "The site goes live on your domain. We register it, hold it and run the hosting.", out: "Your site, live" },
   ],
   status: {
     title: "Your order status",
@@ -882,7 +878,7 @@ export const STUDIO_PROCESS = {
       b: "Your delays",
       t: "If we are waiting on you for a logo, an answer or an approval, the due date moves and no refund is due. You see it as a blocker.",
     },
-    { b: "Domain", t: "The domain name is yours. You pay its yearly renewal. We never hold it." },
+    { b: "Domain", t: "The first year of a .co.za, .com, .net or .org domain is included in the fee. We hold it and renew it each year the renewal is paid. If it isn't paid, we don't renew it." },
     { b: "Hosting", t: "Free for the life of the site for the first 1,000 small business owners, under fair use." },
   ],
   intake: {

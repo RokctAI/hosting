@@ -173,7 +173,7 @@ export function StudioHeader({ base = "", current }: { base?: string; current?: 
   return (
     <header className={scrolled ? "hd on" : "hd"}>
       <div className="wrap hd-in">
-        <a className="mark" href={base ? base : "#top"} aria-label="ROKCT, home">
+        <a className="mark" href="/" aria-label="ROKCT, home">
           ROKCT
           <i aria-hidden="true" />
         </a>

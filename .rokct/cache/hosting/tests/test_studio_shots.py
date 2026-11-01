@@ -102,12 +102,13 @@ class TestStudioShotsWiring(unittest.TestCase):
 
     def test_only_the_picked_option_and_the_work_go_live(self):
         home = read(HOME)
-        self.assertIn('import { isStudioShotSite, studioShotSrc, type StudioShotSiteId } from "./studio-shots";', home)
+        self.assertIn('import { isStudioShotSite, studioShotSrc } from "./studio-shots";', home)
         self.assertIn("const live = on && isStudioShotSite(c.id) ? c.id : null;", home)
         self.assertIn('src={live ? studioShotSrc(live, "option-light.webp") : studioDesignImage(c.id, o, "light")}', home)
         self.assertIn('src={live ? studioShotSrc(live, "option-dark.webp") : studioDesignImage(c.id, o, "dark")}', home)
-        self.assertIn('<DeskProof\n                site="polaris"', home)
-        self.assertIn('<PhoneProof\n                site="supacharge"', home)
+        # 1.15.0: the hero's Polaris/Supacharge proofs left (a second "Our work").
+        self.assertNotIn("<DeskProof", home)
+        self.assertNotIn("<PhoneProof", home)
         # 1.11.0: the "Our work" proofs left with the tabs row; the phones
         # row draws the shots its showcase list names.
         self.assertNotIn("STUDIO_IMAGES", home)

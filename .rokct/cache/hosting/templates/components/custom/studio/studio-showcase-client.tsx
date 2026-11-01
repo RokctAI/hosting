@@ -303,6 +303,10 @@ function Front({ site, onError, flips }: { site: ShowcaseSite; onError: () => vo
   );
 }
 
+// 1.15.0 (Ray: "see logo and back to site in different positions not
+// convenient"): "Back to the site" sits where "See the logo" sat on the
+// front, the card's bottom corner, not in the back's header, so the
+// visitor turns the card back without moving the pointer.
 function Back({ site, body }: { site: ShowcaseSite; body: ReactNode }) {
   return (
     <div className="sr-back">
@@ -311,12 +315,12 @@ function Back({ site, body }: { site: ShowcaseSite; body: ReactNode }) {
           {T.logoKicker}
           <b>{site.name}</b>
         </p>
-        <span className="sr-turn" aria-hidden="true">
-          <RiRepeat2Line size={14} />
-          {T.back}
-        </span>
       </div>
       <div className="sr-back-b">{body}</div>
+      <span className="sr-turn" aria-hidden="true">
+        <RiRepeat2Line size={14} />
+        {T.back}
+      </span>
     </div>
   );
 }
@@ -1049,12 +1053,6 @@ function LogoFace({ site, backs, solo }: { site: ShowcaseEntry; backs: ShowcaseB
             {T.logoKicker}
             <b>{site.name}</b>
           </p>
-          {!solo && (
-            <span className="sr-turn" aria-hidden="true">
-              <RiRepeat2Line size={14} />
-              <span className="wk-turn-t">{T.back}</span>
-            </span>
-          )}
         </div>
         <div className="sr-back-b">
           {built !== undefined ? (
@@ -1071,6 +1069,13 @@ function LogoFace({ site, backs, solo }: { site: ShowcaseEntry; backs: ShowcaseB
           ) : null}
         </div>
       </div>
+      {/* 1.15.0: "Back to the site" in the same corner as the website side's "See the logo". */}
+      {!solo && (
+        <span className="sr-turn wk-turn" aria-hidden="true">
+          <RiRepeat2Line size={14} />
+          {T.back}
+        </span>
+      )}
     </div>
   );
 }

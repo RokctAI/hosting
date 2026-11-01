@@ -78,7 +78,7 @@ import {
 import { StudioShowcaseRow, StudioShowcaseScope, StudioShowcaseSection, type ShowcaseBacks } from "./studio-showcase-client";
 import { SHOWCASE_HOME_COUNT, SHOWCASE_PAGE_HREF, showcaseSitesOnly, type ShowcaseEntry } from "./studio-showcase";
 import { ShowcaseLiftBack } from "./studio-showcase-lift";
-import { isStudioShotSite, studioShotSrc, type StudioShotSiteId } from "./studio-shots";
+import { isStudioShotSite, studioShotSrc } from "./studio-shots";
 
 function WhatsAppGlyph() {
   return (
@@ -97,65 +97,6 @@ function SectionHead({ kicker, title, aside }: { kicker: string; title: string; 
       </div>
       <p className="sm">{aside}</p>
     </div>
-  );
-}
-
-// A proof of a live site (hosting_sdk 1.6.0): the site's own picture of its
-// first screen in each theme, through /studio/shots/ (studio-shots.ts), and
-// following the page's theme like the design options do. The route serves
-// the committed picture until the site has a good live one.
-function ShotImages({ site, kind, alt, width, height, eager }: { site: StudioShotSiteId; kind: "desktop" | "phone"; alt: string; width: number; height: number; eager?: boolean }) {
-  return (
-    <>
-      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
-      <img className="th-l" src={studioShotSrc(site, `${kind}-light.webp`)} alt={alt} width={width} height={height} loading={eager ? "eager" : "lazy"} decoding="async" />
-      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size proof, served as-is */}
-      <img className="th-d" src={studioShotSrc(site, `${kind}-dark.webp`)} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
-    </>
-  );
-}
-
-function DeskProof({
-  site,
-  alt,
-  url,
-  caption,
-  side,
-  eager,
-}: {
-  site: StudioShotSiteId;
-  alt: string;
-  url: string;
-  caption: string;
-  side: string;
-  eager?: boolean;
-}) {
-  return (
-    <figure className="proof desk">
-      <div className="shot" data-url={url}>
-        <ShotImages site={site} kind="desktop" alt={alt} width={1200} height={833} eager={eager} />
-        <span className="cm" aria-hidden="true" />
-      </div>
-      <figcaption>
-        <b>{caption}</b>
-        <span>{side}</span>
-      </figcaption>
-    </figure>
-  );
-}
-
-function PhoneProof({ site, alt, caption, side, eager }: { site: StudioShotSiteId; alt: string; caption: string; side: string; eager?: boolean }) {
-  return (
-    <figure className="proof phone">
-      <div className="shot">
-        <ShotImages site={site} kind="phone" alt={alt} width={560} height={1149} eager={eager} />
-        <span className="cm" aria-hidden="true" />
-      </div>
-      <figcaption>
-        <b>{caption}</b>
-        <span>{side}</span>
-      </figcaption>
-    </figure>
   );
 }
 
@@ -517,28 +458,10 @@ export function StudioHome({
                 ))}
               </ul>
             </div>
-
-            <div className="wrap collage">
-              <DeskProof
-                site="polaris"
-                alt="Polaris: a lender's website with the full cost in the headline and the loan application beside it, on a desktop"
-                url="polaris · public site and loan calculator"
-                caption="Our work · Polaris"
-                side="Proof · desktop"
-                eager
-              />
-              <PhoneProof
-                site="supacharge"
-                alt="Supacharge: a learning app's website on a phone"
-                caption="Supacharge"
-                side="Phone"
-                eager
-              />
-              <div className="cnote">
-                <p className="kick quiet">{H.note.kicker}</p>
-                <p className="sm">{H.note.text}</p>
-              </div>
-            </div>
+            {/* 1.15.0 (Ray): the hero's "Our work" collage (Polaris on a
+                desktop, Supacharge on a phone) left. It was a second "Our
+                work" a screen above the showcase row (#work), which keeps
+                the work: the ranked cards, live from each site. */}
           </section>
 
           {/* ------------------------------------------------------ services */}
