@@ -4,7 +4,7 @@
   "tagline": "Our own site, made the way we make yours.",
   "url": "https://hosting-beta-one.vercel.app",
   "repo": "RokctAI/hosting",
-  "rank": 10,
+  "rank": 5,
   "shots": {
     "branch": "site-shots",
     "desktop": "latest/desktop-light.webp",
