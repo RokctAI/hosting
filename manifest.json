@@ -1,33 +1,33 @@
 {
   "schema": 1,
   "repo": "RokctAI/hosting",
-  "commit": "c2c302ba5271b25fa78e700565315c28a0a1dd6c",
-  "taken_at": "2026-11-01T17:42:06Z",
-  "dir": "shots/c2c302ba5271b25fa78e700565315c28a0a1dd6c",
+  "commit": "d8e63b7c5641fffb658f389c18bb1084c787d4d6",
+  "taken_at": "2026-11-01T19:57:47Z",
+  "dir": "shots/d8e63b7c5641fffb658f389c18bb1084c787d4d6",
   "files": {
     "desktop-light.webp": {
       "width": 1200,
       "height": 833,
-      "bytes": 50560,
-      "sha256": "931780857548ebaf797493f9fbcee60fc9b0df1ce3905354ba06115fd7cf078e"
+      "bytes": 51158,
+      "sha256": "f4de86cf16ef28016da6dd404f507efbb0cc2e33a0a88c15ee8306262d49da2c"
     },
     "desktop-dark.webp": {
       "width": 1200,
       "height": 833,
-      "bytes": 50572,
-      "sha256": "af9cb1744ce42254368c5ba7bb3db965159faee80f6a64cc7e52c8c0e35cd770"
+      "bytes": 51236,
+      "sha256": "b591454501eeb2b455fac303f50d3292c50c3ede6b945fb53468fd84fdacc685"
     },
     "option-light.webp": {
       "width": 800,
       "height": 500,
-      "bytes": 27602,
-      "sha256": "03510178b4a9898f899597e6d9883b41a83da86e5e107678cce2489d5aab78f8"
+      "bytes": 27920,
+      "sha256": "38fcd7d361af1d1970426da18d3d705485d430f797449097dd5464d6f41e8430"
     },
     "option-dark.webp": {
       "width": 800,
       "height": 500,
-      "bytes": 27634,
-      "sha256": "58fa8ba6570b8b01b0275a41370ec1604d4fbfcd0a8dcd1223b1d533222593de"
+      "bytes": 28020,
+      "sha256": "3926cccb38120e78386e14e6552c2f25fc834823e8b5a0c65df859dea377d3c1"
     },
     "phone-light.webp": {
       "width": 560,
