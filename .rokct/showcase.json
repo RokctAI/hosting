@@ -7,8 +7,8 @@
   "rank": 5,
   "shots": {
     "branch": "site-shots",
-    "desktop": "latest/desktop-light.webp",
-    "phone": "latest/phone-light.webp"
+    "desktop": "latest/desktop-dark.webp",
+    "phone": "latest/phone-dark.webp"
   },
   "logo_back": "rokct"
 }
