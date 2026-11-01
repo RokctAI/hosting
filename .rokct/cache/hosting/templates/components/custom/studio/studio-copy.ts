@@ -110,6 +110,8 @@ export const STUDIO_IMAGES = {
   polarisPhone: "/studio/work/polaris-phone.webp",
   supaDesk: "/studio/work/supacharge-desktop.webp",
   supaPhone: "/studio/work/supacharge-phone.webp",
+  studioDesk: "/studio/work/studio-desktop.webp",
+  studioPhone: "/studio/work/studio-phone.webp",
 } as const;
 
 export type StudioServicePrice =
@@ -215,13 +217,11 @@ export const STUDIO_SERVICES: StudioService[] = [
 // stage with no real material is left out, never filled with a stand-in,
 // and a case with no stage at all does not flip.
 //
-//   polaris     versions: the four-point north star the first landing drew
-//               (corporate polaris_sdk 1.7.0, landing/polaris-star.tsx,
-//               gold #f2c94c; removed in 1.7.1 at Ray's word, "polaris no
-//               star please") and the ember P on a horizon line (the polaris
-//               app, assets/svgs/brand_logo_rounded.svg). Chosen: that P.
-//               In use: the app's opening screen (assets/images/splash.png).
-//               No sketch is in any repo.
+// 1.10.0: the Polaris card no longer flips (Ray: "studio showcase can flip
+// as it has logo and im seeing polaris and still its not how i wanted").
+// The flip moved to the ROKCT card, whose back is the four-logo pick
+// (STUDIO_MARKS below); Polaris's logo files left public/studio/logo/.
+//
 //   supacharge  chosen: the wordmark (supacharge marketing/brand/
 //               supacharge-wordmark.png) and the S mark (the app's
 //               notification icon). In use: the store feature graphic
@@ -259,9 +259,69 @@ export const STUDIO_LOGO_COPY = {
   flipBack: (name: string) => `${name}: turn the card back to the site`,
 };
 
+// ---- The ROKCT card's back: four sketches, one final (1.10.0) ------------
+// Ray: "you know that thing we do with logo where you get 4 logos and you
+// choose one, we can even mock a brief for each site", then, on the first
+// render: "I thought of 4 logos all drawn by hand on a plane divided by 4
+// like a cross. Then on the side a selected logo no longer hand drawn".
+// The back is one sketch sheet split by a hand-ruled cross, four pencil
+// sketches on it (studio-sketch.tsx, all vector), the picked one circled,
+// and beside it the picked mark as the clean final file.
+//
+//   c   the ROKCT mark: its sketch traces rokct-r.svg's own path, and the
+//       final is that file, verbatim (RokctAI_frontend public/images/
+//       logo.svg, the same file as shared-workflows .github/assets/logo.svg).
+//   a, b, d   drawn for this page as real alternatives (a wordmark, a
+//       symbol, a seal); the page says so.
+
+export interface StudioMarkOption {
+  key: "a" | "b" | "c" | "d";
+  name: string;
+  /** What the idea is, one line; read out to screen readers with the sheet. */
+  note: string;
+}
+
+export interface StudioMarkSet {
+  ask: string;
+  options: StudioMarkOption[];
+  chosen: StudioMarkOption["key"];
+  /** The picked mark as the finished file. */
+  final: { src: string; alt: string };
+  why: string;
+}
+
+export const STUDIO_MARK_COPY = {
+  kicker: "The logo, the way a job runs",
+  turn: "See the logo sketches",
+  back: "Back to the site",
+  stamp: "Example brief",
+  sheet: "Four sketches, one sheet",
+  final: "The final",
+  finalSub: "Vector, one colour",
+  sizes: "As a WhatsApp picture, and at 32 and 20 pixels.",
+  why: (letter: string) => `Why ${letter} won`,
+  foot: "The brief is an example, written for this page. C is the ROKCT mark in use today; A, B and D were sketched for this page to show how the choice is made.",
+  flip: (name: string) => `${name}: turn the card to see the logo sketches and the final mark`,
+  flipBack: (name: string) => `${name}: turn the card back to the site`,
+  sheetLabel: (notes: string) => `A sketch sheet split into four by a hand-ruled cross, one pencil logo sketch in each quarter. ${notes}`,
+};
+
+export const STUDIO_MARKS_ROKCT: StudioMarkSet = {
+  ask: "One mark that still reads as a WhatsApp profile picture, and looks like a studio worth paying.",
+  options: [
+    { key: "a", name: "Wordmark", note: "ROKCT in tight heavy capitals, the O drawn as an orbit with the dot as its satellite." },
+    { key: "b", name: "Nose cone", note: "The tip of a rocket and nothing else, with a round porthole for the dot." },
+    { key: "c", name: "The R", note: "One solid R with a slanted stem and its registration dot. Circled and ticked: the one picked." },
+    { key: "d", name: "Seal", note: "A round stamp with the name around the ring and a serif R in the middle." },
+  ],
+  chosen: "c",
+  final: { src: "/studio/logo/rokct-r.svg", alt: "The final ROKCT mark: a solid R with a slanted stem and a small registration mark" },
+  why: "It is the only one of the four that still reads at the size of a WhatsApp profile picture and in a single colour, and the slanted cut gives the R the forward lean the name asks for.",
+};
+
 export interface StudioCase {
   /** The site whose live pictures the proofs show (studio-shots.ts); `src` is the committed fallback. */
-  site: "polaris" | "supacharge";
+  site: "studio" | "polaris" | "supacharge";
   /** The portfolio tab (1.8.0): its name and the line under it. */
   tab: string;
   sector: string;
@@ -272,8 +332,10 @@ export interface StudioCase {
   body: string;
   made: string;
   look: string;
-  /** The back of the card: the logo stages that have real material. Empty, the card does not flip. */
+  /** The back of the card: the logo stages that have real material. Empty (and no `marks`), the card does not flip. */
   logo: StudioLogoStage[];
+  /** 1.10.0: the back as a four-logo pick (the ROKCT card). Wins over `logo`. */
+  marks?: StudioMarkSet;
 }
 
 /** The portfolio row's words (1.8.0): the tablist, its controls and the swipe hint. */
@@ -295,6 +357,25 @@ export const STUDIO_WORK_HEAD = {
 
 export const STUDIO_CASES: StudioCase[] = [
   {
+    site: "studio",
+    tab: "ROKCT",
+    sector: "Our own studio",
+    desk: {
+      src: STUDIO_IMAGES.studioDesk,
+      alt: "The ROKCT studio home page on a desktop: 'Your brand, taken seriously.' in tall condensed capitals, with the WhatsApp button and the prices link",
+      url: "rokct · studio home",
+      caption: "ROKCT · Home",
+    },
+    phone: { src: STUDIO_IMAGES.studioPhone, alt: "The ROKCT studio home page on a phone" },
+    kicker: "ROKCT · Our own studio",
+    title: "Our own site, made the way we make yours.",
+    body: "The studio's home page: the prices on the page in rand with the dollar beside it, the website deal, how a job runs phase by phase, and a WhatsApp button wherever a question comes up. Its three first-screen options are under How we design; turn the card for its logo.",
+    made: "Public website, price table, phone and desktop layouts, light and dark themes",
+    look: "Tall condensed capitals, a text serif, one oxblood accent on warm paper",
+    logo: [],
+    marks: STUDIO_MARKS_ROKCT,
+  },
+  {
     site: "polaris",
     tab: "Polaris",
     sector: "Lender",
@@ -310,27 +391,7 @@ export const STUDIO_CASES: StudioCase[] = [
     body: "A short-term lender's public site. The first screen puts the full cost in the headline, with step one of the application beside it; the calculator below itemises the amount, the term, the interest, the fees and the total to repay, each under the ceiling the National Credit Act sets. Light and dark themes and a single green accent, every figure in tabular numerals.",
     made: "Public website, loan calculator, phone and desktop layouts, light and dark themes",
     look: "Light and dark themes, one accent, a display serif for the headlines",
-    logo: [
-      {
-        kind: "versions",
-        pictures: [
-          { src: "/studio/logo/polaris-star.svg", alt: "A gold four-point star", caption: "A north star, in gold. On the first landing; dropped at the client's word.", width: 96, height: 96 },
-          { src: "/studio/logo/polaris-p.svg", alt: "An ember P standing on a pale horizon line, on a pine-green tile", caption: "A P on a horizon line, ember on pine.", width: 108, height: 108 },
-        ],
-      },
-      {
-        kind: "chosen",
-        pictures: [
-          { src: "/studio/logo/polaris-p.svg", alt: "The Polaris mark: an ember P on a horizon line, on a pine-green tile", caption: "The P on the horizon: the app icon and the mark.", width: 108, height: 108 },
-        ],
-      },
-      {
-        kind: "use",
-        pictures: [
-          { src: "/studio/logo/polaris-splash.webp", alt: "The Polaris app's opening screen: the P mark above the name and 'Loans with clear terms'", caption: "The app's opening screen.", width: 480, height: 1037 },
-        ],
-      },
-    ],
+    logo: [],
   },
   {
     site: "supacharge",

@@ -159,7 +159,8 @@ class TestStudioShotsWiring(unittest.TestCase):
                                  capture_output=True, text=True, timeout=60, cwd=tmp)
         self.assertEqual(run.returncode, 0, run.stderr)
         out = json.loads(run.stdout)
-        self.assertEqual(len(out["params"]), 16)
+        # 1.10.0: the studio is also an "Our work" card (+4 work files).
+        self.assertEqual(len(out["params"]), 20)
         self.assertEqual(out["originDefault"], "https://supacharge.school")
         self.assertIsNone(out["originNone"])
         self.assertEqual(out["originEnv"], "https://polaris.example")
@@ -173,6 +174,7 @@ class TestStudioShotsWiring(unittest.TestCase):
         self.assertEqual(out["fallbacks"]["studio/option-dark.webp"], "/studio/process/studio-c-dark.webp")
         self.assertEqual(out["fallbacks"]["polaris/desktop-dark.webp"], "/studio/work/polaris-desktop.webp")
         self.assertEqual(out["fallbacks"]["supacharge/phone-light.webp"], "/studio/work/supacharge-phone.webp")
+        self.assertEqual(out["fallbacks"]["studio/desktop-dark.webp"], "/studio/work/studio-desktop.webp")
         for key, src in out["fallbacks"].items():
             self.assertIsNotNone(src, key)
             self.assertTrue(os.path.isfile(os.path.join(TEMPLATES, "public", src.lstrip("/"))), src)

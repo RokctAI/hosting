@@ -48,6 +48,7 @@ import {
   STUDIO_HERO,
   STUDIO_LOGO_COPY,
   STUDIO_LOGO_STAGES,
+  STUDIO_MARK_COPY,
   STUDIO_PRICE_ROWS,
   STUDIO_PRICES_HEAD,
   STUDIO_PROCESS,
@@ -64,8 +65,10 @@ import {
   studioWhatsApp,
   type StudioCase,
   type StudioDesignCase,
+  type StudioMarkSet,
   type StudioServicePrice,
 } from "./studio-copy";
+import { StudioSketchSheet } from "./studio-sketch";
 import { isStudioShotSite, studioShotSrc, type StudioShotSiteId } from "./studio-shots";
 
 function WhatsAppGlyph() {
@@ -244,9 +247,15 @@ function Swatches({ id }: { id: keyof typeof STUDIO_SCHEMES }) {
   );
 }
 
+function TurnGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5" /></svg>
+  );
+}
+
 // The portfolio card's front (1.8.0): the case exactly as the page showed
 // it before, desktop and phone proofs and the words, now inside its own
-// colour scheme. A case whose back has stages carries a "turn" hint.
+// colour scheme. A case with a back carries a "turn" hint.
 function WorkFront({ c }: { c: StudioCase }) {
   return (
     <article className="case">
@@ -256,10 +265,10 @@ function WorkFront({ c }: { c: StudioCase }) {
         <div>
           <p className="kick">{c.kicker}</p>
           <h3>{c.title}</h3>
-          {c.logo.length > 0 && (
+          {(c.marks || c.logo.length > 0) && (
             <span className="pf-turn" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5" /></svg>
-              {STUDIO_LOGO_COPY.turn}
+              <TurnGlyph />
+              {c.marks ? STUDIO_MARK_COPY.turn : STUDIO_LOGO_COPY.turn}
             </span>
           )}
         </div>
@@ -289,7 +298,7 @@ function WorkBack({ c }: { c: StudioCase }) {
         <p className="kick">{STUDIO_LOGO_COPY.kicker}</p>
         <h3>{c.tab}</h3>
         <span className="pf-turn" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5" /></svg>
+          <TurnGlyph />
           {STUDIO_LOGO_COPY.back}
         </span>
       </div>
@@ -313,6 +322,69 @@ function WorkBack({ c }: { c: StudioCase }) {
           </li>
         ))}
       </ol>
+    </div>
+  );
+}
+
+// The ROKCT card's back (1.10.0): the sketch sheet, a cross splitting it
+// into four hand-drawn logos with the picked one circled (studio-sketch.tsx),
+// and beside it the picked mark as the clean final file, drawn as a mask in
+// the panel's ink so one file serves light and dark, at full size and at
+// avatar sizes. The example brief is one line above, why it won below.
+function MarkBack({ c, m }: { c: StudioCase; m: StudioMarkSet }) {
+  const letter = m.chosen.toUpperCase();
+  const notes = m.options.map((o) => `${o.key.toUpperCase()}, ${o.name}: ${o.note}`).join(" ");
+  const mark = { ["--mk" as string]: `url("${m.final.src}")` };
+  return (
+    <div className="mk">
+      <div className="lg-top">
+        <p className="kick">{STUDIO_MARK_COPY.kicker}</p>
+        <h3>{c.tab}</h3>
+        <span className="pf-turn" aria-hidden="true">
+          <TurnGlyph />
+          {STUDIO_MARK_COPY.back}
+        </span>
+      </div>
+
+      <p className="mk-ask">
+        <span className="stamp">{STUDIO_MARK_COPY.stamp}</span>
+        <q>{m.ask}</q>
+      </p>
+
+      <div className="mk-g">
+        <figure className="mk-sheet">
+          <p className="dz-step">
+            <i>01</i> {STUDIO_MARK_COPY.sheet}
+          </p>
+          <StudioSketchSheet title={STUDIO_MARK_COPY.sheetLabel(notes)} />
+        </figure>
+
+        <div className="mk-final">
+          <p className="dz-step">
+            <i>02</i> {STUDIO_MARK_COPY.final} · {letter}
+          </p>
+          <div className="mk-tile">
+            <span className="mk-mark" role="img" aria-label={m.final.alt} style={mark} />
+            <span className="mk-spec">{STUDIO_MARK_COPY.finalSub}</span>
+          </div>
+          <div className="mk-sizes" aria-hidden="true">
+            <span className="mk-av">
+              <span className="mk-mark" style={mark} />
+            </span>
+            <span className="mk-s32 mk-mark" style={mark} />
+            <span className="mk-s20 mk-mark" style={mark} />
+            <span className="fine">{STUDIO_MARK_COPY.sizes}</span>
+          </div>
+          <div className="mk-why">
+            <p className="dz-step">
+              <i>03</i> {STUDIO_MARK_COPY.why(letter)}
+            </p>
+            <p className="why">{m.why}</p>
+          </div>
+        </div>
+      </div>
+
+      <p className="fine mk-foot">{STUDIO_MARK_COPY.foot}</p>
     </div>
   );
 }
@@ -550,9 +622,9 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
                 labels={STUDIO_WORK_TABS}
                 cards={STUDIO_CASES.map((c) => ({
                   front: <WorkFront c={c} />,
-                  back: c.logo.length > 0 ? <WorkBack c={c} /> : null,
-                  flipLabel: STUDIO_LOGO_COPY.flip(c.tab),
-                  flipBackLabel: STUDIO_LOGO_COPY.flipBack(c.tab),
+                  back: c.marks ? <MarkBack c={c} m={c.marks} /> : c.logo.length > 0 ? <WorkBack c={c} /> : null,
+                  flipLabel: c.marks ? STUDIO_MARK_COPY.flip(c.tab) : STUDIO_LOGO_COPY.flip(c.tab),
+                  flipBackLabel: c.marks ? STUDIO_MARK_COPY.flipBack(c.tab) : STUDIO_LOGO_COPY.flipBack(c.tab),
                 }))}
               />
             </div>
