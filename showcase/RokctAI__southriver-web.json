@@ -1,0 +1,14 @@
+{
+  "name": "South River",
+  "kind": "Bottled water",
+  "tagline": "Your brand on every bottle.",
+  "url": "https://southriver-web.vercel.app",
+  "repo": "RokctAI/southriver-web",
+  "rank": 7,
+  "shots": {
+    "branch": "site-shots",
+    "desktop": "latest/desktop-light.webp",
+    "phone": "latest/phone-light.webp"
+  },
+  "logo_back": null
+}
