@@ -60,8 +60,9 @@ export const STUDIO_SHOT_SITES: Record<StudioShotSiteId, StudioShotSite> = {
   supacharge: { repo: "RokctAI/supacharge-web", origin: "https://supacharge.school", files: [...OPTION, ...WORK] },
   // southriver-web main has no home page yet ("/" answers 404).
   southriver: { repo: "RokctAI/southriver-web", origin: null, files: OPTION },
-  // The studio itself: the hosting shell has no domain yet.
-  studio: { repo: "RokctAI/hosting", origin: null, files: OPTION },
+  // The studio itself: the hosting shell has no domain yet. Since 1.10.0
+  // it is also the first "Our work" card, so it carries the work proofs.
+  studio: { repo: "RokctAI/hosting", origin: null, files: [...OPTION, ...WORK] },
 };
 
 export function isStudioShotSite(id: string): id is StudioShotSiteId {
@@ -119,6 +120,7 @@ export function studioShotFallback(site: StudioShotSiteId, file: SiteShotFile): 
   const work: Partial<Record<StudioShotSiteId, { desk: string; phone: string }>> = {
     polaris: { desk: STUDIO_IMAGES.polarisDesk, phone: STUDIO_IMAGES.polarisPhone },
     supacharge: { desk: STUDIO_IMAGES.supaDesk, phone: STUDIO_IMAGES.supaPhone },
+    studio: { desk: STUDIO_IMAGES.studioDesk, phone: STUDIO_IMAGES.studioPhone },
   };
   const w = work[site];
   if (!w) return null;

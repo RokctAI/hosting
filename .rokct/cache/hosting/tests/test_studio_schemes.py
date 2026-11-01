@@ -197,7 +197,7 @@ class TestWorkRow(unittest.TestCase):
         self.assertIn('layout="stack"', client)
         self.assertIn("hoverDelayMs={450}", client)
         manifest = json.loads(read(MANIFEST))
-        self.assertEqual(manifest["version"], "1.8.0")
+        self.assertGreaterEqual(tuple(int(x) for x in manifest["version"].split(".")), (1, 8, 0))
         self.assertIn("components/custom/flip-card.tsx", manifest["app_type"]["hosting"]["requires"])
         installs = {e.get("from"): e.get("to") for e in manifest["app_type"]["hosting"]["installs"]}
         self.assertEqual(installs.get("templates/public/studio/logo"), "public/studio/logo")
@@ -208,6 +208,8 @@ class TestLogoProcess(unittest.TestCase):
         copy = read(COPY)
         cases = copy.split("export const STUDIO_CASES", 1)[1].split("\n];", 1)[0]
         srcs = re.findall(r'src: "(/studio/logo/[^"]+)"', cases)
+        marks = copy.split("export const STUDIO_MARKS_ROKCT", 1)[1].split("\n};", 1)[0]
+        mark_srcs = re.findall(r'src: "(/studio/logo/[^"]+)"', marks)
         self.assertTrue(srcs)
         for src in srcs:
             path = os.path.join(TEMPLATES, "public", src.lstrip("/"))
@@ -218,19 +220,14 @@ class TestLogoProcess(unittest.TestCase):
         self.assertNotIn("sketch", kinds)
         # Every file in public/studio/logo is used (nothing parked as a stand-in).
         on_disk = {f"/studio/logo/{f}" for f in os.listdir(os.path.join(TEMPLATES, "public", "studio", "logo"))}
-        self.assertEqual(on_disk, set(srcs))
+        self.assertEqual(on_disk, set(srcs) | set(mark_srcs))
 
     def test_back_shows_only_present_stages_and_no_back_means_no_flip(self):
         home = read(HOME)
         self.assertIn("(x) => x.stage && x.stage.pictures.length > 0", home)
-        self.assertIn("back: c.logo.length > 0 ? <WorkBack c={c} /> : null,", home)
+        self.assertIn("back: c.marks ? <MarkBack c={c} m={c.marks} /> : c.logo.length > 0 ? <WorkBack c={c} /> : null,", home)
         client = read(CLIENT)
         self.assertIn('<div className="pf-card">{c.front}</div>', client)
-
-    def test_the_polaris_star_is_the_real_one(self):
-        star = read(os.path.join(TEMPLATES, "public", "studio", "logo", "polaris-star.svg"))
-        # The path of corporate polaris_sdk 1.7.0 landing/polaris-star.tsx, verbatim.
-        self.assertIn('d="M12 0c.6 7.2 4.8 11.4 12 12-7.2.6-11.4 4.8-12 12-.6-7.2-4.8-11.4-12-12 7.2-.6 11.4-4.8 12-12Z"', star)
 
 
 if __name__ == "__main__":

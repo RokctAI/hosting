@@ -35,6 +35,16 @@ export const studioDisplay = localFont({
   adjustFontFallback: false,
 });
 
+// 1.10.0: the hand on the ROKCT card's sketch sheet (studio-sketch.tsx):
+// Caveat 500 (SIL OFL 1.1, fonts/OFL-caveat.txt), the latin cut, for the
+// notes a designer scribbles beside a sketch. Used nowhere else.
+export const studioHand = localFont({
+  src: [{ path: "./fonts/caveat-500.woff2", weight: "500", style: "normal" }],
+  variable: "--font-st-hand",
+  display: "swap",
+  adjustFontFallback: false,
+});
+
 export const studioSerif = Newsreader({
   subsets: ["latin"],
   style: ["normal", "italic"],
@@ -50,4 +60,4 @@ export const studioSans = Hanken_Grotesk({
   display: "swap",
 });
 
-export const studioFontClassName = [studioDisplay.variable, studioSerif.variable, studioSans.variable].join(" ");
+export const studioFontClassName = [studioDisplay.variable, studioSerif.variable, studioSans.variable, studioHand.variable].join(" ");

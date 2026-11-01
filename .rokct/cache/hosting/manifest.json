@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.8.0",
+  "version": "1.10.0",
   "installs": [],
   "dependencies": {},
   "devDependencies": {},
@@ -34,6 +34,10 @@
         {
           "from": "templates/components/custom/studio/studio-shots.ts",
           "to": "components/custom/studio/studio-shots.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-sketch.tsx",
+          "to": "components/custom/studio/studio-sketch.tsx"
         },
         {
           "from": "templates/app/studio/shots",

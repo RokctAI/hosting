@@ -1,5 +1,54 @@
 # Changelog
 
+## 1.10.0
+
+* The ROKCT card flips to the logo sketches (Ray: "studio showcase can
+  flip as it has logo and im seeing polaris and still its not how i
+  wanted"; "you know that thing we do with logo where you get 4 logos and
+  you choose one, we can even mock a brief for each site"; then, on the
+  first render: "I thought of 4 logos all drawn by hand on a plane divided
+  by 4 like a cross. Then on the side a selected logo nolonger hand
+  drawn"; then "let the drawings be rough like a scratchpad"). Versioned 1.10.0, not 1.9.0, because hardware#55 (open) claims
+  1.9.0.
+* "Our work" gains a ROKCT card and it leads the row (three tabs: ROKCT,
+  Polaris, Supacharge). Its front is the studio's own home page as proofs
+  (new `public/studio/work/studio-desktop.webp` and `studio-phone.webp`,
+  shot from the composed shell; `studio` now carries the work files in
+  `studio-shots.ts`).
+* Its back (`MarkBack` in `studio-home.tsx`): the example brief in one
+  line, then the hero - one gridded scratchpad page (new
+  `studio-sketch.tsx`, new install) split into four by a quick pen cross,
+  a rough pen doodle in each quarter: A a condensed wordmark whose O is an
+  orbit (a softer lowercase try struck out), B a nose cone with a
+  porthole (a literal rocket crossed out), C the ROKCT R (traced over the
+  mark's own path, circled and ticked in the accent, "yes!"), D a round
+  seal (a square badge struck out). Beside it (below on a phone) the
+  picked mark as the clean final vector, at full size and at avatar sizes,
+  then why it won. All vector: every line is two or three jittered,
+  bowed, overshooting pen passes (generated once with a fixed seed and
+  committed as path data), scribbled hatching clipped to the shapes and a
+  light noise filter for the pen's edge; notes are in Caveat 500 (new
+  `fonts/caveat-500.woff2`, SIL OFL 1.1, `fonts/OFL-caveat.txt`, loaded in
+  `studio-fonts.ts` as `--font-st-hand`). Ink is currentColor and the
+  paper a token, so the sheet follows light and dark. The card says the
+  brief is an example and that A, B and D were sketched for the page.
+* The final is the real ROKCT mark, verbatim: `public/studio/logo/
+  rokct-r.svg` is RokctAI_frontend `public/images/logo.svg` (identical to
+  shared-workflows `.github/assets/logo.svg`), drawn as a CSS mask in the
+  panel's ink. New `StudioMarkSet`, `STUDIO_MARK_COPY` and
+  `STUDIO_MARKS_ROKCT` in `studio-copy.ts`; `StudioCase` gains `marks`.
+* Polaris comes off the flip: its card no longer turns, and its logo files
+  (`polaris-star.svg`, `polaris-p.svg`, `polaris-splash.webp`) left
+  `public/studio/logo/`. Supacharge's logo-process back is unchanged.
+* Phone frames are thinner everywhere (Ray: "Mobile frames be thinner
+  everywhere"): 4px of bezel instead of 10, radius 26/22 so the corners
+  stay concentric - the hero and every portfolio card.
+* The flip is base_sdk's FlipCard as before: click or tap, Enter / Space,
+  Escape to turn back, a crossfade under reduced motion.
+* test: `tests/test_studio_marks.py`; `test_studio_schemes.py` follows the
+  new back and drops the Polaris star check; `test_studio_shots.py`
+  counts the studio's work proofs.
+
 ## 1.8.0
 
 * Each case in its own colours (Ray: the "how we design" tabs did not
