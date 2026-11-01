@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.58.1
+
+* style: `components/custom/theme-provider.tsx` is prettier-formatted (the
+  `ThemeProvider` signature is wrapped). The fleet linter reformatted it in
+  every shell that tracks it, and the next compose put the long line back
+  (hosting#29). Formatting only, no logic change.
+
 ## 1.58.0
 
 * feat(flip-card): the flip card every shell shares. New

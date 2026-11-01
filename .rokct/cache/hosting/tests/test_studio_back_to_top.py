@@ -55,7 +55,8 @@ class TestStudioBackToTop(unittest.TestCase):
         self.assertNotIn('scope="root"', code)
         root = code.split('<div id="top" className={`st ${fontClassName}`}>', 1)[1]
         inside = root.split("</StudioCurrencyProvider>", 1)[0]
-        self.assertLess(inside.index("</footer>"), inside.index("<BackToTop />"))
+        # 1.11.0: the footer is StudioFooter, shared with /work.
+        self.assertLess(inside.index("<StudioFooter />"), inside.index("<BackToTop />"))
         self.assertLess(inside.index("<BackToTop />"), inside.rindex("</div>"))
 
     def test_studio_reset_skips_the_button(self):
