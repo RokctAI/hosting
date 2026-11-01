@@ -43,6 +43,17 @@
 //     while the card keeps its size; turning back first lets them settle
 //     (LIFT_BACK), then turns. Reduced motion: nothing lifts.
 //
+//   * 1.14.0, the /work filters (Ray: "/work should be in top menu as
+//     portfolio with filters"): chips for All and each service a card
+//     names (studio-showcase.ts showcaseFilters). Under "Logo" a site that
+//     also has a logo side turns over to it (the same FlipCard), a
+//     logo-only card shows up and a site without one leaves; the cards
+//     that stay glide to their new places (a FLIP layout move: measured
+//     before and after, then eased with the Web Animations API), the ones
+//     leaving fade out where they stood and the new ones rise in.
+//     Reduced motion: no glide or turn, a short crossfade. The filter is
+//     kept in ?service= so a filtered view can be shared.
+//
 // The row's last card is "See more": the full ranked list at /work.
 "use client";
 
@@ -67,13 +78,23 @@ import {
 import { FLIP_DURATION_MS, FlipCard } from "@/components/custom/flip-card";
 
 import {
+  SHOWCASE_FILTER_PARAM,
+  SHOWCASE_SERVICES,
   STUDIO_SHOWCASE_COPY as T,
+  showcaseFace,
+  showcaseFilterParam,
+  showcaseFiltered,
+  showcaseFilters,
+  showcaseHasLogo,
   showcaseHost,
   showcaseIsHost,
   showcaseMoreCount,
   showcasePhase,
+  showcasePictures,
   visibleShowcase,
   type ShotStatus,
+  type ShowcaseEntry,
+  type ShowcaseFilter,
   type ShowcaseLogoBack,
   type ShowcaseSite,
 } from "./studio-showcase";
@@ -109,8 +130,8 @@ function probe(src: string): Promise<boolean> {
  * then. `fail` is for an <img> that errors after the check. The answers
  * belong to one list: a new list (the stand-in) starts unchecked.
  */
-export function useShotStatus(sites: ShowcaseSite[]) {
-  const key = sites.map((s) => `${s.repo} ${s.phone} ${s.desktop}`).join("|");
+export function useShotStatus(sites: ShowcaseEntry[]) {
+  const key = sites.map((s) => `${s.repo} ${showcasePictures(s).join(" ")}`).join("|");
   type St = { key: string; status: Record<string, ShotStatus>; ready: boolean };
   const [st, setSt] = useState<St>({ key, status: {}, ready: false });
   const cur: St = st.key === key ? st : { key, status: {}, ready: false };
@@ -126,7 +147,7 @@ export function useShotStatus(sites: ShowcaseSite[]) {
     let live = true;
     const done = () => setSt((p) => (p.key === key ? (p.ready ? p : { ...p, ready: true }) : { key, status: {}, ready: true }));
     const checks = sites.map((s) =>
-      Promise.all([probe(s.phone), probe(s.desktop)]).then((oks) => {
+      Promise.all(showcasePictures(s).map(probe)).then((oks) => {
         if (live) mark(key, s.repo, oks.every(Boolean) ? "ok" : "fail");
       }),
     );
@@ -194,7 +215,7 @@ export function StudioShowcaseCount({ initial, className }: { initial: number; c
  * list, bundled pictures) once every given site has dropped; `gone` when
  * neither has anything left, reported to the StudioShowcaseScope.
  */
-function useShowcaseList(sites: ShowcaseSite[], rescue: ShowcaseSite[]) {
+function useShowcaseList<E extends ShowcaseEntry>(sites: E[], rescue: E[], countOf?: (shown: E[]) => number) {
   const [rescued, setRescued] = useState(false);
   const list = rescued ? rescue : sites;
   const { status, ready, fail } = useShotStatus(list);
@@ -205,9 +226,11 @@ function useShowcaseList(sites: ShowcaseSite[], rescue: ShowcaseSite[]) {
   }, [phase]);
   const gone = phase === "gone";
   const report = useContext(ShowcaseScope)?.report;
+  // The number the page shows: every card left, or (1.14.0) the filter's.
+  const count = countOf ? countOf(shown) : shown.length;
   useEffect(() => {
-    report?.(gone, ready ? shown.length : null);
-  }, [report, gone, ready, shown.length]);
+    report?.(gone, ready ? count : null);
+  }, [report, gone, ready, count]);
   return { list, shown, ready, fail, rescued, gone };
 }
 
@@ -236,8 +259,9 @@ function useHost(): string | null {
  * loader marked `own` (the shell's own repo, from config), or whose live
  * address is this page's host.
  */
-export function ShowcaseExtLink({ site, interactive = true, className = "sr-ext" }: { site: ShowcaseSite; interactive?: boolean; className?: string }) {
+export function ShowcaseExtLink({ site, interactive = true, className = "sr-ext" }: { site: ShowcaseEntry; interactive?: boolean; className?: string }) {
   const host = useHost();
+  if (!site.url) return null; // a logo-only card with no site of its own
   if (site.own || showcaseIsHost(site.url, host)) return null;
   return (
     <a
@@ -1012,46 +1036,327 @@ export function StudioShowcaseRow({
 }
 
 /**
- * /work: every site, ranked, as a grid. Each item shows the desktop and
- * phone pictures under the same rule as the row (both must load or the
- * item leaves the grid), the corner link, the name, the kind and the line.
- * The pictures are not lazy: the check has already fetched every one.
+ * A card's logo side on /work (1.14.0): the built-in back (`logo_back`,
+ * the ROKCT logo sheet) or the card's own `logo` picture, light and dark.
  */
-export function StudioShowcaseGrid({ sites, rescue = [] }: { sites: ShowcaseSite[]; rescue?: ShowcaseSite[] }) {
-  const { shown, ready, fail, gone } = useShowcaseList(sites, rescue);
+function LogoFace({ site, backs, solo }: { site: ShowcaseEntry; backs: ShowcaseBacks; solo: boolean }) {
+  const built = site.logoBack ? backs[site.logoBack] : undefined;
   return (
-    <ol className="wk-grid" data-ready={ready ? "true" : undefined} hidden={gone || undefined}>
-      {shown.map((site, i) => (
-        <li key={site.repo} className="wk-item" data-site={site.repo}>
-          <div className="wk-shots">
-            <div className="wk-desk">
-              <div className="sr-bar" aria-hidden="true">
-                <i />
-                <i />
-                <i />
-                <span>{showcaseHost(site.url)}</span>
-              </div>
-              <div className="wk-desk-s">
-                {/* eslint-disable-next-line @next/next/no-img-element -- the site's own shot, served as-is from its shots branch */}
-                <img src={site.desktop} alt={T.desktopAlt(site.name)} width={1200} height={833} decoding="async" onError={() => fail(site.repo)} />
-              </div>
+    <div className={`wk-shots wk-logo${solo ? " solo" : ""}`}>
+      <div className="sr-back wk-logo-card">
+        <div className="sr-back-h">
+          <p>
+            {T.logoKicker}
+            <b>{site.name}</b>
+          </p>
+          {!solo && (
+            <span className="sr-turn" aria-hidden="true">
+              <RiRepeat2Line size={14} />
+              <span className="wk-turn-t">{T.back}</span>
+            </span>
+          )}
+        </div>
+        <div className="sr-back-b">
+          {built !== undefined ? (
+            built
+          ) : site.logo ? (
+            <div className="wk-logo-art">
+              {/* eslint-disable-next-line @next/next/no-img-element -- the client's logo, served as-is from its repo's branch */}
+              <img className={site.logo.dark ? "th-l" : undefined} src={site.logo.light} alt={T.logoAlt(site.name)} decoding="async" />
+              {site.logo.dark && (
+                // eslint-disable-next-line @next/next/no-img-element -- the client's logo, served as-is from its repo's branch
+                <img className="th-d" src={site.logo.dark} alt={T.logoAlt(site.name)} decoding="async" />
+              )}
             </div>
-            <div className="wk-phone">
-              {/* eslint-disable-next-line @next/next/no-img-element -- the site's own shot, served as-is from its shots branch */}
-              <img src={site.phone} alt={T.phoneAlt(site.name)} width={560} height={1149} decoding="async" onError={() => fail(site.repo)} />
-            </div>
-            <ShowcaseExtLink site={site} className="sr-ext wk-ext" />
-          </div>
-          <div className="wk-meta">
-            <span className="wk-n num">{String(i + 1).padStart(2, "0")}</span>
-            <div>
-              <h2 className="wk-name">{site.name}</h2>
-              <p className="wk-kind">{site.kind}</p>
-            </div>
-            <p className="wk-tag">{site.tagline}</p>
-          </div>
-        </li>
-      ))}
-    </ol>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** A site's website side on /work: the desktop with the phone over its corner. */
+function SiteFace({ site, flips, onError }: { site: ShowcaseSite; flips: boolean; onError: () => void }) {
+  return (
+    <div className="wk-shots">
+      <div className="wk-desk">
+        <div className="sr-bar" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <span>{showcaseHost(site.url)}</span>
+        </div>
+        <div className="wk-desk-s">
+          {/* eslint-disable-next-line @next/next/no-img-element -- the site's own shot, served as-is from its shots branch */}
+          <img src={site.desktop} alt={T.desktopAlt(site.name)} width={1200} height={833} decoding="async" onError={onError} />
+        </div>
+      </div>
+      <div className="wk-phone">
+        {/* eslint-disable-next-line @next/next/no-img-element -- the site's own shot, served as-is from its shots branch */}
+        <img src={site.phone} alt={T.phoneAlt(site.name)} width={560} height={1149} decoding="async" onError={onError} />
+      </div>
+      {flips && (
+        <span className="sr-turn wk-turn" aria-hidden="true">
+          <RiRepeat2Line size={14} />
+          {T.turn}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** How long the /work moves take (ms): the glide, a card rising in, one fading out. */
+const GRID_MOVE = 560;
+const GRID_IN = 460;
+const GRID_OUT = 240;
+const GRID_EASE = "cubic-bezier(.22,.8,.24,1)";
+
+type Box = { x: number; y: number; w: number; h: number };
+
+/** A card's box inside the grid (its current, possibly mid-move, place). */
+function boxIn(el: HTMLElement, grid: HTMLElement): Box {
+  const a = el.getBoundingClientRect();
+  const g = grid.getBoundingClientRect();
+  return { x: a.left - g.left, y: a.top - g.top, w: a.width, h: a.height };
+}
+
+/** One /work card: the face its filter asks for, the corner link, the name, kind, line and services. */
+function WorkItem({
+  site,
+  n,
+  lead,
+  flipped,
+  backs,
+  onFlip,
+  onError,
+  leaving,
+}: {
+  site: ShowcaseEntry;
+  n: number;
+  lead: boolean;
+  flipped: boolean;
+  backs: ShowcaseBacks;
+  onFlip?: (next: boolean) => void;
+  onError: (repo: string) => void;
+  leaving?: Box;
+}) {
+  const err = () => onError(site.repo);
+  const flips = site.website && showcaseHasLogo(site);
+  const labels = SHOWCASE_SERVICES.filter((s) => site.services.includes(s.key)).map((s) => s.label);
+  const style = leaving ? { position: "absolute" as const, left: leaving.x, top: leaving.y, width: leaving.w, height: leaving.h, margin: 0 } : undefined;
+  return (
+    <li
+      className={`wk-item${lead ? " wk-lead" : ""}${leaving ? " wk-out" : ""}`}
+      data-site={site.repo}
+      data-face={flipped || !site.website ? "logo" : "site"}
+      data-leaving={leaving ? "true" : undefined}
+      aria-hidden={leaving ? true : undefined}
+      inert={leaving ? true : undefined}
+      style={style}
+    >
+      <div className="wk-card">
+        {!site.website ? (
+          <LogoFace site={site} backs={backs} solo />
+        ) : flips ? (
+          <FlipCard
+            className="wk-flip"
+            ringClassName="wk-ring"
+            layout="stack"
+            flipped={flipped}
+            onFlippedChange={(next) => onFlip?.(next)}
+            flipLabel={`${site.name}: ${T.turn}`}
+            flipBackLabel={`${site.name}: ${T.back}`}
+            front={<SiteFace site={site} flips onError={err} />}
+            back={<LogoFace site={site} backs={backs} solo={false} />}
+          />
+        ) : (
+          <SiteFace site={site} flips={false} onError={err} />
+        )}
+        <ShowcaseExtLink site={site} className="sr-ext wk-ext" interactive={!leaving} />
+      </div>
+      <div className="wk-meta">
+        <span className="wk-n num">{String(n).padStart(2, "0")}</span>
+        <div>
+          <h2 className="wk-name">{site.name}</h2>
+          <p className="wk-kind">{site.kind}</p>
+        </div>
+        <p className="wk-tag">{site.tagline}</p>
+        <ul className="wk-svc" aria-label={`${site.name}: what we made`}>
+          {labels.map((l) => (
+            <li key={l}>{l}</li>
+          ))}
+        </ul>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * /work: every card, ranked, as a grid, with the service filters (1.14.0).
+ * Each site shows its desktop and phone pictures under the same rule as
+ * the row (every picture must load or the card leaves the grid), the
+ * corner link, the name, the kind, the line and what we made. The
+ * pictures are not lazy: the check has already fetched every one.
+ */
+export function StudioShowcaseGrid({
+  sites,
+  rescue = [],
+  backs = {},
+}: {
+  sites: ShowcaseEntry[];
+  rescue?: ShowcaseEntry[];
+  /** The built-in logo sides, rendered on the server (studio-home.tsx studioShowcaseBacks). */
+  backs?: ShowcaseBacks;
+}) {
+  // The filter asked for (a chip or ?service=); the one in force is it when it has a chip, else "all".
+  const [want, setWant] = useState<string>("all");
+  const pick = (shown: ShowcaseEntry[]) => showcaseFilterParam(want, showcaseFilters(shown));
+  const { shown, ready, fail, gone } = useShowcaseList(sites, rescue, (l) => showcaseFiltered(l, pick(l)).length);
+  const chips = showcaseFilters(shown);
+  const filter: ShowcaseFilter = showcaseFilterParam(want, chips);
+  const items = showcaseFiltered(shown, filter);
+  const reduce = useMedia("(prefers-reduced-motion: reduce)");
+
+  // A card turned by hand (click, Enter, Space) until the filter changes.
+  const [manual, setManual] = useState<Record<string, boolean>>({});
+  // Cards fading out where they stood, out of the flow, so the rest move at once.
+  const [leaving, setLeaving] = useState<{ site: ShowcaseEntry; box: Box; flipped: boolean; lead: boolean; n: number }[]>([]);
+  const grid = useRef<HTMLOListElement>(null);
+  const before = useRef<Map<string, Box> | null>(null);
+
+  // ?service= on arrival (after hydration, so the server render stays "all").
+  useEffect(() => {
+    try {
+      const v = new URLSearchParams(window.location.search).get(SHOWCASE_FILTER_PARAM);
+      if (v) setWant(v);
+    } catch {
+      /* no query: all */
+    }
+  }, []);
+
+  const faceOf = (site: ShowcaseEntry, f: ShowcaseFilter) =>
+    site.website && showcaseHasLogo(site) ? (showcaseFace(site, f) === "logo") !== !!manual[site.repo] : false;
+
+  const choose = (next: ShowcaseFilter) => {
+    if (next === filter) return;
+    const g = grid.current;
+    if (g) {
+      // Measure every card where it is now, then let the leavers go.
+      const map = new Map<string, Box>();
+      g.querySelectorAll<HTMLElement>("li.wk-item:not([data-leaving])").forEach((el) => {
+        if (el.dataset.site) map.set(el.dataset.site, boxIn(el, g));
+      });
+      before.current = map;
+      const stay = new Set(showcaseFiltered(shown, next).map((s) => s.repo));
+      const out = items
+        .map((site, i) => ({ site, i }))
+        .filter(({ site }) => !stay.has(site.repo) && map.has(site.repo))
+        .map(({ site, i }) => ({ site, box: map.get(site.repo) as Box, flipped: faceOf(site, filter), lead: i === 0, n: i + 1 }));
+      setLeaving((cur) => [...cur.filter((l) => !stay.has(l.site.repo) && !out.some((o) => o.site.repo === l.site.repo)), ...out]);
+    }
+    setManual({});
+    setWant(next);
+    try {
+      const url = new URL(window.location.href);
+      if (next === "all") url.searchParams.delete(SHOWCASE_FILTER_PARAM);
+      else url.searchParams.set(SHOWCASE_FILTER_PARAM, next);
+      window.history.replaceState(window.history.state, "", url.toString());
+    } catch {
+      /* the address stays; the filter still applies */
+    }
+  };
+
+  // After the filter's render: glide the cards that stayed, raise the new
+  // ones, fade the leavers. Runs before paint, so nothing jumps first.
+  useIsoLayoutEffect(() => {
+    const g = grid.current;
+    const prev = before.current;
+    if (!g || !prev) return;
+    before.current = null;
+    let k = 0;
+    g.querySelectorAll<HTMLElement>("li.wk-item").forEach((el) => {
+      const repo = el.dataset.site ?? "";
+      if (el.dataset.leaving) {
+        if (el.dataset.anim) return;
+        el.dataset.anim = "out";
+        const a = el.animate(
+          reduce
+            ? [{ opacity: 1 }, { opacity: 0 }]
+            : [
+                { opacity: 1, transform: "none" },
+                { opacity: 0, transform: "scale(.96)" },
+              ],
+          { duration: reduce ? 160 : GRID_OUT, easing: "ease-out", fill: "forwards" },
+        );
+        a.onfinish = () => setLeaving((cur) => cur.filter((l) => l.site.repo !== repo));
+        return;
+      }
+      el.getAnimations().forEach((a) => a.cancel());
+      const was = prev.get(repo);
+      const now = boxIn(el, g);
+      if (was && Math.abs(was.w - now.w) < 2) {
+        const dx = was.x - now.x;
+        const dy = was.y - now.y;
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+        if (reduce) return; // no glide: it is simply there
+        el.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: "none" }], { duration: GRID_MOVE, easing: GRID_EASE });
+      } else {
+        // New to the grid, or it changed size (the lead card): it rises in where it now stands.
+        el.animate(
+          reduce
+            ? [{ opacity: 0 }, { opacity: 1 }]
+            : [
+                { opacity: 0, transform: "translateY(18px) scale(.97)" },
+                { opacity: 1, transform: "none" },
+              ],
+          { duration: reduce ? 160 : GRID_IN, delay: reduce ? 0 : 140 + 50 * k++, easing: GRID_EASE, fill: "backwards" },
+        );
+      }
+    });
+  }, [filter, leaving.length]);
+
+  const label = chips.find((c) => c.key === filter)?.label ?? T.filters.all;
+  return (
+    <>
+      {chips.length > 1 && (
+        <div className="wk-filters" role="group" aria-label={T.filters.label} hidden={gone || undefined}>
+          {chips.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              className="wk-chip"
+              aria-pressed={c.key === filter}
+              data-filter={c.key}
+              onClick={() => choose(c.key)}
+            >
+              <span>{c.label}</span>
+              <span className="wk-chip-n num" aria-hidden="true">
+                {c.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+      <p className="wk-sr" role="status" aria-live="polite">
+        {ready && !gone ? T.filters.shown(items.length, label) : ""}
+      </p>
+      <ol ref={grid} className="wk-grid" data-ready={ready ? "true" : undefined} data-filter={filter} hidden={gone || undefined}>
+        {items.map((site, i) => (
+          <WorkItem
+            key={site.repo}
+            site={site}
+            n={i + 1}
+            lead={i === 0}
+            flipped={faceOf(site, filter)}
+            backs={backs}
+            onFlip={(next) => setManual((m) => ({ ...m, [site.repo]: next !== (showcaseFace(site, filter) === "logo") }))}
+            onError={fail}
+          />
+        ))}
+        {leaving.map((l) => (
+          <WorkItem key={`out:${l.site.repo}`} site={l.site} n={l.n} lead={l.lead} flipped={l.flipped} backs={backs} onError={fail} leaving={l.box} />
+        ))}
+      </ol>
+    </>
   );
 }

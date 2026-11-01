@@ -80,7 +80,9 @@ export const STUDIO_CURRENCY_NOTE: Record<StudioCurrency, string> = {
 // ---- Page copy ----------------------------------------------------------
 export const STUDIO_NAV = [
   { href: "#services", label: "Services" },
-  { href: "#work", label: "Our work" },
+  // 1.14.0 (Ray): "Portfolio" opens /work, the whole list with its filters.
+  // A "/" href is a page, used as is; a "#" href is a home-page section.
+  { href: "/work", label: "Portfolio" },
   { href: "#prices", label: "Prices" },
   { href: "#hosting", label: "Hosting" },
   { href: "#process", label: "How it works" },

@@ -92,6 +92,8 @@ html:has(.st){scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 .st .nav{display:flex;gap:28px;font:500 14.5px/1 var(--sans)}
 .st .nav a{text-decoration:none;color:var(--ink-2);padding:8px 0;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
 .st .nav a:hover{color:var(--ink);border-bottom-color:var(--ink)}
+/* 1.14.0: the page the visitor is on (Portfolio on /work) */
+.st .nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--acc-text)}
 .st .hd-r{display:flex;align-items:center;gap:10px}
 .st .pill{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 13px;border:1px solid var(--rule-2);border-radius:999px;font:600 13px/1 var(--sans);letter-spacing:.02em;color:var(--ink);transition:border-color .2s,background .2s}
 .st .pill:hover{border-color:var(--ink)}
@@ -110,6 +112,7 @@ html:has(.st){scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 .st .mnav.open{display:block}
 .st .mnav a{display:block;padding:16px 0;border-bottom:1px solid var(--rule);font:600 17px/1 var(--sans);text-decoration:none}
 .st .mnav a:last-child{border-bottom:0}
+.st .mnav a[aria-current="page"]{color:var(--acc-text)}
 }
 .st .hero{padding-block:clamp(44px,7vw,96px) 0}
 .st .hero .kick{margin-bottom:26px}
@@ -795,13 +798,57 @@ html:has(.st){scroll-behavior:auto}
 .st .wk-grid{list-style:none;margin:0;padding:clamp(28px,4vw,48px) 0 0;border-top:1px solid var(--ink);display:grid;gap:clamp(44px,5vw,72px) clamp(24px,3vw,44px)}
 @media (min-width:900px){
 .st .wk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.st .wk-item:first-child{grid-column:1/-1;display:grid;grid-template-columns:8fr 4fr;gap:44px;align-items:end}
-.st .wk-item:first-child .wk-meta{margin-top:0;grid-template-columns:1fr;padding-bottom:12px}
-.st .wk-item:first-child .wk-n{font-size:84px}
-.st .wk-item:first-child .wk-name{font-size:clamp(30px,2.8vw,42px)}
-.st .wk-item:first-child .wk-tag{grid-column:auto;font-size:clamp(19px,1.6vw,23px)}
+.st .wk-item.wk-lead{grid-column:1/-1;display:grid;grid-template-columns:8fr 4fr;gap:44px;align-items:end}
+.st .wk-item.wk-lead .wk-meta{margin-top:0;grid-template-columns:1fr;padding-bottom:12px}
+.st .wk-item.wk-lead .wk-n{font-size:84px}
+.st .wk-item.wk-lead .wk-name{font-size:clamp(30px,2.8vw,42px)}
+.st .wk-item.wk-lead .wk-tag{grid-column:auto;font-size:clamp(19px,1.6vw,23px)}
 }
 .st .wk-item{position:relative;min-width:0}
+/* 1.14.0: the lead card is the first the filter shows (a class, since a
+   card fading out can still sit in the list); leavers are out of the flow. */
+.st .wk-grid{position:relative}
+.st .wk-item.wk-out{pointer-events:none;z-index:0}
+.st .wk-card{position:relative}
+.st .wk-flip{display:block;border-radius:16px}
+.st .wk-flip:focus-visible .wk-shots{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--acc-text)}
+.st .wk-turn{left:clamp(14px,2vw,22px);right:auto;bottom:clamp(14px,2vw,22px);opacity:1;transform:none;z-index:2}
+.st .wk-flip:hover .wk-turn{background:var(--acc-deep)}
+/* The logo side: the same panel, a card on it with the logo sheet or picture. */
+.st .wk-shots.wk-logo{height:100%;padding:clamp(18px,3.2vw,44px)}
+/* Chrome can leave the logo sheet unpainted on a turned face (a rounded,
+   clipped picture under a shadowed card, inside the 3D turn); each face of
+   a /work card gets its own layer, and the grid's sheet is square (its
+   corners sit on the card's paper colour anyway). */
+.st .wk-flip>div>div{will-change:transform}
+.st .wk-logo .sr-lb-sheet{border-radius:0}
+.st .wk-logo-card{height:100%;min-height:0}
+.st .wk-logo.solo .wk-logo-card{height:auto;aspect-ratio:1200/760}
+.st .wk-logo-card .sr-back-h .sr-turn{z-index:auto}
+.st .wk-logo-art{position:absolute;inset:0;display:grid;place-items:center;padding:8% 10%}
+.st .wk-logo-art img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.st .wk-logo-art .th-d{display:none}
+.dark .st .wk-logo-art .th-l{display:none}
+.dark .st .wk-logo-art .th-d{display:block}
+/* The filter chips. */
+.st .wk-filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 clamp(20px,2.6vw,32px)}
+.st .wk-filters[hidden]{display:none}
+.st button.wk-chip{display:inline-flex;align-items:center;gap:10px;min-height:42px;padding:0 8px 0 18px;border:1px solid var(--rule-2);border-radius:999px;
+  font:600 14px/1 var(--sans);letter-spacing:.01em;color:var(--ink-2);background:transparent;
+  transition:background-color .25s cubic-bezier(.22,.8,.24,1),border-color .25s,color .25s,transform .2s}
+.st button.wk-chip:hover{border-color:var(--ink);color:var(--ink)}
+.st button.wk-chip:active{transform:scale(.97)}
+.st button.wk-chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.st .wk-chip-n{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 7px;border-radius:999px;background:var(--bg-2);color:var(--ink-2);font:600 12px/1 var(--sans);
+  transition:background-color .25s,color .25s}
+.st button.wk-chip[aria-pressed="true"] .wk-chip-n{background:var(--acc);color:var(--acc-ink)}
+.st .wk-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* What we made, under each card. */
+.st .wk-svc{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:12px 0 0;padding:0}
+.st .wk-svc li{font:600 10.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);border:1px solid var(--rule-2);border-radius:999px;padding:6px 10px}
+@media (min-width:900px){
+.st .wk-item.wk-lead .wk-svc{grid-column:auto}
+}
 .st .wk-shots{position:relative;border-radius:16px;background:var(--bg-2);padding:clamp(18px,3.2vw,44px) 22% clamp(18px,3.2vw,44px) clamp(18px,3.2vw,44px);overflow:hidden;isolation:isolate}
 .st .wk-desk{position:relative;background:var(--frame);border-radius:10px;padding:26px 4px 4px;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.22,.8,.24,1)}
 .st .wk-desk .sr-bar{height:26px;opacity:1}
@@ -822,9 +869,16 @@ html:has(.st){scroll-behavior:auto}
 @media (max-width:560px){
 .st .wk-n{font-size:38px}
 .st .wk-tag{grid-column:1/-1}
+.st .wk-svc{grid-column:1/-1}
+/* The logo side's header on a phone: one line, the turn chip as its icon, room for the corner link. */
+.st .wk-logo .sr-back-h{height:40px;padding:0 44px 0 12px}
+.st .wk-logo .sr-back-h p{white-space:nowrap;font-size:10px}
+.st .wk-logo .sr-back-h p b{font-size:17px;margin-left:6px}
+.st .wk-logo .sr-back-h .sr-turn{padding:7px}
+.st .wk-turn-t{display:none}
 .st .wk-foot .btn{white-space:normal}
 }
 @media (prefers-reduced-motion:reduce){
-.st .wk-desk,.st .wk-phone{transition:none}
+.st .wk-desk,.st .wk-phone,.st button.wk-chip{transition:none}
 .st .wk-item:hover .wk-desk,.st .wk-item:hover .wk-phone{transform:none}
 }

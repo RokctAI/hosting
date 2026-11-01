@@ -29,7 +29,7 @@ import { StudioWork } from "@/components/custom/studio/studio-work";
 
 export const metadata: Metadata = {
   title: { absolute: `${STUDIO_SHOWCASE_COPY.page.title} · ROKCT Studio` },
-  description: "Every site the ROKCT studio has built, best first, each one live on the web and shown on a phone and a desktop.",
+  description: "The ROKCT studio portfolio: every site and logo we have made, best first, filtered by service. Each site live on the web, shown on a phone and a desktop.",
 };
 
 export default function Page() {
