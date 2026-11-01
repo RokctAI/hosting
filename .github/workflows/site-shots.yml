@@ -347,6 +347,11 @@ jobs:
           printf '%s\n' "# Site shots" "" \
             "Pictures of this site's first screen, written by .github/workflows/site-shots.yml on main after its health gate passed." \
             "manifest.json names the newest set; shots/<commit>/ holds each set. Do not edit by hand." > README.md
+          # Vercel reads vercel.json from the commit it deploys, so main's
+          # deploymentEnabled rule never reaches this orphan branch: without
+          # its own file every push here starts a Vercel build of a tree with
+          # no app, which fails (site-shots 978633d). Opt it out.
+          printf '%s\n' '{' '  "git": {' '    "deploymentEnabled": false' '  }' '}' > vercel.json
           git add -A
           git commit -q -m "site shots: $SHOTS_COMMIT" -m "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           git -c http.extraheader="$AUTH" push -q origin "HEAD:refs/heads/$SHOTS_BRANCH"
