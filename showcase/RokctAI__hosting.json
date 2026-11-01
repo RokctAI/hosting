@@ -1,0 +1,14 @@
+{
+  "name": "ROKCT",
+  "kind": "Our own studio",
+  "tagline": "Our own site, made the way we make yours.",
+  "url": "https://hosting-beta-one.vercel.app",
+  "repo": "RokctAI/hosting",
+  "rank": 5,
+  "shots": {
+    "branch": "site-shots",
+    "desktop": "latest/desktop-light.webp",
+    "phone": "latest/phone-light.webp"
+  },
+  "logo_back": "rokct"
+}

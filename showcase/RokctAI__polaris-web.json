@@ -1,0 +1,14 @@
+{
+  "name": "Polaris",
+  "kind": "Lender",
+  "tagline": "The full cost, on the page before anyone applies.",
+  "url": "https://polaris-web-nu.vercel.app",
+  "repo": "RokctAI/polaris-web",
+  "rank": 8,
+  "shots": {
+    "branch": "site-shots",
+    "desktop": "latest/desktop-light.webp",
+    "phone": "latest/phone-light.webp"
+  },
+  "logo_back": null
+}

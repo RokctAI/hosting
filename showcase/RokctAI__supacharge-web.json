@@ -1,0 +1,14 @@
+{
+  "name": "Supacharge",
+  "kind": "Learning app",
+  "tagline": "A site that sends learners to the app store in one screen.",
+  "url": "https://supacharge.school",
+  "repo": "RokctAI/supacharge-web",
+  "rank": 9,
+  "shots": {
+    "branch": "site-shots",
+    "desktop": "latest/desktop-light.webp",
+    "phone": "latest/phone-light.webp"
+  },
+  "logo_back": null
+}

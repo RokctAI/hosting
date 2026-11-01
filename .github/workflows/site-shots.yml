@@ -12,7 +12,8 @@ name: Site shots
 #
 # Only when the gate passes are the six WebP files and manifest.json
 # committed to the orphan branch `site-shots` (appended to, never
-# force-pushed; the tree keeps the five newest sets, history keeps all).
+# force-pushed; the tree keeps the five newest sets, history keeps all,
+# and latest/ is a copy of the newest set at a stable path).
 # When it fails the job goes red and the branch keeps the last good set.
 # base_sdk >= 1.55.0 serves that set from this site at /site-shots/, and
 # hosting_sdk >= 1.6.0's studio reads it from there.
@@ -334,6 +335,11 @@ jobs:
           mkdir -p "shots/$SHOTS_COMMIT"
           cp "$OUT"/*.webp "shots/$SHOTS_COMMIT/"
           cp "$OUT/manifest.json" manifest.json
+          # latest/ always holds the newest set at a path that never changes,
+          # for links that must not go stale when old shots/<commit>/ sets
+          # are pruned (the studio showcase cards, .rokct/showcase.json).
+          mkdir -p latest
+          cp "$OUT"/*.webp latest/
           # The five newest sets stay in the tree; older ones live on in history.
           {
             echo "$SHOTS_COMMIT"
@@ -346,7 +352,7 @@ jobs:
           done
           printf '%s\n' "# Site shots" "" \
             "Pictures of this site's first screen, written by .github/workflows/site-shots.yml on main after its health gate passed." \
-            "manifest.json names the newest set; shots/<commit>/ holds each set. Do not edit by hand." > README.md
+            "manifest.json names the newest set; shots/<commit>/ holds each set; latest/ is a copy of the newest set. Do not edit by hand." > README.md
           # Vercel reads vercel.json from the commit it deploys, so main's
           # deploymentEnabled rule never reaches this orphan branch: without
           # its own file every push here starts a Vercel build of a tree with
