@@ -1,5 +1,41 @@
 # Changelog
 
+## 1.58.0
+
+* feat(flip-card): the flip card every shell shares. New
+  `components/custom/flip-card.tsx` (`FlipCard`, `useMediaQuery`,
+  `stopFlip`) is lms_sdk's `LmsFlipCard`, the Supacharge tutor and plan
+  card flip, moved here so other shells turn a card the same way (Ray,
+  2026-10-31: the studio portfolio card flips "exactly like the
+  Supacharge tutor card"). Click, tap, Enter or Space turns it; a fine
+  pointer also turns it on hover unless a click pinned it; Escape turns
+  it back; reduced motion crossfades instead of rotating; the hidden face
+  is `inert` and `aria-hidden`.
+* The defaults behave as LmsFlipCard did. New optional props: `layout`
+  (`"stack"`: both faces share one grid cell, so the card is as tall as
+  its taller face), `hoverDelayMs` (hover-intent), `onFlip(flipped,
+  cause)` (every turn, by press or hover) and `ringClassName` (the focus
+  ring; the default is the shell's `ring` token, so no colour is named
+  here).
+* lms_sdk >= 1.41.0 re-exports it from `landing/lms-flip-card.tsx`;
+  hosting_sdk >= 1.8.0 draws the studio portfolio card with it.
+* test: `TestFlipCard` in `tests/test_manifest.py`.
+
+## 1.57.0
+
+* feat(site-data): a site's order form goes by email, not WhatsApp (Ray,
+  2026-10-31: "orders@sitedomain"). `data/site.json` gains an optional
+  `email: { orders?, domain? }`; the address is `email.orders` if set,
+  else orders@`email.domain`, else orders@ the site's own host
+  (`templates/lib/site-data/order-email.ts`: `orderEmailAddress`,
+  `orderEmailMessage`, `orderMailto`). An order section no longer
+  requires a WhatsApp number; pricing and contact sections still do.
+  Every site offers all its channels by default (email, plus WhatsApp when
+  it has a number; `orderChannels`). `email.orderVia` (`"email"`,
+  `"whatsapp"`, `"both"`) narrows it; WhatsApp or both needs the number.
+  Backward compatible: existing site.json files validate unchanged.
+  The host's mail transport and its credentials are env secrets, set by Ray.
+
 ## 1.56.0
 
 * feat(back-to-top): the "Back to top" button is on every page of every

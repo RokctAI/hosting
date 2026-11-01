@@ -237,6 +237,9 @@ export interface SiteDataLink {
 }
 
 /** `data/site.json` (1.53.0): a local-data site's identity. */
+/** How the order form is sent: unset (default) offers every channel the site has: email, plus WhatsApp when site.whatsapp is set. "email" or "whatsapp" turns the other off; "both" requires site.whatsapp. */
+export type SiteOrderVia = "email" | "whatsapp" | "both";
+
 export interface SiteIdentity {
   name: string;
   /** The wordmark as type: a heavy `lead` (with an optional `mark` such as "®") over a light `rest`. */
@@ -246,6 +249,11 @@ export interface SiteIdentity {
   since?: string;
   /** `number`: international digits ("27150006069"); `display`: as printed ("015 000 6069"). */
   whatsapp?: { number: string; display: string };
+  /**
+   * (1.57.0) Where the order form goes. `orders` overrides the address;
+   * without it the address is orders@`domain`, or orders@ the site's own host.
+   */
+  email?: { orders?: string; domain?: string; orderVia?: SiteOrderVia };
   header?: { logo?: "none" | "auto" | (string & {}); action?: SiteDataLink };
   metadata: {
     title: string;
@@ -413,7 +421,7 @@ export interface SiteOrderField {
   button?: string;
 }
 
-/** `data/order.json` (1.53.0): the WhatsApp order form; see validate-site.mjs validateOrder. */
+/** `data/order.json` (1.53.0): the order form, sent by email (see order-email.ts); see validate-site.mjs validateOrder. */
 export interface SiteOrder {
   intro: string;
   fields: {

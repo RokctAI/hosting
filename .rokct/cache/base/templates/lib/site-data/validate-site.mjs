@@ -278,7 +278,7 @@ export function validateSite(value) {
   const problems = [];
   if (!isPlainObject(value)) return ['the file must be a JSON object with a "name" and "metadata"'];
   const c = checker(problems);
-  c.only("", value, ["name", "wordmark", "motto", "place", "since", "whatsapp", "header", "metadata", "footer"]);
+  c.only("", value, ["name", "wordmark", "motto", "place", "since", "whatsapp", "email", "header", "metadata", "footer"]);
   c.str("name", value.name, true);
   if (c.object("wordmark", value.wordmark)) {
     c.only("wordmark", value.wordmark, ["lead", "mark", "rest"]);
@@ -295,6 +295,18 @@ export function validateSite(value) {
       problems.push('whatsapp.number must be the international number in digits, such as "27150006069"');
     }
     c.str("whatsapp.display", value.whatsapp.display, true);
+  }
+  if (c.object("email", value.email)) {
+    c.only("email", value.email, ["orders", "domain", "orderVia"]);
+    if (c.str("email.orders", value.email.orders) && value.email.orders !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.email.orders)) {
+      problems.push('email.orders must be an email address such as "orders@example.com"');
+    }
+    if (c.str("email.domain", value.email.domain) && value.email.domain !== undefined && !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(value.email.domain)) {
+      problems.push('email.domain must be a bare domain such as "example.com"');
+    }
+  }
+  if (value.email?.orderVia !== undefined && !["email", "whatsapp", "both"].includes(value.email.orderVia)) {
+    problems.push('email.orderVia must be "email", "whatsapp" or "both"');
   }
   if (c.object("header", value.header)) {
     c.only("header", value.header, ["logo", "action"]);
@@ -602,7 +614,10 @@ export function checkSitePage(files) {
   if (files.site === undefined) problems.push("data/sections.json needs data/site.json (the site's name, metadata and contact)");
   if (types.has("pricing") && files.pricing === undefined) problems.push("data/sections.json has a pricing section but data/pricing.json is missing");
   if (types.has("order") && files.order === undefined) problems.push("data/sections.json has an order section but data/order.json is missing");
-  const needsWhatsApp = types.has("order") || types.has("pricing") || types.has("contact") || JSON.stringify(sections).includes('"href":"whatsapp"');
+  // The order form goes by email (1.57.0), so it no longer needs the WhatsApp number.
+  // Unset orderVia offers every channel the site has (a site without a WhatsApp number offers email only), so only an explicit choice needs the number.
+  const via = files.site?.email?.orderVia;
+  const needsWhatsApp = (types.has("order") && (via === "whatsapp" || via === "both")) || types.has("pricing") || types.has("contact") || JSON.stringify(sections).includes('"href":"whatsapp"');
   if (needsWhatsApp && files.site !== undefined && files.site.whatsapp === undefined) {
     problems.push("data/sections.json opens WhatsApp (an order, pricing or contact section, or a \"whatsapp\" link) but data/site.json has no whatsapp number");
   }

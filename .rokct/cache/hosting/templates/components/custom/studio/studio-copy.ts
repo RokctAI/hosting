@@ -206,9 +206,65 @@ export const STUDIO_SERVICES: StudioService[] = [
   },
 ];
 
+// ---- The portfolio card's back: the logo process (1.8.0) ----------------
+// Ray: the portfolio card flips to show how the logo was made, in four
+// stages - the versions considered, the one chosen, the hand-drawn sketch,
+// the final logo in use - "to show the process, not just the result".
+// STRICT: real material only. Every picture here is a file from the
+// client's own repo (or the studio's record of it), copied as it is; a
+// stage with no real material is left out, never filled with a stand-in,
+// and a case with no stage at all does not flip.
+//
+//   polaris     versions: the four-point north star the first landing drew
+//               (corporate polaris_sdk 1.7.0, landing/polaris-star.tsx,
+//               gold #f2c94c; removed in 1.7.1 at Ray's word, "polaris no
+//               star please") and the ember P on a horizon line (the polaris
+//               app, assets/svgs/brand_logo_rounded.svg). Chosen: that P.
+//               In use: the app's opening screen (assets/images/splash.png).
+//               No sketch is in any repo.
+//   supacharge  chosen: the wordmark (supacharge marketing/brand/
+//               supacharge-wordmark.png) and the S mark (the app's
+//               notification icon). In use: the store feature graphic
+//               (marketing/tour/store/feature-graphic.png). No other
+//               versions and no sketch are in any repo.
+
+export type StudioLogoStageKind = "versions" | "chosen" | "sketch" | "use";
+
+export interface StudioLogoPicture {
+  src: string;
+  alt: string;
+  caption: string;
+  width: number;
+  height: number;
+}
+
+export interface StudioLogoStage {
+  kind: StudioLogoStageKind;
+  pictures: StudioLogoPicture[];
+}
+
+/** The four stages in the order the back reads them; a case lists only the ones it has. */
+export const STUDIO_LOGO_STAGES: { kind: StudioLogoStageKind; label: string }[] = [
+  { kind: "versions", label: "The versions we weighed" },
+  { kind: "chosen", label: "The one chosen" },
+  { kind: "sketch", label: "The sketch" },
+  { kind: "use", label: "In use" },
+];
+
+export const STUDIO_LOGO_COPY = {
+  kicker: "The logo, start to finish",
+  turn: "See the logo process",
+  back: "Back to the site",
+  flip: (name: string) => `${name}: turn the card to see how the logo was made`,
+  flipBack: (name: string) => `${name}: turn the card back to the site`,
+};
+
 export interface StudioCase {
   /** The site whose live pictures the proofs show (studio-shots.ts); `src` is the committed fallback. */
   site: "polaris" | "supacharge";
+  /** The portfolio tab (1.8.0): its name and the line under it. */
+  tab: string;
+  sector: string;
   desk: { src: string; alt: string; url: string; caption: string };
   phone: { src: string; alt: string };
   kicker: string;
@@ -216,7 +272,19 @@ export interface StudioCase {
   body: string;
   made: string;
   look: string;
+  /** The back of the card: the logo stages that have real material. Empty, the card does not flip. */
+  logo: StudioLogoStage[];
 }
+
+/** The portfolio row's words (1.8.0): the tablist, its controls and the swipe hint. */
+export const STUDIO_WORK_TABS = {
+  label: "Our work",
+  previous: "Previous site",
+  next: "Next site",
+  pause: "Pause the slideshow",
+  play: "Play the slideshow",
+  hint: "Swipe for the next site",
+};
 
 export const STUDIO_WORK_HEAD = {
   kicker: "Our work",
@@ -228,6 +296,8 @@ export const STUDIO_WORK_HEAD = {
 export const STUDIO_CASES: StudioCase[] = [
   {
     site: "polaris",
+    tab: "Polaris",
+    sector: "Lender",
     desk: {
       src: STUDIO_IMAGES.polarisDesk,
       alt: "Polaris home page on a desktop: 'The full cost, shown before you apply' beside step one of the loan application",
@@ -240,9 +310,32 @@ export const STUDIO_CASES: StudioCase[] = [
     body: "A short-term lender's public site. The first screen puts the full cost in the headline, with step one of the application beside it; the calculator below itemises the amount, the term, the interest, the fees and the total to repay, each under the ceiling the National Credit Act sets. Light and dark themes and a single green accent, every figure in tabular numerals.",
     made: "Public website, loan calculator, phone and desktop layouts, light and dark themes",
     look: "Light and dark themes, one accent, a display serif for the headlines",
+    logo: [
+      {
+        kind: "versions",
+        pictures: [
+          { src: "/studio/logo/polaris-star.svg", alt: "A gold four-point star", caption: "A north star, in gold. On the first landing; dropped at the client's word.", width: 96, height: 96 },
+          { src: "/studio/logo/polaris-p.svg", alt: "An ember P standing on a pale horizon line, on a pine-green tile", caption: "A P on a horizon line, ember on pine.", width: 108, height: 108 },
+        ],
+      },
+      {
+        kind: "chosen",
+        pictures: [
+          { src: "/studio/logo/polaris-p.svg", alt: "The Polaris mark: an ember P on a horizon line, on a pine-green tile", caption: "The P on the horizon: the app icon and the mark.", width: 108, height: 108 },
+        ],
+      },
+      {
+        kind: "use",
+        pictures: [
+          { src: "/studio/logo/polaris-splash.webp", alt: "The Polaris app's opening screen: the P mark above the name and 'Loans with clear terms'", caption: "The app's opening screen.", width: 480, height: 1037 },
+        ],
+      },
+    ],
   },
   {
     site: "supacharge",
+    tab: "Supacharge",
+    sector: "Learning app",
     desk: {
       src: STUDIO_IMAGES.supaDesk,
       alt: "Supacharge home page on a desktop: 'Pass with confidence', with store download buttons",
@@ -255,8 +348,150 @@ export const STUDIO_CASES: StudioCase[] = [
     body: "The public site for a South African learning app. The home page carries the brand's black and orange, the accelerator milestone, the download buttons for every store, and an explanation of how a lesson runs in two teaching styles.",
     made: "Public website, phone and desktop layouts, light and dark themes",
     look: "Black ground, the brand's orange, a heavy italic display face",
+    logo: [
+      {
+        kind: "chosen",
+        pictures: [
+          { src: "/studio/logo/supacharge-wordmark.webp", alt: "The Supacharge wordmark in heavy white italic", caption: "The wordmark.", width: 660, height: 124 },
+          { src: "/studio/logo/supacharge-s.webp", alt: "The Supacharge S mark in white", caption: "The S, for the app's small spaces.", width: 108, height: 108 },
+        ],
+      },
+      {
+        kind: "use",
+        pictures: [
+          { src: "/studio/logo/supacharge-feature.webp", alt: "The Supacharge store graphic: the wordmark over 'Your tutor is one tap away', beside two phones on an orange disc", caption: "The app store feature graphic.", width: 1024, height: 500 },
+        ],
+      },
+    ],
   },
 ];
+
+// ---- Case colour schemes (1.8.0) ----------------------------------------
+// Ray: each tab of "How we design" (and, since the same release, each
+// portfolio tab) shows that client's own colour scheme. A case's panel
+// re-themes the studio tokens it draws with (studio.css `.cs`) from the
+// scheme below, in light and dark; the rest of the page keeps the studio's
+// own look. The swatches are the brand's colours exactly as its own code
+// sets them; the tokens are those colours, nudged only where a text pair
+// would miss WCAG AA (4.5:1). tests/test_studio_schemes.py checks every
+// text pair in both modes.
+//
+//   polaris     polaris_sdk 1.8.0 landing/polaris-theme.css (--px-*): lime
+//               #b8e05a on forest #07130f, brass #e3ae45 for "pending".
+//   supacharge  lms_sdk 1.39.0 landing/lms-theme.css (--sc-*): the app's
+//               orange #ff6600 on #101010 (dark) / #ececef (light), teal
+//               --sc-lit #17a398. White on #ff6600 is 2.9:1, so labels on
+//               the orange are ink, and orange text on light is #ad4300.
+//   southriver  southriver-web data/theme.json `primary` #e4333b (the
+//               label red), the label's deeper red and the river blue as
+//               the picked (C) and River poster (B) renders print them.
+//               White on #e4333b is 4.3:1, so fills use the deeper #c40019.
+//   studio      this page's own tokens (studio.css): oxblood #8C1A2D.
+
+export interface StudioSchemeTokens {
+  bg: string;
+  card: string;
+  ink: string;
+  ink2: string;
+  ink3: string;
+  rule: string;
+  rule2: string;
+  acc: string;
+  accDeep: string;
+  accInk: string;
+  accText: string;
+  frame: string;
+}
+
+export interface StudioScheme {
+  /** Where the colours come from, for the record. */
+  source: string;
+  /** The brand's own colours, shown as chips in the brief. */
+  swatches: { name: string; hex: string }[];
+  light: StudioSchemeTokens;
+  dark: StudioSchemeTokens;
+}
+
+export type StudioSchemeId = "polaris" | "southriver" | "supacharge" | "studio";
+
+export const STUDIO_SCHEMES: Record<StudioSchemeId, StudioScheme> = {
+  polaris: {
+    source: "polaris_sdk 1.8.0, landing/polaris-theme.css",
+    swatches: [
+      { name: "Lime", hex: "#b8e05a" },
+      { name: "Forest", hex: "#07130f" },
+      { name: "Brass", hex: "#e3ae45" },
+      { name: "Mist", hex: "#f7f9f5" },
+    ],
+    light: { bg: "#f7f9f5", card: "#ffffff", ink: "#15201b", ink2: "#5b6660", ink3: "#6b7570", rule: "#d6ddd6", rule2: "#b9c4bb", acc: "#b8e05a", accDeep: "#a9d444", accInk: "#13200a", accText: "#4e7a12", frame: "#15201b" },
+    dark: { bg: "#07130f", card: "#0b1f1a", ink: "#f3f8f4", ink2: "#9db8ae", ink3: "#7f9e92", rule: "#1a3f35", rule2: "#255548", acc: "#b8e05a", accDeep: "#c8ea78", accInk: "#13200a", accText: "#b8e05a", frame: "#020806" },
+  },
+  southriver: {
+    source: "southriver-web data/theme.json (primary), the label as the picked render prints it",
+    swatches: [
+      { name: "Label red", hex: "#e4333b" },
+      { name: "Deep red", hex: "#c40019" },
+      { name: "River blue", hex: "#064171" },
+      { name: "Bottle white", hex: "#fbf7f4" },
+    ],
+    light: { bg: "#fbf7f4", card: "#ffffff", ink: "#1c1214", ink2: "#5e5153", ink3: "#74676a", rule: "#eadcd8", rule2: "#d6c2bd", acc: "#c40019", accDeep: "#a30015", accInk: "#ffffff", accText: "#b5001a", frame: "#064171" },
+    dark: { bg: "#120b0b", card: "#1d1212", ink: "#f6efed", ink2: "#c4b5b3", ink3: "#9c8b89", rule: "#3a2524", rule2: "#4d3230", acc: "#c40019", accDeep: "#d0021f", accInk: "#ffffff", accText: "#ff6b72", frame: "#04223b" },
+  },
+  supacharge: {
+    source: "lms_sdk 1.39.0, landing/lms-theme.css",
+    swatches: [
+      { name: "Supacharge orange", hex: "#ff6600" },
+      { name: "Night", hex: "#101010" },
+      { name: "Teal", hex: "#17a398" },
+      { name: "Cloud", hex: "#ececef" },
+    ],
+    light: { bg: "#ececef", card: "#f9f9fb", ink: "#1b1b20", ink2: "#5b5b62", ink3: "#66666e", rule: "#d9d9de", rule2: "#c4c4cb", acc: "#ff6600", accDeep: "#e65c00", accInk: "#1b1b20", accText: "#ad4300", frame: "#1b1b20" },
+    dark: { bg: "#101010", card: "#1c1c1c", ink: "#ffffff", ink2: "#a3a3a3", ink3: "#8c8c8c", rule: "#2e2e2e", rule2: "#3d3d3d", acc: "#ff6600", accDeep: "#ff7a1f", accInk: "#101010", accText: "#ff6600", frame: "#000000" },
+  },
+  studio: {
+    source: "this page's own tokens, studio.css",
+    swatches: [
+      { name: "Oxblood", hex: "#8c1a2d" },
+      { name: "Ink", hex: "#17161b" },
+      { name: "Paper", hex: "#f2f1ed" },
+      { name: "Rose", hex: "#f2818f" },
+    ],
+    light: { bg: "#faf9f6", card: "#f2f1ed", ink: "#17161b", ink2: "#55545c", ink3: "#6e6d75", rule: "#d5d4cd", rule2: "#bfbeb6", acc: "#8c1a2d", accDeep: "#6b1122", accInk: "#fbedef", accText: "#8c1a2d", frame: "#1b1a1f" },
+    dark: { bg: "#1b1a20", card: "#131216", ink: "#efede7", ink2: "#aeaca6", ink3: "#8f8d96", rule: "#2b2a31", rule2: "#3b3a42", acc: "#7c1526", accDeep: "#5e0f1d", accInk: "#fbedef", accText: "#f2818f", frame: "#050507" },
+  },
+};
+
+const SCHEME_VARS: [keyof StudioSchemeTokens, string][] = [
+  ["bg", "bg"],
+  ["card", "card"],
+  ["ink", "ink"],
+  ["ink2", "ink-2"],
+  ["ink3", "ink-3"],
+  ["rule", "rule"],
+  ["rule2", "rule-2"],
+  ["acc", "acc"],
+  ["accDeep", "acc-deep"],
+  ["accInk", "acc-ink"],
+  ["accText", "acc-text"],
+  ["frame", "frame"],
+];
+
+/**
+ * A scheme as inline custom properties: `--cl-<token>` (light) and
+ * `--cd-<token>` (dark). studio.css `.cs` maps them onto the studio tokens
+ * for the theme the page is in.
+ */
+export function studioSchemeVars(id: StudioSchemeId): Record<string, string> {
+  const s = STUDIO_SCHEMES[id];
+  const out: Record<string, string> = {};
+  for (const [k, name] of SCHEME_VARS) {
+    out[`--cl-${name}`] = s.light[k];
+    out[`--cd-${name}`] = s.dark[k];
+  }
+  return out;
+}
+
+export const STUDIO_SCHEME_LABEL = "Their colours";
 
 // ---- How we design ------------------------------------------------------
 // The studio's design process shown the way a logo job runs: a brief comes
@@ -288,7 +523,7 @@ export interface StudioDesignOption {
 }
 
 export interface StudioDesignCase {
-  id: string;
+  id: StudioSchemeId;
   tab: string;
   sector: string;
   brief: { client: string; sells: string; to: string; ask: string };

@@ -36,6 +36,7 @@ import {
   StudioDealAlt,
   StudioHeader,
   StudioPrice,
+  StudioWorkTabs,
 } from "./studio-client";
 import {
   STUDIO_CASES,
@@ -45,16 +46,23 @@ import {
   STUDIO_DESIGN_STEPS,
   STUDIO_FOOTER,
   STUDIO_HERO,
+  STUDIO_LOGO_COPY,
+  STUDIO_LOGO_STAGES,
   STUDIO_PRICE_ROWS,
   STUDIO_PRICES_HEAD,
   STUDIO_PROCESS,
+  STUDIO_SCHEME_LABEL,
+  STUDIO_SCHEMES,
   STUDIO_SERVICES,
   STUDIO_SERVICES_HEAD,
   STUDIO_WHATSAPP_DISPLAY,
   STUDIO_WHATSAPP_URL,
   STUDIO_WORK_HEAD,
+  STUDIO_WORK_TABS,
   studioDesignImage,
+  studioSchemeVars,
   studioWhatsApp,
+  type StudioCase,
   type StudioDesignCase,
   type StudioServicePrice,
 } from "./studio-copy";
@@ -215,6 +223,100 @@ function TablePrice({ price }: { price: StudioServicePrice }) {
   );
 }
 
+// A case's own colours (1.8.0): the brand's swatches, exactly as its code
+// sets them, as chips under the brief. The chip names the colour; the hex
+// is beside it for anyone who wants the value.
+function Swatches({ id }: { id: keyof typeof STUDIO_SCHEMES }) {
+  const s = STUDIO_SCHEMES[id];
+  return (
+    <div className="sw">
+      <p className="sw-h">{STUDIO_SCHEME_LABEL}</p>
+      <ul className="sw-row">
+        {s.swatches.map((w) => (
+          <li key={w.hex}>
+            <span className="sw-chip" style={{ background: w.hex }} aria-hidden="true" />
+            <span className="sw-n">{w.name}</span>
+            <span className="sw-x">{w.hex.toUpperCase()}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// The portfolio card's front (1.8.0): the case exactly as the page showed
+// it before, desktop and phone proofs and the words, now inside its own
+// colour scheme. A case whose back has stages carries a "turn" hint.
+function WorkFront({ c }: { c: StudioCase }) {
+  return (
+    <article className="case">
+      <DeskProof site={c.site} alt={c.desk.alt} url={c.desk.url} caption={c.desk.caption} side="Proof · desktop" />
+      <PhoneProof site={c.site} alt={c.phone.alt} caption="Phone" side="390" />
+      <div className="case-text">
+        <div>
+          <p className="kick">{c.kicker}</p>
+          <h3>{c.title}</h3>
+          {c.logo.length > 0 && (
+            <span className="pf-turn" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5" /></svg>
+              {STUDIO_LOGO_COPY.turn}
+            </span>
+          )}
+        </div>
+        <div>
+          <p>{c.body}</p>
+          <dl className="spec">
+            <dt>Made</dt>
+            <dd>{c.made}</dd>
+            <dt>Look</dt>
+            <dd>{c.look}</dd>
+          </dl>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// The portfolio card's back (1.8.0): the logo process, only the stages
+// that have real material (studio-copy.ts), in the order they happened.
+function WorkBack({ c }: { c: StudioCase }) {
+  const stages = STUDIO_LOGO_STAGES.map((st) => ({ ...st, stage: c.logo.find((l) => l.kind === st.kind) })).filter(
+    (x) => x.stage && x.stage.pictures.length > 0,
+  );
+  return (
+    <div className="lg">
+      <div className="lg-top">
+        <p className="kick">{STUDIO_LOGO_COPY.kicker}</p>
+        <h3>{c.tab}</h3>
+        <span className="pf-turn" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5" /></svg>
+          {STUDIO_LOGO_COPY.back}
+        </span>
+      </div>
+      <ol className="lg-stages">
+        {stages.map(({ kind, label, stage }, i) => (
+          <li key={kind} className={`lg-stage lg-${kind}`}>
+            <p className="dz-step">
+              <i>{String(i + 1).padStart(2, "0")}</i> {label}
+            </p>
+            <div className="lg-pics">
+              {stage!.pictures.map((pic) => (
+                <figure key={pic.src + pic.caption} className="lg-pic">
+                  <div className="lg-tile">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- the client's own file, served as-is */}
+                    <img src={pic.src} alt={pic.alt} width={pic.width} height={pic.height} loading="lazy" decoding="async" />
+                  </div>
+                  <figcaption>{pic.caption}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 // One "how we design" case: the example brief, the three options with the
 // chosen one marked, and why it won. Each thumbnail ships in both themes and
 // follows the page's theme (studio.css shows one, hides the other; a hidden
@@ -248,6 +350,7 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
             <dd>&ldquo;{c.brief.ask}&rdquo;</dd>
           </div>
         </dl>
+        <Swatches id={c.id} />
       </div>
 
       <div className="opts">
@@ -302,6 +405,12 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
           <span className="sm">
             Option {letter} is the one our team built out, for desktop and phone, in light and dark.
           </span>
+        </p>
+        <p className="dz-cta">
+          <a className="btn btn-acc btn-sm" href={studioWhatsApp(`Hi ROKCT, I'd like three options for my site, like the ${c.tab} brief.`)}>
+            <WhatsAppGlyph />
+            Start a brief like this
+          </a>
         </p>
       </div>
     </>
@@ -435,27 +544,17 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
           <section className="sec" id="work">
             <div className="wrap">
               <SectionHead {...STUDIO_WORK_HEAD} />
-              {STUDIO_CASES.map((c) => (
-                <article className="case" key={c.kicker}>
-                  <DeskProof site={c.site} alt={c.desk.alt} url={c.desk.url} caption={c.desk.caption} side="Proof · desktop" />
-                  <PhoneProof site={c.site} alt={c.phone.alt} caption="Phone" side="390" />
-                  <div className="case-text">
-                    <div>
-                      <p className="kick">{c.kicker}</p>
-                      <h3>{c.title}</h3>
-                    </div>
-                    <div>
-                      <p>{c.body}</p>
-                      <dl className="spec">
-                        <dt>Made</dt>
-                        <dd>{c.made}</dd>
-                        <dt>Look</dt>
-                        <dd>{c.look}</dd>
-                      </dl>
-                    </div>
-                  </div>
-                </article>
-              ))}
+              <StudioWorkTabs
+                tabs={STUDIO_CASES.map((c) => ({ id: c.site, label: c.tab, sub: c.sector }))}
+                schemes={STUDIO_CASES.map((c) => studioSchemeVars(c.site))}
+                labels={STUDIO_WORK_TABS}
+                cards={STUDIO_CASES.map((c) => ({
+                  front: <WorkFront c={c} />,
+                  back: c.logo.length > 0 ? <WorkBack c={c} /> : null,
+                  flipLabel: STUDIO_LOGO_COPY.flip(c.tab),
+                  flipBackLabel: STUDIO_LOGO_COPY.flipBack(c.tab),
+                }))}
+              />
             </div>
           </section>
 
@@ -474,6 +573,7 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
               </ol>
               <StudioDesignTabs
                 tabs={STUDIO_DESIGN_CASES.map((c) => ({ id: c.id, label: c.tab, sub: c.sector }))}
+                schemes={STUDIO_DESIGN_CASES.map((c) => studioSchemeVars(c.id))}
                 panels={STUDIO_DESIGN_CASES.map((c) => (
                   <DesignCase key={c.id} c={c} />
                 ))}

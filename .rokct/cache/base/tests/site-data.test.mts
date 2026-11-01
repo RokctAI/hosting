@@ -498,3 +498,33 @@ describe("theme.json backToTop", () => {
     assert.deepEqual(validateSiteData("theme", { primary: "#0a7", backToTop: true }), ["backToTop must be an object"]);
   });
 });
+
+// base_sdk 1.57.0: the order form goes by email.
+import { orderChannels, orderEmailAddress, orderMailto } from "../templates/lib/site-data/order-email.ts";
+import { validateSite as validateSiteEmail, checkSitePage } from "../templates/lib/site-data/validate-site.mjs";
+
+describe("order email", () => { it("order email: override, declared domain, then host", () => {
+  assert.equal(orderEmailAddress({ email: { orders: "shop@x.co.za" } }, "y.com"), "shop@x.co.za");
+  assert.equal(orderEmailAddress({ email: { domain: "x.co.za" } }, "y.com"), "orders@x.co.za");
+  assert.equal(orderEmailAddress({}, "www.southriver.co.za:3000"), "orders@southriver.co.za");
+  assert.equal(orderEmailAddress({}), null);
+  assert.match(orderMailto("a@b.co", { subject: "S s", text: "a: b" }), /^mailto:a@b\.co\?subject=S%20s&body=a%3A%20b$/);
+});
+
+it("site.json email is validated", () => {
+  const base = { name: "X", metadata: { title: "t", description: "d" } };
+  const bad = validateSiteEmail({ ...base, email: { orders: "nope", domain: "no spaces" } });
+  assert.equal(bad.length, 2);
+  assert.deepEqual(validateSiteEmail({ ...base, email: { orders: "o@x.co" } }), []);
+});
+  it("orderVia: whatsapp or both need a WhatsApp number", () => {
+    const sections = { sections: [{ type: "order" }] };
+    const site = (via?: string) => ({ name: "X", email: via ? { orderVia: via } : {} });
+    assert.deepEqual(checkSitePage({ sections, site: site(), order: {} }), []);
+    assert.deepEqual(orderChannels({}), ["email"]);
+    assert.deepEqual(orderChannels({ whatsapp: { number: "1", display: "1" } }), ["email", "whatsapp"]);
+    assert.deepEqual(orderChannels({ whatsapp: { number: "1", display: "1" }, email: { orderVia: "email" } }), ["email"]);
+    assert.equal(checkSitePage({ sections, site: site("both"), order: {} }).length, 1);
+    assert.equal(validateSiteEmail({ name: "X", metadata: { title: "t", description: "d" }, email: { orderVia: "sms" } }).length, 1);
+  });
+});

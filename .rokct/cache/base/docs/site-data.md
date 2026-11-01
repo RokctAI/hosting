@@ -45,10 +45,10 @@ so base has one signal for switching off backend-only surface.
 | `about`     | `data/about.md`         | the markdown, verbatim, as a string                                                                                              |
 | `legal`     | `data/legal/<slug>.md`  | a map of slug to `{ title, markdown }`; the title from a `title:` front-matter line, else the first level-1 heading (removed from the body) |
 | `network`   | `data/network.json`     | `{ heading?, sites: [{ key, name, url, logo?, logoDark?, wordmark?, shown? }] }`; `url` an https origin with no path, query string or fragment, or `null` with `shown: false` |
-| `site`      | `data/site.json`        | (1.53.0) `{ name, wordmark?: { lead, mark?, rest? }, motto?, place?, since?, whatsapp?: { number, display }, header?: { logo?, action? }, metadata: { title, tagline?, description, keywords?, themeColor?, locale?, icon? }, footer?: { links?, line?, legal? } }` |
+| `site`      | `data/site.json`        | (1.53.0) `{ name, wordmark?: { lead, mark?, rest? }, motto?, place?, since?, whatsapp?: { number, display }, email?: { orders?, domain?, orderVia?: "email"\|"whatsapp"\|"both" }, header?: { logo?, action? }, metadata: { title, tagline?, description, keywords?, themeColor?, locale?, icon? }, footer?: { links?, line?, legal? } }` |
 | `sections`  | `data/sections.json`    | (1.53.0) `{ sections: [{ type, id?, nav?, variant?, tone?, ...the type's fields }] }`; types `hero` (first, if any), `intro`, `steps`, `pricing`, `gallery`, `facts`, `order`, `contact` |
 | `pricing`   | `data/pricing.json`     | (1.53.0) `{ tiers: [{ name, price, unit?, detail?, best?, minQty?, previewNote? }], ctaLabel?, bestLabel? }` |
-| `order`     | `data/order.json`       | (1.53.0) `{ intro, fields: { business, quantity, phone, area, file? }, message: { business, quantity, quantityPrice?, area, phone, fileSent?, fileLater? }, submit, fine?, preview? }` |
+| `order`     | `data/order.json`       | (1.53.0; goes by email since 1.57.0, to `site.email.orders` or orders@ the site's domain) `{ intro, fields: { business, quantity, phone, area, file? }, message: { business, quantity, quantityPrice?, area, phone, fileSent?, fileLater? }, submit, fine?, preview? }` |
 | `css`       | `data/site.css`         | (1.53.0) the site's own stylesheet, verbatim; plain CSS, no `<style>`/`<script>`, no `@import` |
 
 ### A page that is data (1.53.0)
