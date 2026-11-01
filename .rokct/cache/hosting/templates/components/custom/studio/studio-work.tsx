@@ -21,6 +21,11 @@
 // the corner link, name, kind and line, a site leaving the grid if a
 // picture fails) and the studio footer. Server component; tokens and faces
 // are the home page's (studio.css, studio-fonts.ts).
+//
+// 1.14.0: the header's "Portfolio" (marked as the current page) opens it,
+// and the grid has the service filters (studio-showcase-client.tsx); the
+// built-in logo sides (the ROKCT sheet) are rendered here, on the server,
+// as on the home row.
 
 import "./studio.css";
 
@@ -28,9 +33,9 @@ import { BackToTop } from "@/components/custom/back-to-top";
 
 import { StudioCurrencyProvider, StudioHeader } from "./studio-client";
 import { STUDIO_WHATSAPP_URL } from "./studio-copy";
-import { StudioFooter } from "./studio-home";
+import { StudioFooter, studioShowcaseBacks } from "./studio-home";
 import { StudioShowcaseCount, StudioShowcaseGrid, StudioShowcaseScope, StudioShowcaseSection } from "./studio-showcase-client";
-import { STUDIO_SHOWCASE_COPY, type ShowcaseSite } from "./studio-showcase";
+import { SHOWCASE_PAGE_HREF, STUDIO_SHOWCASE_COPY, type ShowcaseEntry } from "./studio-showcase";
 
 export function StudioWork({
   fontClassName,
@@ -38,15 +43,15 @@ export function StudioWork({
   rescue = [],
 }: {
   fontClassName: string;
-  sites: ShowcaseSite[];
+  sites: ShowcaseEntry[];
   /** The built-in stand-in if every site drops in the browser (loadShowcase). */
-  rescue?: ShowcaseSite[];
+  rescue?: ShowcaseEntry[];
 }) {
   const P = STUDIO_SHOWCASE_COPY.page;
   return (
     <StudioCurrencyProvider>
       <div id="top" className={`st ${fontClassName}`}>
-        <StudioHeader base="/" />
+        <StudioHeader base="/" current={SHOWCASE_PAGE_HREF} />
         <StudioShowcaseScope>
           <main className="wk">
             <section className="wk-head">
@@ -65,7 +70,7 @@ export function StudioWork({
                 WhatsApp button below stay. */}
             <StudioShowcaseSection className="wk-body" aria-label={P.title}>
               <div className="wrap">
-                <StudioShowcaseGrid sites={sites} rescue={rescue} />
+                <StudioShowcaseGrid sites={sites} rescue={rescue} backs={studioShowcaseBacks()} />
               </div>
             </StudioShowcaseSection>
             <div className="wk-end">

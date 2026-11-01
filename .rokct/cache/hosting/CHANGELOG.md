@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.14.0
+
+* "Portfolio" in the studio header (Ray, 2026-11-01 11:14Z: "/work should
+  be in top menu as portfolio with filters"). It replaces "Our work" and
+  opens `/work` from every studio page, marked as the current page there;
+  the home row's "All our work" chip and See more card still open it.
+* `/work` lists every showcase card with service filters: chips for All
+  and each service at least one card names (Website, Logo, Social posts,
+  Business plan, Pitch deck, Print), each with its count. Under "Logo" a
+  site that also has a logo side turns over to it (base_sdk's FlipCard,
+  the row's flip), a logo-only card shows up and a site without one
+  leaves; "Website" shows website sides only; "All" shows everything with
+  sites on their website side. Cards that stay glide to their new places
+  (a FLIP move), leavers fade where they stood, newcomers rise in;
+  prefers-reduced-motion gives a short crossfade with no glide or turn. A
+  card with a logo side can also be turned by hand (click, Enter, Space)
+  until the filter changes. The filter is kept in `?service=` so a view
+  can be shared; each card lists what we made under its line, and a polite
+  live region says how many cards are shown. Remixicon only.
+* Showcase schema, backward compatible: optional `services` (known values
+  only, ["website"] when absent) and `logo`
+  (`{"branch"?, "light", "dark"?}`, raster pictures on the repo's branch,
+  branch defaulting to shots.branch) for a card's own logo side. Logo art
+  (`logo` or a known `logo_back`) implies the "logo" service, and a "logo"
+  claim with no art is dropped. A card without "website" is logo-only: url
+  and shots optional, logo art required. The browser checks a card's logo
+  pictures with its shots. The home row draws sites only.
+* ShowcaseSite gains `website`, `services` and `logo`; ShowcaseMark (logo
+  only) and ShowcaseEntry are new. Tests: test_studio_portfolio_filters.py;
+  the older suites' version checks are floors.
+
 ## 1.13.0
 
 * New "What you get with ROKCT hosting" section on the studio home

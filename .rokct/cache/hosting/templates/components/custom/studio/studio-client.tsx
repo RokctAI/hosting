@@ -150,9 +150,14 @@ function SunMoon() {
 /**
  * The studio header. `base` prefixes the section anchors: "" on the home
  * page, "/" on another studio page (1.11.0's /work), so "Prices" there
- * goes to /#prices.
+ * goes to /#prices. A page link ("/work", 1.14.0's Portfolio) is used as
+ * is, and marked as the current page where `current` names it.
  */
-export function StudioHeader({ base = "" }: { base?: string }) {
+export function navHref(href: string, base: string): string {
+  return href.startsWith("/") ? href : `${base}${href}`;
+}
+
+export function StudioHeader({ base = "", current }: { base?: string; current?: string }) {
   const { cur, setCur } = useContext(CurrencyContext);
   const { resolvedTheme, setTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
@@ -174,7 +179,7 @@ export function StudioHeader({ base = "" }: { base?: string }) {
         </a>
         <nav className="nav" aria-label="Sections">
           {STUDIO_NAV.map((n) => (
-            <a key={n.href} href={`${base}${n.href}`}>
+            <a key={n.href} href={navHref(n.href, base)} aria-current={n.href === current ? "page" : undefined}>
               {n.label}
             </a>
           ))}
@@ -214,7 +219,7 @@ export function StudioHeader({ base = "" }: { base?: string }) {
       </div>
       <div className={open ? "mnav wrap open" : "mnav wrap"}>
         {STUDIO_NAV.map((n) => (
-          <a key={n.href} href={`${base}${n.href}`} onClick={() => setOpen(false)}>
+          <a key={n.href} href={navHref(n.href, base)} aria-current={n.href === current ? "page" : undefined} onClick={() => setOpen(false)}>
             {n.href === "#contact" ? `${n.label} · ${STUDIO_WHATSAPP_DISPLAY}` : n.label}
           </a>
         ))}

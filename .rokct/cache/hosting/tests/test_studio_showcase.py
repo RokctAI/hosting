@@ -295,14 +295,15 @@ console.log(JSON.stringify({
 
     def test_both_pictures_are_probed_and_errors_remove_the_site(self):
         client = read(CLIENT)
-        self.assertIn("Promise.all([probe(s.phone), probe(s.desktop)])", client)
+        # 1.14.0: every picture a card has (showcasePictures: phone, desktop, then its own logo).
+        self.assertIn("Promise.all(showcasePictures(s).map(probe))", client)
         self.assertIn('oks.every(Boolean) ? "ok" : "fail"', client)
         self.assertIn("im.onerror = () => resolve(false);", client)
         self.assertIn("resolve(im.naturalWidth > 0)", client)
         # An <img> that errors later also takes its site out, row and grid.
         self.assertGreaterEqual(client.count("onError={"), 4)
         self.assertEqual(client.count("const shown = visibleShowcase(list, status, ready);"), 1)
-        self.assertEqual(client.count("useShowcaseList(sites, rescue)"), 2)
+        self.assertEqual(client.count("useShowcaseList(sites, rescue"), 2)
 
 
 
@@ -409,17 +410,19 @@ class TestAllDroppedAtRuntime(unittest.TestCase):
 
     def test_row_and_grid_swap_then_hide_the_section(self):
         client = read(CLIENT)
-        hook = client.split("function useShowcaseList(", 1)[1].split("\n}\n", 1)[0]
+        hook = client.split("function useShowcaseList<", 1)[1].split("\n}\n", 1)[0]
         self.assertIn("const list = rescued ? rescue : sites;", hook)
         self.assertIn('if (phase === "rescue") setRescued(true);', hook)
-        self.assertIn("report?.(gone, ready ? shown.length : null);", hook)
+        # 1.14.0: the number is the filter's when the grid asks (countOf).
+        self.assertIn("const count = countOf ? countOf(shown) : shown.length;", hook)
+        self.assertIn("report?.(gone, ready ? count : null);", hook)
         # A new list starts unchecked (the stand-in shares repos with the folder).
         self.assertIn("const cur: St = st.key === key ? st : { key, status: {}, ready: false };", client)
         section = client.split("export function StudioShowcaseSection(", 1)[1].split("\n}\n", 1)[0]
         self.assertIn('<section {...rest} data-showcase="" hidden={gone || undefined}>', section)
         # 1.12.0: the stand-in counts itself, through showcaseMoreCount.
         self.assertIn("showcaseMoreCount(givenTotal, list.length, shown.length, rescued, rescue.length)", client)
-        self.assertIn('<ol className="wk-grid" data-ready={ready ? "true" : undefined} hidden={gone || undefined}>', client)
+        self.assertIn('<ol ref={grid} className="wk-grid" data-ready={ready ? "true" : undefined} data-filter={filter} hidden={gone || undefined}>', client)
         css = read(CSS)
         self.assertIn(".st [data-showcase][hidden],.st .wk-grid[hidden]{display:none!important}", css)
 
@@ -433,7 +436,7 @@ class TestAllDroppedAtRuntime(unittest.TestCase):
         self.assertIn("<StudioShowcaseScope>", home)
         self.assertNotIn('<section className="sec" id="work">', home)
         work = read(os.path.join(STUDIO, "studio-work.tsx"))
-        self.assertIn("<StudioShowcaseGrid sites={sites} rescue={rescue} />", work)
+        self.assertIn("<StudioShowcaseGrid sites={sites} rescue={rescue} backs={studioShowcaseBacks()} />", work)
         self.assertIn('<StudioShowcaseCount className="fine num" initial={sites.length} />', work)
         for page in ("page.tsx", os.path.join("work", "page.tsx")):
             src = read(os.path.join(TEMPLATES, "app", page))
@@ -479,13 +482,17 @@ class TestRowAndPage(unittest.TestCase):
         self.assertIn("const { sites, rescue } = loadShowcase();", page)
         self.assertIn("<StudioWork fontClassName={studioFontClassName} sites={sites} rescue={rescue} />", page)
         work = read(WORK)
-        self.assertIn("<StudioShowcaseGrid sites={sites} rescue={rescue} />", work)
-        self.assertIn('<StudioHeader base="/" />', work)
+        self.assertIn("<StudioShowcaseGrid sites={sites} rescue={rescue} backs={studioShowcaseBacks()} />", work)
+        self.assertIn('<StudioHeader base="/" current={SHOWCASE_PAGE_HREF} />', work)
         self.assertIn("<StudioFooter />", work)
-        client = read(CLIENT).split("export function StudioShowcaseGrid", 1)[1]
+        # 1.14.0: the grid's faces (LogoFace, SiteFace, WorkItem) sit just above it.
+        client = read(CLIENT).split("function LogoFace(", 1)[1]
         for needle in ("{site.name}", "{site.kind}", "{site.tagline}", "site.desktop", "site.phone", "<ShowcaseExtLink"):
             self.assertIn(needle, client, needle)
-        self.assertIn('href={`${base}${n.href}`}', read(os.path.join(STUDIO, "studio-client.tsx")))
+        # 1.14.0: a "/" link (Portfolio) is used as is; "#" anchors take the base.
+        header = read(os.path.join(STUDIO, "studio-client.tsx"))
+        self.assertIn('return href.startsWith("/") ? href : `${base}${href}`;', header)
+        self.assertEqual(header.count("href={navHref(n.href, base)}"), 2)
 
     def test_external_link_opens_a_new_tab_safely(self):
         client = read(CLIENT)

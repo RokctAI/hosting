@@ -76,7 +76,7 @@ import {
   type StudioServicePrice,
 } from "./studio-copy";
 import { StudioShowcaseRow, StudioShowcaseScope, StudioShowcaseSection, type ShowcaseBacks } from "./studio-showcase-client";
-import { SHOWCASE_HOME_COUNT, SHOWCASE_PAGE_HREF, type ShowcaseSite } from "./studio-showcase";
+import { SHOWCASE_HOME_COUNT, SHOWCASE_PAGE_HREF, showcaseSitesOnly, type ShowcaseEntry } from "./studio-showcase";
 import { ShowcaseLiftBack } from "./studio-showcase-lift";
 import { isStudioShotSite, studioShotSrc, type StudioShotSiteId } from "./studio-shots";
 
@@ -452,14 +452,17 @@ export function StudioFooter() {
 
 export function StudioHome({
   fontClassName,
-  showcase,
-  rescue = [],
+  showcase: entries,
+  rescue: rescueEntries = [],
 }: {
   fontClassName: string;
-  showcase: ShowcaseSite[];
+  showcase: ShowcaseEntry[];
   /** The built-in stand-in if every showcase site drops in the browser (loadShowcase). */
-  rescue?: ShowcaseSite[];
+  rescue?: ShowcaseEntry[];
 }) {
+  // 1.14.0: the row draws sites (phones); logo-only cards live on /work.
+  const showcase = showcaseSitesOnly(entries);
+  const rescue = showcaseSitesOnly(rescueEntries);
   const H = STUDIO_HERO;
   const P = STUDIO_PROCESS;
   const C = STUDIO_CONTACT;

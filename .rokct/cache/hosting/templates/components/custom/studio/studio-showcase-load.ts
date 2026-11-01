@@ -39,7 +39,7 @@ import {
   showcaseOrFallback,
   showcaseOwnRepo,
   showcaseRescueList,
-  type ShowcaseSite,
+  type ShowcaseEntry,
 } from "./studio-showcase";
 
 /** Every `*.json` in the folder, name and text; empty when the folder is missing or unreadable. */
@@ -75,7 +75,7 @@ export function readShowcaseFiles(dir: string): { name: string; text: string }[]
 export function loadShowcase(
   root: string = process.cwd(),
   env: Record<string, string | undefined> = process.env,
-): { sites: ShowcaseSite[]; fallback: boolean; rescue: ShowcaseSite[] } {
+): { sites: ShowcaseEntry[]; fallback: boolean; rescue: ShowcaseEntry[] } {
   const files = readShowcaseFiles(join(root, SHOWCASE_DIR));
   const sites = buildShowcase(files);
   const skipped = files.length - sites.length;
