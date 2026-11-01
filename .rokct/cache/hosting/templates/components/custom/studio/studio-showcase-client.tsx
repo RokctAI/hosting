@@ -54,10 +54,17 @@
 //     Reduced motion: no glide or turn, a short crossfade. The filter is
 //     kept in ?service= so a filtered view can be shared.
 //
+//   * 1.17.0, the award badge: a card whose file declares an `award` gets
+//     a small pill (Remixicon award-line) under its caption on the row, its
+//     label at rest and the detail joined on once the card grows; on /work
+//     the whole line sits under the card's own line. It is laid over the
+//     row's spare room (absolute) and below the /work picture, so no card
+//     button moves; a card without an award draws exactly as before.
+//
 // The row's last card is "See more": the full ranked list at /work.
 "use client";
 
-import { RiArrowRightLine, RiExternalLinkLine, RiPauseLine, RiPlayLine, RiRepeat2Line } from "@remixicon/react";
+import { RiArrowRightLine, RiAwardLine, RiExternalLinkLine, RiPauseLine, RiPlayLine, RiRepeat2Line } from "@remixicon/react";
 import {
   createContext,
   useCallback,
@@ -81,6 +88,7 @@ import {
   SHOWCASE_FILTER_PARAM,
   SHOWCASE_SERVICES,
   STUDIO_SHOWCASE_COPY as T,
+  showcaseAwardText,
   showcaseFace,
   showcaseFilterParam,
   showcaseFiltered,
@@ -496,6 +504,13 @@ function CardBody({ item, g, interactive, big, flipped, lifted, dim, backs, tota
         <b>{site.name}</b> · <span>{site.kind}</span>
         <em>{site.tagline}</em>
       </p>
+      {site.award && (
+        <p className="sr-award" data-award="">
+          <RiAwardLine size={13} aria-hidden="true" />
+          <b>{site.award.label}</b>
+          {site.award.detail && <span className="sr-award-d"> · {site.award.detail}</span>}
+        </p>
+      )}
     </li>
   );
 }
@@ -1186,6 +1201,12 @@ function WorkItem({
           <p className="wk-kind">{site.kind}</p>
         </div>
         <p className="wk-tag">{site.tagline}</p>
+        {site.award && (
+          <p className="wk-award" data-award="">
+            <RiAwardLine size={15} aria-hidden="true" />
+            <span>{showcaseAwardText(site.award)}</span>
+          </p>
+        )}
         <ul className="wk-svc" aria-label={`${site.name}: what we made`}>
           {labels.map((l) => (
             <li key={l}>{l}</li>

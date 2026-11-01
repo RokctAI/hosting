@@ -34,6 +34,8 @@ import {
   type ReactNode,
 } from "react";
 
+import { HeaderAuthSlot } from "@/components/custom/header-auth-slot";
+
 import {
   STUDIO_CONTACT,
   STUDIO_CURRENCY_NOTE,
@@ -157,6 +159,15 @@ export function navHref(href: string, base: string): string {
   return href.startsWith("/") ? href : `${base}${href}`;
 }
 
+// 1.16.0: the Log in / Sign up pair is drawn by whatever SDK fills base's
+// header auth slot (base_sdk >= 1.60.0; auth_sdk registers it), in the
+// studio's own classes: a quiet link and a line pill on the bar (both hide
+// with the bar's other buttons below 980px; the pill also steps aside up to
+// 1099px so the section links stay on one line), plain menu rows in the
+// phone menu. Nothing registered, nothing drawn.
+const STUDIO_AUTH_BAR = { login: "hd-login", signup: "btn btn-line btn-sm hd-signup" };
+const STUDIO_AUTH_MENU = { login: "mnav-auth", signup: "mnav-auth" };
+
 export function StudioHeader({ base = "", current }: { base?: string; current?: string }) {
   const { cur, setCur } = useContext(CurrencyContext);
   const { resolvedTheme, setTheme } = useTheme();
@@ -201,6 +212,7 @@ export function StudioHeader({ base = "", current }: { base?: string; current?: 
           >
             <SunMoon />
           </button>
+          <HeaderAuthSlot variant="bar" classes={STUDIO_AUTH_BAR} />
           <a className="btn btn-ink btn-sm" href={STUDIO_WHATSAPP_URL}>
             WhatsApp us
           </a>
@@ -223,6 +235,7 @@ export function StudioHeader({ base = "", current }: { base?: string; current?: 
             {n.href === "#contact" ? `${n.label} · ${STUDIO_WHATSAPP_DISPLAY}` : n.label}
           </a>
         ))}
+        <HeaderAuthSlot variant="panel" classes={STUDIO_AUTH_MENU} onNavigate={() => setOpen(false)} />
       </div>
     </header>
   );

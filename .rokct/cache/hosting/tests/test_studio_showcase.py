@@ -95,7 +95,7 @@ def run_node(script, files):
         with open(probe, "w", encoding="utf-8") as f:
             f.write(script)
         run = subprocess.run([node, "--experimental-strip-types", "--no-warnings", probe],
-                             capture_output=True, text=True, timeout=60, cwd=tmp)
+                             capture_output=True, text=True, timeout=60, cwd=tmp, check=False)
     if run.returncode != 0 and "strip-types" in run.stderr:
         raise unittest.SkipTest("node has no type stripping")
     if run.returncode != 0:
@@ -506,7 +506,7 @@ class TestRowAndPage(unittest.TestCase):
         # Every target=_blank in the new files carries noopener.
         for path in NEW_FILES:
             src = read(path)
-            for m in re.finditer(r"<a\b[^>]*>", src, re.S):
+            for m in re.finditer(r"<a\b[^>]*>", src, re.DOTALL):
                 if 'target="_blank"' in m.group(0):
                     self.assertIn("noopener", m.group(0), path)
 
@@ -527,10 +527,10 @@ class TestRowAndPage(unittest.TestCase):
             self.assertNotIn("lucide", src, path)
             self.assertNotIn("@radix-ui/react-icons", src, path)
             self.assertNotIn("<svg", src, path)
-            for m in re.finditer(r'from "([^"]*icon[^"]*)"', src, re.I):
+            for m in re.finditer(r'from "([^"]*icon[^"]*)"', src, re.IGNORECASE):
                 self.assertEqual(m.group(1), "@remixicon/react", path)
         client = read(CLIENT)
-        self.assertIn('import { RiArrowRightLine, RiExternalLinkLine, RiPauseLine, RiPlayLine, RiRepeat2Line } from "@remixicon/react";', client)
+        self.assertIn('import { RiArrowRightLine, RiAwardLine, RiExternalLinkLine, RiPauseLine, RiPlayLine, RiRepeat2Line } from "@remixicon/react";', client)
 
     def test_flip_is_base_flip_card_and_only_for_a_known_back(self):
         client = read(CLIENT)
@@ -567,7 +567,7 @@ class TestRowAndPage(unittest.TestCase):
         self.assertIn(".st .sr-m .sr-card{scroll-snap-align:start}", phones)
 
     def test_studio_css_braces_balance(self):
-        css = re.sub(r"/\*.*?\*/", "", read(CSS), flags=re.S)
+        css = re.sub(r"/\*.*?\*/", "", read(CSS), flags=re.DOTALL)
         depth = 0
         for ch in css:
             depth += (ch == "{") - (ch == "}")

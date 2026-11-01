@@ -56,6 +56,22 @@
 // have logo art, or it is skipped. Every other card needs url and shots as
 // before.
 //
+// 1.17.0, the award badge (Ray wants Supacharge's "Top 200 · GSE 2026
+// Digital Startup Accelerator" shown on its card; the studio names no
+// site's data, so the site declares it in its own .rokct/showcase.json).
+// One optional field, backward compatible:
+//
+//   "award": "Top 200 · GSE 2026 Digital Startup Accelerator"
+//   "award": {"label":"Top 200","detail":"GSE 2026 Digital Startup Accelerator"}
+//
+// A string is split at its first " · " into the label and the detail (no
+// " · ": the label alone), so both forms above read the same. `label` is
+// the short part the home row shows on a card at rest (up to 40
+// characters); `detail` (optional, up to 90) joins it with " · " on a
+// grown card and on /work. A bad award (empty,
+// too long, the wrong type) is dropped and the card shows as if it had
+// none; it never skips the card.
+//
 // This file is the rules only - parse, check, order - with no imports, so
 // the server loader (studio-showcase-load.ts), the client row and the tests
 // all run the same code. A file that fails a check is skipped, never
@@ -104,6 +120,12 @@ export interface ShowcaseLogo {
   dark: string | null;
 }
 
+/** A card's award badge (1.17.0 `award`): a short label and an optional detail. */
+export interface ShowcaseAward {
+  label: string;
+  detail: string | null;
+}
+
 interface ShowcaseCommon {
   /** `<owner>/<repo>`: the key, unique in the list. */
   repo: string;
@@ -117,6 +139,8 @@ interface ShowcaseCommon {
   logoBack: ShowcaseLogoBack | null;
   /** 1.14.0: the card's own logo picture(s); null when it has none. */
   logo: ShowcaseLogo | null;
+  /** 1.17.0: the award the site declares; null when it has none. */
+  award: ShowcaseAward | null;
   /** The site this page is served from (no out-link on its card); set by markOwnSite. */
   own?: boolean;
 }
@@ -237,6 +261,34 @@ export function showcaseLogo(v: unknown, repo: string, fallbackBranch: string | 
   return { light: showcaseShotUrl(repo, branch, light), dark: dark ? showcaseShotUrl(repo, branch, dark) : null };
 }
 
+/**
+ * A card's `award` (1.17.0): a string ("label · detail", or the label
+ * alone) or `{label, detail?}`. Whitespace is collapsed; null when it is
+ * missing or does not hold (no label, a label over 40 characters, a detail
+ * given but empty, over 90 characters or not a string).
+ */
+export function showcaseAward(v: unknown): ShowcaseAward | null {
+  let o: Record<string, unknown>;
+  if (typeof v === "string") {
+    const cut = v.indexOf(" · ");
+    o = cut < 0 ? { label: v } : { label: v.slice(0, cut), detail: v.slice(cut + 3) };
+  } else if (v && typeof v === "object" && !Array.isArray(v)) {
+    o = v as Record<string, unknown>;
+  } else {
+    return null;
+  }
+  const label = text(o.label, 40);
+  if (!label) return null;
+  if (o.detail === undefined || o.detail === null) return { label, detail: null };
+  const detail = text(o.detail, 90);
+  return detail ? { label, detail } : null;
+}
+
+/** The award as one line: "label · detail", or the label alone. */
+export function showcaseAwardText(a: ShowcaseAward): string {
+  return a.detail ? `${a.label} · ${a.detail}` : a.label;
+}
+
 /** True when the card has a logo side to show (its own `logo`, or a known back). */
 export function showcaseHasLogo(e: { logo: ShowcaseLogo | null; logoBack: ShowcaseLogoBack | null }): boolean {
   return e.logo !== null || e.logoBack !== null;
@@ -294,7 +346,8 @@ export function parseShowcaseEntry(raw: unknown, fileName?: string): ShowcaseEnt
   // Art implies the service; a claim with nothing to show is dropped.
   const withLogo = declared.includes("logo") || art;
   const services = SHOWCASE_SERVICES.map((s) => s.key).filter((k) => (k === "logo" ? withLogo && art : declared.includes(k)));
-  const common = { repo, name, kind, tagline, rank, services, logoBack, logo };
+  const award = showcaseAward(o.award);
+  const common = { repo, name, kind, tagline, rank, services, logoBack, logo, award };
   if (!website) {
     if (!art) return null;
     return { ...common, website: false, url };
@@ -358,6 +411,9 @@ export function buildShowcase(files: { name: string; text: string }[]): Showcase
  * and Polaris cards show their sites' dark first screens (the dark live
  * picture, and committed pictures recaptured from the live sites with the
  * dark scheme); Supacharge stays light.
+ *
+ * No award (1.17.0): an award is the site's own claim, made in its own
+ * showcase file, never written here.
  */
 export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
   {
@@ -371,6 +427,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     desktop: "/studio/shots/studio/desktop-dark.webp",
     logoBack: "rokct",
     logo: null,
+    award: null,
     services: ["website", "logo"],
     website: true,
   },
@@ -385,6 +442,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     desktop: "/studio/shots/polaris/desktop-dark.webp",
     logoBack: null,
     logo: null,
+    award: null,
     services: ["website"],
     website: true,
   },
@@ -399,6 +457,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     desktop: "/studio/shots/supacharge/desktop-light.webp",
     logoBack: null,
     logo: null,
+    award: null,
     services: ["website"],
     website: true,
   },

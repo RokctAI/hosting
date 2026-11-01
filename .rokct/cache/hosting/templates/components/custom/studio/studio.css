@@ -117,8 +117,13 @@ html.dark:has(.st)::-webkit-scrollbar-thumb{background:#F2818F;border-color:#131
 .st section[id],.st .contact{scroll-margin-top:84px}
 .st .burger{display:none}
 .st .mnav{display:none}
+/* 1.16.0: the injected Log in link on the bar (Sign up is a .btn) */
+.st .hd-login{font:600 14px/1 var(--sans);letter-spacing:.01em;color:var(--ink-2);text-decoration:none;padding:8px 4px;white-space:nowrap;transition:color .2s}
+.st .hd-login:hover{color:var(--ink)}
+/* the bar is full between the burger and 1100px: Log in stays, Sign up waits for the login page's own link */
+@media (min-width:981px) and (max-width:1099px){.st .hd .hd-signup{display:none}}
 @media (max-width:980px){
-.st .nav,.st .hd .btn{display:none}
+.st .nav,.st .hd .btn,.st .hd .hd-login{display:none}
 .st .burger{display:inline-flex}
 .st .mnav{display:none;border-top:1px solid var(--rule);background:var(--bg)}
 .st .mnav.open{display:block}
@@ -660,6 +665,17 @@ html:has(.st){scroll-behavior:auto}
   display:inline-block;opacity:0;max-width:0;overflow:hidden;vertical-align:bottom;transition:opacity .3s,max-width .5s cubic-bezier(.22,.8,.24,1)}
 .st .sr-card.big .sr-cap em{opacity:1;max-width:420px;transition:opacity .4s .3s,max-width .6s cubic-bezier(.22,.8,.24,1)}
 
+/* 1.17.0: the award badge, in the row's spare room under the caption (absolute: nothing moves).
+   The label at rest; the detail joins it on a grown card, like the caption's line. */
+.st .sr-award{position:absolute;left:50%;top:calc(100% + 38px);transform:translateX(-50%);margin:0;display:inline-flex;align-items:center;gap:6px;
+  white-space:nowrap;padding:4px 10px 4px 8px;border-radius:999px;background:var(--acc-soft);color:var(--acc-text);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc-text) 22%,transparent);
+  font:600 10.5px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;transition:opacity .3s}
+.st .sr-award svg{flex:none}
+.st .sr-award b{font-weight:700}
+.st .sr-award-d{display:inline-block;max-width:0;opacity:0;overflow:hidden;vertical-align:bottom;transition:opacity .3s,max-width .5s cubic-bezier(.22,.8,.24,1)}
+.st .sr-card.big .sr-award-d{max-width:420px;opacity:1;transition:opacity .4s .3s,max-width .6s cubic-bezier(.22,.8,.24,1)}
+
 /* "See the logo": shown on a grown card that has a back. The whole card turns (FlipCard). */
 .st .sr-turn{position:absolute;right:14px;bottom:14px;display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);
   border-radius:999px;padding:9px 15px 9px 12px;font:600 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
@@ -706,6 +722,7 @@ html:has(.st){scroll-behavior:auto}
   transition:scale .6s cubic-bezier(.22,.8,.24,1) calc(var(--i) * 40ms),translate .6s cubic-bezier(.22,.8,.24,1) calc(var(--i) * 40ms),opacity .1s linear calc(var(--i) * 40ms)}
 .st .sr-card.lift{z-index:6}
 .st .sr-card.lift .sr-cap{opacity:0;transition:opacity .2s}
+.st .sr-card.lift .sr-award{opacity:0;transition:opacity .2s}
 .st .sr-card.lift .sr-ext{opacity:0;pointer-events:none}
 /* The red pen around C: redrawn live once C is full size; drawn at all other times. */
 .st .sr-pen{position:absolute;inset:0;width:100%;height:100%;overflow:visible;--pen:#8b3b49}
@@ -755,6 +772,8 @@ html:has(.st){scroll-behavior:auto}
 .st .sr-m .sr-bar span{font-size:10px;padding:4px 10px}
 .st .sr-m .sr-cap{top:calc(100% + 12px)}
 .st .sr-m .sr-cap em{display:none}
+.st .sr-m .sr-award{top:calc(100% + 30px);padding:3px 8px 3px 7px;font-size:10px}
+.st .sr-m .sr-award-d{display:none}
 .st .sr-m .sr-ext{top:-8px;right:-8px}
 .st .sr-m .sr-turn{right:10px;bottom:10px;padding:8px 12px 8px 10px;font-size:10px}
 .st .sr-m .sr-back-h{height:38px;padding:0 12px}
@@ -773,7 +792,7 @@ html:has(.st){scroll-behavior:auto}
 .st .sr-more-k{font-size:38px}
 }
 @media (prefers-reduced-motion:reduce){
-.st .sr-card,.st .sr-dev,.st .sr-screen,.st .sr-rail,.st .sr-screen img,.st .sr-cap em,.st .sr-turn,.st .sr-bar{transition-duration:.2s!important;transition-delay:0s!important}
+.st .sr-card,.st .sr-dev,.st .sr-screen,.st .sr-rail,.st .sr-screen img,.st .sr-cap em,.st .sr-award,.st .sr-award-d,.st .sr-turn,.st .sr-bar{transition-duration:.2s!important;transition-delay:0s!important}
 /* 1.12.0: nothing lifts; the sheet shows complete. */
 .st .sr-card.lift .sr-lg{scale:none;translate:none}
 .st .sr-card.lift .sr-lb-sheet{opacity:1}
@@ -847,6 +866,14 @@ html:has(.st){scroll-behavior:auto}
 @media (min-width:900px){
 .st .wk-item.wk-lead .wk-svc{grid-column:auto}
 }
+/* 1.17.0: the award badge, under the card's line (below the picture: the card's buttons stay put). */
+.st .wk-award{grid-column:2;justify-self:start;display:inline-flex;align-items:center;gap:8px;max-width:100%;margin:12px 0 0;padding:6px 13px 6px 10px;
+  border-radius:999px;background:var(--acc-soft);color:var(--acc-text);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc-text) 22%,transparent);
+  font:600 11px/1.35 var(--sans);letter-spacing:.1em;text-transform:uppercase}
+.st .wk-award svg{flex:none}
+@media (min-width:900px){
+.st .wk-item.wk-lead .wk-award{grid-column:auto}
+}
 .st .wk-shots{position:relative;border-radius:16px;background:var(--bg-2);padding:clamp(18px,3.2vw,44px) 22% clamp(18px,3.2vw,44px) clamp(18px,3.2vw,44px);overflow:hidden;isolation:isolate}
 .st .wk-desk{position:relative;background:var(--frame);border-radius:10px;padding:26px 4px 4px;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.22,.8,.24,1)}
 .st .wk-desk .sr-bar{height:26px;opacity:1}
@@ -868,6 +895,7 @@ html:has(.st){scroll-behavior:auto}
 .st .wk-n{font-size:38px}
 .st .wk-tag{grid-column:1/-1}
 .st .wk-svc{grid-column:1/-1}
+.st .wk-award{grid-column:1/-1}
 /* The logo side's header on a phone: one line, room for the corner link. */
 .st .wk-logo .sr-back-h{height:40px;padding:0 44px 0 12px}
 .st .wk-logo .sr-back-h p{white-space:nowrap;font-size:10px}
