@@ -42,9 +42,9 @@ by base's hero host through the hero copy and form lines.
    | File | What it holds |
    | --- | --- |
    | `theme.json` | `primary`, `palette` / `paletteDark` (named tokens: paper, card, ink, brand, highlight, heroTop and the rest), `fonts` (display and text face from the allowed set, display weight, italic, capitals) |
-   | `site.json` | name, wordmark, motto, place, since, WhatsApp number, header logo and action, metadata, footer line and links (the footer ends `© <year> <name> · Built with ♥ by ROKCT`; `footer.legal` is no longer drawn) |
+   | `site.json` | name, wordmark, motto, place, since, WhatsApp number, header logo (with `wordmark: false` the image alone) and action, metadata, footer logo, line and links (the footer ends `© <year> <name> · Built with ♥ by ROKCT`; `footer.legal` is no longer drawn) |
    | `sections.json` | the page top to bottom: hero, intro, steps, pricing, gallery, facts, order, contact; each with a layout `variant` and a `tone` |
-   | `pricing.json` | price tiers, needed when a pricing section is on the page |
+   | `pricing.json` | price tiers, needed when a pricing section is on the page; since 1.5.0 a tier may carry a `fine` line, `art` drawn in the card and a quantity `slider` with a running total (`perCase` sets the units in a case) |
    | `order.json` | the WhatsApp order form, needed when an order section is on the page |
    | `site.css` | optional: the site's own CSS, drawn after the renderer's (plain CSS, no tags, no `@import`) |
 
@@ -52,7 +52,9 @@ by base's hero host through the hero copy and form lines.
    file down to the field and fails naming it.
 3. Put the art in `public/` and point at it from `sections.json`
    (`{ "kind": "image", "src": "/art/loaf.svg", "alt": "..." }`). A bottle can
-   be drawn from a label's colours and words, or carry its own label art.
+   be drawn from a label's colours and words (with an optional `mark`
+   monogram), or carry its own label art; give it `labels` and it rolls
+   through them (1.5.0).
    Prefer art that needs no web font (outline any text in an SVG), since an
    SVG drawn as an image cannot load the page's fonts.
 4. Set the deployment's `NEXT_PUBLIC_SITE_NAME` (the header wordmark) and run

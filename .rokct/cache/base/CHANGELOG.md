@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.59.0
+
+* feat(site-data): the schema behind the South River render Ray approved
+  (Ray, 2026-11-01: "south river site doesnt have what we discussed
+  yet"). Every field is optional, so existing data/ folders validate
+  unchanged; corporate_sdk >= 1.5.0 draws them.
+  * `data/site.json`: `header.wordmark` (`false` when the `header.logo`
+    image already spells the name, so the header draws the image alone)
+    and `footer.logo` (a public path the footer draws in place of the type
+    wordmark).
+  * A bottle art's `labels`: more labels the bottle rolls through after
+    `label`, one at a time.
+  * A label's `mark`: a monogram of one or two characters, drawn in a
+    ring above the name.
+  * `data/pricing.json`: `perCase` (units in one case, such as 24
+    bottles) and, per tier, `fine` (`{ strong?, text }`, a small line under
+    `detail`), `art` (a picture drawn in the card) and `slider`
+    (`{ min, max, step?, label, count?, total?, breakdown? }`, a quantity
+    range with a running total). The words are templates over `{n}`,
+    `{units}`, `{price}`, `{each}` and `{total}`; `{units}` or `{each}`
+    without `perCase` fails, and so does a slider on a price with no
+    number in it.
+  * `priceAmount(price)` (`validate-site.mjs`): the first number in a
+    price string, `"R1,500"` -> 1500.
+* test: `tests/site-data.test.mts` "render fields (1.59.0)".
+
 ## 1.58.1
 
 * style: `components/custom/theme-provider.tsx` is prettier-formatted (the

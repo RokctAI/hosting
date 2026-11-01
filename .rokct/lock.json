@@ -19,7 +19,7 @@
       "git": "https://github.com/RokctAI/core",
       "path": "../core/telemetry/nextjs",
       "ref": "main",
-      "commit": "5a5c1ea45b4ea9061b7fcc544f7c91df21313838",
+      "commit": "7bb8d65fddf502565c79e22bf5bb77c7734172c0",
       "version": "1.2.2",
       "install_py_sha256": "318d20eb7123ffaa549618d06b4530dfce5df9ba0b07df2328c0c6e1738e36c4",
       "content_sha256": "97652d52df5b1f4fada6bfb41793a47df1b90cc5343aaf317139683cd75db1c1"
@@ -31,10 +31,10 @@
       "git": "https://github.com/RokctAI/core",
       "path": "../core/base/nextjs",
       "ref": "main",
-      "commit": "5a5c1ea45b4ea9061b7fcc544f7c91df21313838",
-      "version": "1.58.1",
+      "commit": "7bb8d65fddf502565c79e22bf5bb77c7734172c0",
+      "version": "1.59.0",
       "install_py_sha256": "b6c434a1c05611d29f1018f68b9423383f7ecfbf9cc1efe74825ba6c4df98fff",
-      "content_sha256": "316c35d70b12bcb5b3cc5b4cc81f87ef80eaf94fe4edcd3974caa27991e6df6f"
+      "content_sha256": "6912f1636973a2f5b2513315ea1c936aa41edc7fadd89142d89e901f1786b490"
     },
     {
       "name": "auth_sdk",
@@ -55,10 +55,10 @@
       "git": "https://github.com/RokctAI/corporate",
       "path": "../corporate/corporate/nextjs",
       "ref": "main",
-      "commit": "5dc470f93424a95e97d269ffe62c937ed19a43b8",
-      "version": "1.4.2",
+      "commit": "6f0fc852cdfef1d8c3ffc256f08fbe4fb7f23844",
+      "version": "1.5.0",
       "install_py_sha256": "6e03485fd03617ea1e175adc50354a91af25e213908371fa3581083d8aa7d4ba",
-      "content_sha256": "420e27eb0e9bfde2b5bb34da1b018d7d175133c9cf7776d031fabecfb957be3d"
+      "content_sha256": "4f10951fd68754301fa6a60e413279a6a4066149ac248673d30773bad5ea17ab"
     },
     {
       "name": "hosting_sdk",
@@ -67,10 +67,10 @@
       "git": "https://github.com/RokctAI/hardware",
       "path": "../hardware/hosting/nextjs",
       "ref": "main",
-      "commit": "27b652238882f47692dc0c98be9275d3eb5165cd",
-      "version": "1.11.0",
+      "commit": "61a1e9dcebee3ff9d5b9d154f0598cd70398310a",
+      "version": "1.13.0",
       "install_py_sha256": "a2f6b895733cacd18dac6f63228bb5537e4ac6ea20c33009a211db2984b4e25f",
-      "content_sha256": "9e285951098bd1b49f16e79a1fcda10e17df6c94eb7e94da7e8163a5365f5b87"
+      "content_sha256": "cb0d87302d0235768a4f98a70e3cba2d6f1ae993d679a6118ea1a33c735c959d"
     }
   ]
 }

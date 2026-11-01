@@ -301,6 +301,38 @@ html:has(.st){scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 .st .terms{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
 .st .terms li{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:13px 0;border-bottom:1px solid var(--rule);font:400 14.5px/1.5 var(--sans);color:var(--ink-2)}
 .st .terms li b{font-weight:700;color:var(--ink);font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+/* What you get with ROKCT hosting (hosting_sdk 1.13.0): a ledger of six
+   cards on one hairline grid, as .phases draws its five. The cost card
+   comes first in the studio's red; each group card leads every line with
+   how often it happens. Weekly lines carry the filled tag. */
+.st .hb{display:grid;grid-template-columns:1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+@media (min-width:720px){
+.st .hb{grid-template-columns:repeat(2,1fr)}
+}
+@media (min-width:1100px){
+.st .hb{grid-template-columns:repeat(3,1fr)}
+}
+.st .hb-card,.st .hb-cost{padding:26px 24px 28px;display:flex;flex-direction:column;min-width:0}
+.st .hb-card{background:var(--card)}
+.st .hb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.st .hb-ic{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--rule-2);border-radius:10px;color:var(--acc-text)}
+.st .hb-ic svg{display:block}
+.st .hb-n{font:700 15px/1 var(--disp);letter-spacing:.06em;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.st .hb-card h3{font:700 clamp(28px,2.4vw,34px)/.95 var(--disp);text-transform:uppercase;letter-spacing:0;margin:0 0 6px}
+.st .hb-lines{list-style:none;margin:0;padding:0}
+.st .hb-lines li{padding:14px 0 2px;border-top:1px dashed var(--rule-2);margin-top:12px}
+.st .hb-lines li:first-child{margin-top:8px}
+.st .hb-when{display:inline-flex;align-items:center;font:700 10.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-text);background:var(--acc-soft);padding:6px 9px 5px;border-radius:999px}
+.st .hb-when[data-when="Every week"]{background:var(--acc);color:var(--acc-ink)}
+.st .hb-lines p{margin:9px 0 0;font:400 14.5px/1.5 var(--sans);color:var(--ink-2)}
+.st .hb-from{display:inline-flex;align-items:center;gap:6px;margin-top:7px;font:500 12px/1.3 var(--sans);color:var(--ink-3);letter-spacing:.02em}
+.st .hb-from::before{content:"";width:6px;height:6px;border-radius:1px;background:var(--acc-text)}
+.st .hb-cost{background:var(--acc);color:var(--acc-ink);gap:14px}
+.st .hb-cost .kick{color:var(--acc-ink);opacity:.8}
+.st .hb-cost .big{margin:0;font:500 clamp(25px,2.3vw,32px)/1.13 var(--serif);letter-spacing:-.01em;text-wrap:balance}
+.st .hb-cost ul{list-style:none;margin:4px 0 0;padding:0}
+.st .hb-cost li{font:400 14.5px/1.5 var(--sans);padding:10px 0;border-top:1px solid color-mix(in srgb,var(--acc-ink) 24%,transparent)}
+.st .hb-lasts{margin:auto 0 0;padding:14px 16px;border-radius:10px;background:color-mix(in srgb,var(--acc-ink) 12%,transparent);font:500 14px/1.5 var(--sans)}
 .st .intake{margin-top:clamp(40px,5vw,64px);display:grid;gap:20px}
 @media (min-width:900px){
 .st .intake{grid-template-columns:4fr 8fr;gap:40px}
@@ -574,10 +606,12 @@ html:has(.st){scroll-behavior:auto}
   --ph:calc((var(--pw) - 8px) * 1149 / 560 + 8px);
   --dh:var(--ph);
   --dw:calc((var(--ph) - 34px) * 1200 / 833 + 8px);
-  position:relative;height:calc(var(--dh) + 96px);overflow:hidden;overflow:clip;
+  /* 1.12.0: --lp is invisible room above and below, so the lifted logos are not cut off; the layout does not move */
+  --lp:120px;margin:calc(-1 * var(--lp)) 0;pointer-events:none;
+  position:relative;height:calc(var(--dh) + 96px + 2 * var(--lp));overflow:hidden;overflow:clip;
   -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 6%,#000 94%,transparent 100%);
           mask-image:linear-gradient(90deg,transparent 0,#000 6%,#000 94%,transparent 100%)}
-.st .sr-track{position:absolute;inset:0 auto 0 0;will-change:transform;transition:opacity .5s cubic-bezier(.22,.8,.24,1)}
+.st .sr-track{position:absolute;inset:var(--lp) auto var(--lp) 0;pointer-events:auto;will-change:transform;transition:opacity .5s cubic-bezier(.22,.8,.24,1)}
 .st .sr-rail{display:flex;align-items:center;gap:var(--gap);height:100%;padding:0 0 40px var(--gap);margin:0;list-style:none;
   transform:translateX(var(--shift,0px));transition:transform .6s cubic-bezier(.22,.8,.24,1)}
 .st .sr-probe{position:absolute;left:0;top:0;width:var(--dw);height:0;visibility:hidden;pointer-events:none}
@@ -630,15 +664,55 @@ html:has(.st){scroll-behavior:auto}
   border-radius:999px;padding:9px 15px 9px 12px;font:600 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
   box-shadow:0 8px 20px -8px rgba(0,0,0,.5);opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .25s,transform .35s cubic-bezier(.22,.8,.24,1)}
 .st .sr-card.big .sr-dev .sr-turn{opacity:1;transform:none;transition:opacity .35s .45s,transform .45s .45s cubic-bezier(.22,.8,.24,1)}
-.st .sr-back{height:100%;background:var(--card);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.st .sr-back{position:relative;height:100%;background:var(--card);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column}
 .st .sr-back-h{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;padding:0 26px 0 16px;border-bottom:1px solid var(--rule)}
 .st .sr-back-h p{margin:0;font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-text)}
 .st .sr-back-h p b{font-family:var(--disp);font-weight:800;font-size:20px;letter-spacing:0;color:var(--ink);margin-left:10px;vertical-align:-2px}
 .st .sr-back-h .sr-turn{position:static;opacity:1;transform:none;padding:8px 13px 8px 10px}
 .st .sr-back-b{flex:1;min-height:0;position:relative}
-.st .sr-mk{height:100%;display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;padding:10px 14px 12px;align-items:center}
-.st .sr-mk-sheet{height:100%;aspect-ratio:1;min-height:0}
-.st .sr-mk-sheet .sk{width:100%;height:100%;border-radius:10px}
+
+/* 1.12.0: the floating logos (studio-showcase-lift.tsx), after the approved
+   prototype. The back is the logo sheet as a picture; each drawing is its
+   own cut-out laid exactly on its spot. Once the card has turned (`lift`),
+   they grow about their own centres with a soft shadow, spreading a little
+   (--dx/--dy, set by the client), while the card keeps its size; the sheet
+   under them fades and loses its red ring, the red pen is drawn around C
+   (then the tick), and on the way back the ring returns after .5s.
+   Wide screens show the whole logo page (.sr-lb-w); phones the sketch
+   sheet beside the final (.sr-lb-m). */
+.st .sr-lb,.st .sr-lb-w{position:relative;height:100%}
+.st .sr-lb .th-d{display:none}
+.dark .st .sr-lb .th-l{display:none}
+.dark .st .sr-lb .th-d{display:block}
+.st .sr-lb-sheet{position:absolute;inset:0;overflow:hidden;border-radius:0 0 11px 11px;transition:opacity .4s cubic-bezier(.22,.8,.24,1) .5s}
+.st .sr-lb-sheet img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 0}
+.st .sr-lb-sheet img,.st .sr-sk>img{transition:opacity .4s cubic-bezier(.22,.8,.24,1) .5s}
+.st .sr-lb-sheet img.sr-nr,.st .sr-sk>img.sr-nr{opacity:0}
+.st .sr-card.lift .sr-lb-sheet,.st .sr-card.lift .sr-lb-sheet img,.st .sr-card.lift .sr-sk>img{transition-delay:0s}
+.st .sr-card.lift .sr-lb-sheet img:not(.sr-nr),.st .sr-card.lift .sr-sk>img:not(.sr-nr){opacity:0}
+.st .sr-card.lift .sr-lb-sheet img.sr-nr,.st .sr-card.lift .sr-sk>img.sr-nr{opacity:1}
+.st .sr-card.lift .sr-lb-sheet{opacity:.3}
+.st .sr-lifts{position:absolute;inset:0;container-type:size;pointer-events:none}
+.st .sr-lsheet{position:relative;margin:0 auto;width:min(100cqw,calc(100cqh * 1200 / 824));height:min(100cqh,calc(100cqw * 824 / 1200))}
+.st .sr-lg{position:absolute;left:var(--x);top:var(--y);width:var(--w);height:var(--h);opacity:0;
+  --sh:rgba(52,30,22,.30);--halo:rgba(250,248,242,.85);
+  filter:drop-shadow(0 0 1.5px var(--halo)) drop-shadow(0 0 4px var(--halo)) drop-shadow(0 12px 14px var(--sh)) drop-shadow(0 2px 3px var(--sh));
+  transition:scale .5s cubic-bezier(.22,.8,.24,1) calc(var(--i) * 40ms),translate .5s cubic-bezier(.22,.8,.24,1) calc(var(--i) * 40ms),opacity .14s linear calc(var(--i) * 40ms + .48s)}
+.dark .st .sr-lg{--sh:rgba(0,0,0,.75);--halo:rgba(26,25,31,.85)}
+.st .sr-lg img{width:100%;height:100%;display:block}
+.st .sr-card.lift .sr-lg{opacity:1;scale:var(--k);translate:var(--dx,0px) var(--dy,0px);z-index:calc(1 + var(--i));
+  transition:scale .6s cubic-bezier(.22,.8,.24,1) calc(var(--i) * 40ms),translate .6s cubic-bezier(.22,.8,.24,1) calc(var(--i) * 40ms),opacity .1s linear calc(var(--i) * 40ms)}
+.st .sr-card.lift{z-index:6}
+.st .sr-card.lift .sr-cap{opacity:0;transition:opacity .2s}
+.st .sr-card.lift .sr-ext{opacity:0;pointer-events:none}
+/* The red pen around C: redrawn live once C is full size; drawn at all other times. */
+.st .sr-pen{position:absolute;inset:0;width:100%;height:100%;overflow:visible;--pen:#8b3b49}
+.dark .st .sr-pen{--pen:#ca7c89}
+.st .sr-pen path{fill:none;stroke:var(--pen);stroke-width:var(--sw);stroke-linecap:round;stroke-linejoin:round;opacity:.92;stroke-dasharray:1 1.2;stroke-dashoffset:0}
+.st .sr-card.lift .sr-pen-ring{animation:sr-pen .8s cubic-bezier(.45,.05,.4,1) .72s both}
+.st .sr-card.lift .sr-pen-tick{animation:sr-pen .28s cubic-bezier(.5,0,.3,1) 1.55s both}
+@keyframes sr-pen{from{stroke-dashoffset:1.02}to{stroke-dashoffset:0}}
+.st .sr-lb-m{display:none}
 .st .sr-mk-fin{display:grid;gap:8px;justify-items:start;min-width:0}
 .st .sr-mk-k{font:600 10.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-text)}
 .st .sr-mk-fin p{margin:0;font:400 14px/1.35 var(--serif);color:var(--ink-2)}
@@ -684,13 +758,24 @@ html:has(.st){scroll-behavior:auto}
 .st .sr-m .sr-back-h{height:38px;padding:0 22px 0 12px}
 .st .sr-m .sr-back-h p{font-size:10px}
 .st .sr-m .sr-back-h p b{font-size:17px;margin-left:6px}
-.st .sr-m .sr-mk{gap:12px;padding:8px 10px 10px}
-.st .sr-m .sr-mk-av{width:46px;height:46px}
+.st .sr-m .sr-lb-w{display:none}
+.st .sr-m .sr-lb-m{height:100%;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;padding:10px 12px 12px;align-items:center}
+.st .sr-sk{position:relative;height:100%;aspect-ratio:1;min-height:0}
+.st .sr-sk>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px}
+.st .sr-m .sr-card.lift .sr-sk>img.sr-nr{opacity:.3}
+.st .sr-m .sr-card.lift .sr-lg{scale:calc(1 + (var(--k) - 1) * .8)}
+.st .sr-m .sr-mk-av.sr-lg{position:relative;left:auto;top:auto;width:52px;height:52px;opacity:1;filter:none;
+  transition:scale .5s cubic-bezier(.22,.8,.24,1) .16s,translate .5s cubic-bezier(.22,.8,.24,1) .16s,box-shadow .5s}
+.st .sr-m .sr-card.lift .sr-mk-av.sr-lg{box-shadow:0 10px 18px -8px var(--sh)}
 .st .sr-m .sr-mk-fin p{font-size:12.5px}
 .st .sr-more-k{font-size:38px}
 }
 @media (prefers-reduced-motion:reduce){
 .st .sr-card,.st .sr-dev,.st .sr-screen,.st .sr-rail,.st .sr-screen img,.st .sr-cap em,.st .sr-turn,.st .sr-bar{transition-duration:.2s!important;transition-delay:0s!important}
+/* 1.12.0: nothing lifts; the sheet shows complete. */
+.st .sr-card.lift .sr-lg{scale:none;translate:none}
+.st .sr-card.lift .sr-lb-sheet{opacity:1}
+.st .sr-pen path{animation:none!important}
 }
 
 /* 1.11.0: /work - every site, ranked, as a grid (studio-work.tsx). Each

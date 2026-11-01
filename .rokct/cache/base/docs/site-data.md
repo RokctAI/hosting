@@ -45,9 +45,9 @@ so base has one signal for switching off backend-only surface.
 | `about`     | `data/about.md`         | the markdown, verbatim, as a string                                                                                              |
 | `legal`     | `data/legal/<slug>.md`  | a map of slug to `{ title, markdown }`; the title from a `title:` front-matter line, else the first level-1 heading (removed from the body) |
 | `network`   | `data/network.json`     | `{ heading?, sites: [{ key, name, url, logo?, logoDark?, wordmark?, shown? }] }`; `url` an https origin with no path, query string or fragment, or `null` with `shown: false` |
-| `site`      | `data/site.json`        | (1.53.0) `{ name, wordmark?: { lead, mark?, rest? }, motto?, place?, since?, whatsapp?: { number, display }, email?: { orders?, domain?, orderVia?: "email"\|"whatsapp"\|"both" }, header?: { logo?, action? }, metadata: { title, tagline?, description, keywords?, themeColor?, locale?, icon? }, footer?: { links?, line?, legal? } }` |
+| `site`      | `data/site.json`        | (1.53.0) `{ name, wordmark?: { lead, mark?, rest? }, motto?, place?, since?, whatsapp?: { number, display }, email?: { orders?, domain?, orderVia?: "email"\|"whatsapp"\|"both" }, header?: { logo?, wordmark?, action? }, metadata: { title, tagline?, description, keywords?, themeColor?, locale?, icon? }, footer?: { links?, line?, legal?, logo? } }` |
 | `sections`  | `data/sections.json`    | (1.53.0) `{ sections: [{ type, id?, nav?, variant?, tone?, ...the type's fields }] }`; types `hero` (first, if any), `intro`, `steps`, `pricing`, `gallery`, `facts`, `order`, `contact` |
-| `pricing`   | `data/pricing.json`     | (1.53.0) `{ tiers: [{ name, price, unit?, detail?, best?, minQty?, previewNote? }], ctaLabel?, bestLabel? }` |
+| `pricing`   | `data/pricing.json`     | (1.53.0) `{ tiers: [{ name, price, unit?, detail?, best?, minQty?, previewNote?, fine?, art?, slider? }], perCase?, ctaLabel?, bestLabel? }`; since 1.59.0 `fine: { strong?, text }`, `art` (drawn in the card), `slider: { min, max, step?, label, count?, total?, breakdown? }` with `{n}`, `{units}`, `{price}`, `{each}`, `{total}` in its words, and `perCase` (units in one case) |
 | `order`     | `data/order.json`       | (1.53.0; goes by email since 1.57.0, to `site.email.orders` or orders@ the site's domain) `{ intro, fields: { business, quantity, phone, area, file? }, message: { business, quantity, quantityPrice?, area, phone, fileSent?, fileLater? }, submit, fine?, preview? }` |
 | `css`       | `data/site.css`         | (1.53.0) the site's own stylesheet, verbatim; plain CSS, no `<style>`/`<script>`, no `@import` |
 
@@ -80,8 +80,10 @@ is required"), a section type outside the library fails, and the kinds must
 agree - a page needs `site.json`, a pricing or order section needs its
 file, anything that opens WhatsApp (a link `href` of `"whatsapp"`, an
 order, pricing or contact section) needs `site.json`'s number. Art is either
-`{ kind: "bottle", size?, label: { bg, fg?, name?, sub?, footer?, art? }, cap? }`
-(the drawn bottle; `art` is a public path to the site's own label image) or
+`{ kind: "bottle", size?, label: { bg, fg?, name?, sub?, footer?, art?, mark? }, labels?, cap? }`
+(the drawn bottle; `art` is a public path to the site's own label image;
+`labels`, since 1.59.0, are more labels the bottle rolls through, and
+`mark` a one- or two-character monogram) or
 `{ kind: "image", src, alt, width?, height? }` (the site's own file under
 `public/`). The home SDK's manifest declares the kinds such a page cannot
 do without under `home.site_data.requires`, and a local build without them

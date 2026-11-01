@@ -38,6 +38,8 @@ import type {
 
 import { SiteArtView, Stamp, StepGlyph, Wave } from "./site-art";
 import { SiteOrderForm } from "./site-order-form.client";
+import { fillPriceWords } from "./site-price";
+import { SitePricingSlider } from "./site-pricing-slider.client";
 import { siteKind, whatsappHref } from "./site-source";
 
 function toneClass(tone: SiteSectionTone | undefined, fallback: SiteSectionTone = "paper"): string {
@@ -114,29 +116,53 @@ export function SitePricing({ id, s, site }: { id?: string; s: SitePricingSectio
         </div>
 
         <div className={`grid gap-4 ${tiers.length > 2 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
-          {tiers.map((tier) => (
-            <article key={tier.name} className={`cs-card cs-tier ${tier.best ? "best" : ""}`}>
-              <div className="flex items-center justify-between gap-3">
-                <h3>{tier.name}</h3>
-                {tier.best && pricing?.bestLabel && <span className="cs-chip sun">{pricing.bestLabel}</span>}
-              </div>
-              <div className="flex items-end gap-3">
-                <span className="price">{tier.price}</span>
-                {tier.unit && <span className="unit pb-2">{tier.unit}</span>}
-              </div>
-              {tier.detail && <p>{tier.detail}</p>}
-              {pricing?.ctaLabel && (
-                <a
-                  href={chat}
-                  target="_blank"
-                  rel="noopener"
-                  className={`cs-btn mt-auto self-start ${tier.best ? "cs-btn-white" : "cs-btn-brand"}`}
-                >
-                  {pricing.ctaLabel}
-                </a>
-              )}
-            </article>
-          ))}
+          {tiers.map((tier, i) => {
+            // 1.5.0: a tier may carry a fine line, a slider and art drawn the card's full height.
+            const words = (
+              <>
+                <div className="flex items-center justify-between gap-3">
+                  <h3>{tier.name}</h3>
+                  {tier.best && pricing?.bestLabel && <span className="cs-chip sun">{pricing.bestLabel}</span>}
+                </div>
+                <div className={tier.art ? "flex flex-col gap-3" : "flex items-end gap-3"}>
+                  <span className="price">{tier.price}</span>
+                  {tier.unit && <span className={`unit ${tier.art ? "" : "pb-2"}`}>{tier.unit}</span>}
+                </div>
+                {tier.detail && <p>{tier.detail}</p>}
+                {tier.fine && (
+                  <p className="fine">
+                    {tier.fine.strong && <b>{fillPriceWords(tier.fine.strong, { price: tier.price, perCase: pricing?.perCase })}</b>}
+                    {fillPriceWords(tier.fine.text, { price: tier.price, perCase: pricing?.perCase })}
+                  </p>
+                )}
+                {tier.slider && <SitePricingSlider slider={tier.slider} price={tier.price} perCase={pricing?.perCase} />}
+                {pricing?.ctaLabel && (
+                  <a
+                    href={chat}
+                    target="_blank"
+                    rel="noopener"
+                    className={`cs-btn mt-auto self-start ${tier.best ? "cs-btn-white" : "cs-btn-brand"}`}
+                  >
+                    {pricing.ctaLabel}
+                  </a>
+                )}
+              </>
+            );
+            return (
+              <article key={tier.name} className={`cs-card cs-tier ${tier.best ? "best" : ""} ${tier.art ? "has-art" : ""}`}>
+                {tier.art ? (
+                  <>
+                    <div className="words">{words}</div>
+                    <div className="art">
+                      <SiteArtView art={tier.art} id={`tier-${i}-art`} height={480} />
+                    </div>
+                  </>
+                ) : (
+                  words
+                )}
+              </article>
+            );
+          })}
         </div>
 
         {s.own && (

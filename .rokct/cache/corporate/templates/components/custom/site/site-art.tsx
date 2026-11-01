@@ -24,6 +24,13 @@
 // SiteArt (a bottle, or the site's own image file). Server-safe: no hooks,
 // no browser APIs, so the client order form can use it too. Every gradient
 // id is prefixed with the instance `id`, so several bottles share a page.
+//
+// 1.5.0 (the South River render Ray approved): the water stops in the neck
+// under clear plastic; drops form on the cold bottle and run down leaving a
+// wet trail; a label may carry a `mark` (a monogram in a ring); and a bottle
+// given more `labels` rolls through them, the label on show running off round
+// one edge while the next wraps on from the other. With reduced motion the
+// first label stays on and the drops stay caught part-way down.
 import React from "react";
 
 import type { SiteArt, SiteLabel, SiteStepIcon } from "@/lib/site-data/kinds";
@@ -49,6 +56,22 @@ function LabelFace({ label, size }: { label: SiteLabel; size: SiteBottleSize }) 
   const fit = nameSize * 0.8 * len > 136 ? { textLength: 136, lengthAdjust: "spacingAndGlyphs" as const } : {};
   return (
     <>
+      {label.mark && (
+        <g aria-hidden="true">
+          <circle cx="110" cy="284" r="12" fill="none" stroke={fg} strokeWidth="2" />
+          <text
+            x="110"
+            y="289"
+            textAnchor="middle"
+            fontFamily="var(--cs-font-display-stack)"
+            fontWeight="900"
+            fontSize="13"
+            fill={fg}
+          >
+            {label.mark.toUpperCase()}
+          </text>
+        </g>
+      )}
       <text
         x="110"
         y="318"
@@ -87,6 +110,56 @@ function LabelFace({ label, size }: { label: SiteLabel; size: SiteBottleSize }) 
   );
 }
 
+/** Where the water stands: in the neck, under the empty clear plastic at the top. */
+const WATER_LEVEL = 70;
+
+/** How far a drop runs down the bottle, in viewBox units. */
+const RUN_DISTANCE = 86;
+
+/** The drops that form and run: x, y, radius, delay in seconds. */
+const RUNNING_DROPS: readonly (readonly [number, number, number, number])[] = [
+  [62, 176, 6, 0],
+  [164, 200, 5.4, 2.6],
+  [118, 238, 5, 5.1],
+  [150, 300, 5.6, 1.2],
+  [58, 330, 5.2, 3.6],
+  [172, 392, 6, 0.6],
+  [96, 424, 5.4, 4.4],
+  [52, 470, 6, 2],
+  [140, 500, 5, 5.8],
+];
+
+/** A teardrop of radius `r`, its point up, centred on the origin's round end. */
+function dropPath(r: number): string {
+  const k = r / 5;
+  const f = (v: number) => (v * k).toFixed(2);
+  return `M0 ${f(-8)} C${f(3)} ${f(-3)} ${f(5)} ${f(-0.5)} ${f(5)} ${f(2)} A${f(5)} ${f(5)} 0 0 1 ${f(-5)} ${f(2)} C${f(-5)} ${f(-0.5)} ${f(-3)} ${f(-3)} 0 ${f(-8)} Z`;
+}
+
+/** The label roll: each label holds ROLL_HOLD seconds and rolls in ROLL_TURN. */
+const ROLL_HOLD = 2.8;
+const ROLL_TURN = 1.1;
+const ROLL_STEP = ROLL_HOLD + ROLL_TURN;
+
+/**
+ * The keyframes of a bottle's label roll over `n` labels. Every face scales
+ * about the label's left edge: arriving, it grows from the right edge
+ * (translateX(180) scaleX(0) to none), leaving, it shrinks to the left edge,
+ * so the leaving and arriving faces always tile the label exactly.
+ */
+function rollCss(id: string, n: number): string {
+  const total = n * ROLL_STEP;
+  const pct = (t: number) => `${((t / total) * 100).toFixed(3)}%`;
+  const off = "translateX(180px) scaleX(0.001)";
+  const on = "translateX(0) scaleX(1)";
+  const gone = "translateX(0) scaleX(0.001)";
+  return (
+    `@keyframes ${id}-roll{0%{transform:${off}}${pct(ROLL_TURN)}{transform:${on}}${pct(ROLL_STEP)}{transform:${on}}` +
+    `${pct(ROLL_STEP + ROLL_TURN)}{transform:${gone}}100%{transform:${gone}}}` +
+    `.${id}-roll{animation:${id}-roll ${total.toFixed(2)}s cubic-bezier(.55,.06,.45,.94) infinite backwards}`
+  );
+}
+
 /**
  * A PET bottle wearing `label`: a 500 ml bottle, or the taller 1.25 litre.
  * The label is drawn from its name and sub-line, or, when it names an
@@ -95,6 +168,7 @@ function LabelFace({ label, size }: { label: SiteLabel; size: SiteBottleSize }) 
 export function Bottle({
   id,
   label,
+  labels,
   size = "500 ml",
   height = 560,
   cap,
@@ -103,6 +177,8 @@ export function Bottle({
 }: {
   id: string;
   label: SiteLabel;
+  /** More labels the bottle rolls through after `label`. */
+  labels?: readonly SiteLabel[];
   size?: SiteBottleSize;
   height?: number;
   cap?: string;
@@ -116,13 +192,15 @@ export function Bottle({
   const capFill = cap ?? "#ffffff";
   const name = label.name ?? "";
   const ribsLow = [448, 468, 488].map((y) => y + extra);
+  const faces = [label, ...(labels ?? [])];
+  const roll = faces.length > 1 ? rollCss(id, faces.length) : null;
   return (
     <svg
       width={w}
       height={height}
       viewBox={`0 0 240 ${vbH}`}
       role="img"
-      aria-label={`${size} bottle labelled ${name}`}
+      aria-label={`${size} bottle labelled ${faces.map((f) => f.name ?? "").filter(Boolean).join(", then ") || name}`}
       className={className}
       style={style}
     >
@@ -159,9 +237,22 @@ export function Bottle({
         <clipPath id={`${id}-clip`}>
           <path d={body} />
         </clipPath>
+        <clipPath id={`${id}-labclip`}>
+          <path d={LABEL_SHAPE} />
+        </clipPath>
+        <radialGradient id={`${id}-bead`} cx="0.4" cy="0.65" r="0.75">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.55" />
+          <stop offset="0.6" stopColor="#cfe6ee" stopOpacity="0.5" />
+          <stop offset="1" stopColor="#4d7d92" stopOpacity="0.6" />
+        </radialGradient>
+        <linearGradient id={`${id}-trail`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0.8" />
+        </linearGradient>
         <filter id={`${id}-blur`} x="-20%" y="-50%" width="140%" height="200%">
           <feGaussianBlur stdDeviation="5" />
         </filter>
+        {roll && <style>{roll}</style>}
       </defs>
 
       <ellipse cx="112" cy={604 + extra} rx="78" ry="9" fill="#1a0508" opacity="0.35" filter={`url(#${id}-blur)`} />
@@ -173,8 +264,11 @@ export function Bottle({
       ))}
       <rect x="80" y="40" width="60" height="9" rx="3" fill={capFill} opacity="0.85" />
 
-      <path d={body} fill={`url(#${id}-water)`} />
+      <path d={body} fill="#eef6f9" fillOpacity="0.2" />
       <g clipPath={`url(#${id}-clip)`}>
+        <rect x="0" y={WATER_LEVEL} width="240" height={vbH} fill={`url(#${id}-water)`} />
+        <ellipse cx="110" cy={WATER_LEVEL} rx="26" ry="2.5" fill="#ffffff" opacity="0.75" />
+        <rect x="86" y="48" width="48" height={WATER_LEVEL - 48} fill="#ffffff" opacity="0.12" />
         {[176, 194, 212].map((y) => (
           <path key={y} d={`M20 ${y} Q110 ${y + 7} 200 ${y}`} fill="none" stroke="#fff" strokeOpacity="0.6" strokeWidth="2" />
         ))}
@@ -188,12 +282,22 @@ export function Bottle({
           <path key={`s${y}`} d={`M20 ${y + 4} Q110 ${y + 11} 200 ${y + 4}`} fill="none" stroke="#1b2a33" strokeOpacity="0.1" strokeWidth="1.5" />
         ))}
 
-        <path d={LABEL_SHAPE} fill={label.bg} />
-        {label.art ? (
-          <image href={label.art} x="34" y="256" width="151.2" height="126" preserveAspectRatio="xMidYMid meet" />
-        ) : (
-          <LabelFace label={label} size={size} />
-        )}
+        <g clipPath={`url(#${id}-labclip)`}>
+          {faces.map((face, i) => (
+            <g
+              key={i}
+              className={roll ? `cs-roll-face ${i > 0 ? "cs-roll-next" : ""} ${id}-roll` : undefined}
+              style={roll ? { animationDelay: `${(i * ROLL_STEP - ROLL_TURN).toFixed(2)}s` } : undefined}
+            >
+              <path d={LABEL_SHAPE} fill={face.bg} />
+              {face.art ? (
+                <image href={face.art} x="34" y="256" width="151.2" height="126" preserveAspectRatio="xMidYMid meet" />
+              ) : (
+                <LabelFace label={face} size={size} />
+              )}
+            </g>
+          ))}
+        </g>
         <path d={LABEL_SHAPE} fill={`url(#${id}-lab)`} />
 
         <path d={body} fill={`url(#${id}-sheen)`} />
@@ -214,6 +318,15 @@ export function Bottle({
         [120, 110, 3],
       ].map(([cx, cy, r], i) => (
         <circle key={i} cx={cx} cy={cy} r={r} fill={`url(#${id}-drop)`} className="cs-drop" style={{ animationDelay: `${i * 0.7}s` }} />
+      ))}
+      {RUNNING_DROPS.map(([cx, cy, r, delay], i) => (
+        <g key={`run${i}`} transform={`translate(${cx} ${cy + (cy > 300 ? extra : 0)})`} aria-hidden="true">
+          <rect className="cs-run-trail" x={-r * 0.3} y="0" width={r * 0.6} height={RUN_DISTANCE} rx={r * 0.3} fill={`url(#${id}-trail)`} stroke="#3f6b80" strokeOpacity="0.18" strokeWidth="0.6" style={{ animationDelay: `${delay}s` }} />
+          <g className="cs-run" style={{ animationDelay: `${delay}s` }}>
+            <path d={dropPath(r)} fill={`url(#${id}-bead)`} stroke="#3f6b80" strokeOpacity="0.7" strokeWidth="1.1" />
+            <ellipse cx={-r * 0.35} cy={r * 0.1} rx={r * 0.22} ry={r * 0.4} fill="#ffffff" opacity="0.95" />
+          </g>
+        </g>
       ))}
     </svg>
   );
@@ -322,7 +435,7 @@ export function WhatsAppGlyph() {
 /** A data picture at a height: the drawn bottle, or the site's own image file. */
 export function SiteArtView({ art, id, height, className }: { art: SiteArt; id: string; height: number; className?: string }) {
   if (art.kind === "bottle") {
-    return <Bottle id={id} label={art.label} size={art.size} cap={art.cap} height={height} className={className} />;
+    return <Bottle id={id} label={art.label} labels={art.labels} size={art.size} cap={art.cap} height={height} className={className} />;
   }
   const w = art.width && art.height ? Math.round((height * art.width) / art.height) : undefined;
   // eslint-disable-next-line @next/next/no-img-element -- a site's own art file, drawn at its declared size

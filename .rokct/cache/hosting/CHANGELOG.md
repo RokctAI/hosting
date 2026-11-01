@@ -1,5 +1,75 @@
 # Changelog
 
+## 1.13.0
+
+* New "What you get with ROKCT hosting" section on the studio home
+  (`#hosting`, after Prices, with a "Hosting" link in the header). Ray
+  approved the list on 2026-11-01 (website-service/year-of-hosting.md) and
+  said yes at 11:01Z to three additions, drawn as the "Looked after" group:
+  "We reply within 1 working day on WhatsApp", two small text or photo
+  edits a month included (more are paid), and a short yearly "what we did
+  for your site" message. Six cards on one hairline grid (three across from
+  1100px, two from 720px, one on a phone): "What it costs" first in the
+  studio's red, then Kept current, Kept safe, Kept online, Kept looking
+  right and Looked after, each with a Remixicon glyph, the group name in
+  the display face and every line led by how often it happens ("Every
+  week", "Every change", "Always", "Every month", "Every year", "1 working
+  day"); weekly lines carry the filled tag. The three weekly lines (the
+  building-block refresh and the live-site browser and broken-picture
+  checks) are marked "From November 2026": they land with the weekly site
+  refresh being built in shared-workflows.
+* Ray, 11:03Z: the benefits last for as long as the site is hosted with
+  us, and leaving is the only limit. The cost card ends on that single
+  condition: "All of this lasts for as long as your site is hosted with
+  us. If you ever move it elsewhere, it's yours to take, and the weekly
+  care stops."
+* Only lines that are true today, or start this month, are shown. Not
+  claimed: scheduled monthly security updates, leaked-key scanning, uptime
+  alerts, backups of form data. No tool, provider or brand is named.
+* Every word is in `studio-copy.ts` (`STUDIO_HOSTING_HEAD`,
+  `STUDIO_HOSTING_COST`, `STUDIO_HOSTING_GROUPS`); the tokens are the
+  studio's own (`.hb*` in `studio.css`), so light and dark follow the page.
+  New `tests/test_studio_hosting.py`.
+
+## 1.12.0
+
+* The ROKCT card's logo back floats (Ray approved the prototype "Floating
+  Logo Concept" and said "build"). Before, the turned card showed the
+  1.11.0 back: the vector sketch sheet and the final mark, still. Now, once
+  the card has turned, the card stays the same size and the four sketches
+  and the final R lift off the sheet and grow a little in place, spreading
+  slightly from the sheet's middle and kept inside the row; while they are
+  big the red pen circle is drawn around C, then the tick; turning back,
+  they shrink onto the sheet first and the card turns after (`LIFT_BACK`,
+  700ms). While they are up the sheet under them fades and shows without
+  its red ring, which comes back about half a second after they land; the
+  card's caption and its live-site icon hide. The automatic turn does the
+  same. Reduced motion: nothing lifts and the sheet shows complete.
+* New `studio-showcase-lift.tsx` (`ShowcaseLiftBack`, server component):
+  the back is the logo sheet as committed pictures, one per theme, each
+  with a copy without the red ring, and every drawing a cut-out picture
+  laid exactly on its spot (`LIFT_SHEET`, `LIFT_SKETCHES`, in % of the
+  sheet, each with its own grow factor), the pen ring and tick SVG strokes
+  over cut-out C. Wide screens show the whole logo page (the brief, the
+  four sketches, the final and why it won); phones show the sketch sheet
+  beside the final mark and its line. The pictures are installed at
+  `public/studio/lift/` (26 webp files, about 750 KB, only fetched when the
+  card turns: `loading="lazy"` on a back that renders once the card grows).
+* `studio-showcase-client.tsx`: `useTurn` holds each row's turned card and
+  lifted drawings; `lift` goes on the card `FLIP_DURATION_MS + 60` after
+  the turn (base_sdk's FlipCard turn, so the lift starts as the turn ends);
+  `placeLifts` sets each drawing's `--dx` / `--dy` first. The row's stage
+  gains invisible room above and below (`--lp`, 120px, negative margins,
+  no pointer events) so a lifted drawing is never cut off; the layout does
+  not move.
+* "See more" counts only the cards shown. Before, the row's last card
+  said "All 6 sites, ranked" while 5 rendered when a site's pictures 404ed
+  and it dropped out; now the number is the whole list less the row's own
+  sites that dropped (`showcaseMoreCount`), and the stand-in's own length
+  once it has taken over.
+* `studio-sketch.tsx` is no longer drawn on the page; it stays as the
+  source the sheet pictures were rendered from.
+
 ## 1.11.0
 
 * "Our work" is a row of phones from a ranked list (Ray approved the

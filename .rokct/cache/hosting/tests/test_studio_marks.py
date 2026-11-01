@@ -110,10 +110,13 @@ class TestRokctCard(unittest.TestCase):
         self.assertEqual(installs.get("templates/components/custom/studio/studio-sketch.tsx"), "components/custom/studio/studio-sketch.tsx")
 
     def test_back_markup(self):
-        self.assertIn("<StudioSketchSheet title={STUDIO_MARK_COPY.sheetLabel(notes)} />", HOME)
-        self.assertIn('role="img" aria-label={m.final.alt}', HOME)
+        # 1.12.0: the back moved to studio-showcase-lift.tsx (the floating
+        # logos); the sheet is its committed render, the final the real mark.
+        lift = read(os.path.join(STUDIO, "studio-showcase-lift.tsx"))
+        self.assertIn("<ShowcaseLiftBack m={STUDIO_MARKS_ROKCT} />", HOME)
+        self.assertIn('role="img" aria-label={m.final.alt}', lift)
         # 1.11.0: the back is cut to the portfolio row's card; one line on why.
-        self.assertIn("{STUDIO_MARK_COPY.picked}", HOME)
+        self.assertIn("{STUDIO_MARK_COPY.picked}", lift)
 
     def test_final_follows_the_theme(self):
         self.assertIn("mask:var(--mk) center/contain no-repeat", CSS)

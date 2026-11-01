@@ -15,8 +15,9 @@
  */
 
 
-// A local-data site's footer (order 95, frame): the wordmark (data/site.json
-// `wordmark`, else the name), the motto and the place line, the links
+// A local-data site's footer (order 95, frame): the logo (data/site.json
+// `footer.logo`, 1.5.0) or the wordmark (`wordmark`, else the name), the
+// motto and the place line, the links
 // (`footer.links`, else one per section with a nav label) and base's chrome
 // row with the shell's published legal links. The row ends with base_sdk
 // 1.54.0's site credit, `© <year> <site name> · Built with ♥ by ROKCT`
@@ -57,12 +58,22 @@ export async function SiteFooter({ id }: { id?: string }) {
       <div className="container mx-auto flex max-w-6xl flex-col gap-12 px-4 xl:px-0">
         <div className="flex flex-col justify-between gap-10 md:flex-row md:items-end">
           <div className="flex flex-col gap-2">
-            {site && (
-              <Wordmark
-                wordmark={site.wordmark ?? { lead: site.name }}
-                name={site.name}
-                className="text-[2.1rem] text-[var(--cs-brand-text)]"
+            {site?.footer?.logo ? (
+              // 1.5.0: the site's own logo image, tinted the brand text colour in either theme.
+              <span
+                role="img"
+                aria-label={site.name}
+                className="cs-footer-logo"
+                style={{ ["--cs-footer-logo" as string]: `url("${site.footer.logo}")` }}
               />
+            ) : (
+              site && (
+                <Wordmark
+                  wordmark={site.wordmark ?? { lead: site.name }}
+                  name={site.name}
+                  className="text-[2.1rem] text-[var(--cs-brand-text)]"
+                />
+              )
             )}
             {site?.motto && <p className="mt-2 text-base font-semibold text-[var(--cs-ink)]">{site.motto}</p>}
             {site?.footer?.line && <p className="cs-k">{site.footer.line}</p>}

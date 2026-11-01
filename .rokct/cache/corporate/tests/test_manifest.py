@@ -140,7 +140,7 @@ class TestCorporateNextjs(unittest.TestCase):
     def test_identity_and_version(self):
         self.assertEqual(self.manifest["name"], "corporate_sdk")
         self.assertRegex(self.manifest["version"], r"^\d+\.\d+\.\d+$")
-        self.assertEqual(self.manifest["version"], "1.4.2")
+        self.assertEqual(self.manifest["version"], "1.5.0")
         self.assertIn("sdk_name = 'corporate_sdk'", read(INSTALL_PY))
         self.assertTrue(read(INSTALL_PY).startswith("# " + LICENSE_HEAD))
         # Same shape as the sibling halves: one flat installs list, no
@@ -791,6 +791,65 @@ class TestSiteCredit(unittest.TestCase):
                                  capture_output=True, text=True, timeout=60, cwd=tmp)
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertEqual(run.stdout.strip(), "\u00a9 2026 Example Bakehouse \u00b7 Built with \u2665 by ROKCT")
+
+
+class TestSouthRiverRender(unittest.TestCase):
+    """1.5.0: the renderer draws the fields base_sdk 1.59.0 adds for the
+    South River render Ray approved - a bottle's label roll and monogram,
+    the water in the neck and the running drops, a tier's fine line, art
+    and slider, the header's image-only brand and the footer logo."""
+
+    SITE = os.path.join(TEMPLATES, "components", "custom", "site")
+
+    def test_version_and_floor(self):
+        self.assertEqual(load_manifest()["version"], "1.5.0")
+        self.assertIn("floor base_sdk >= 1.59.0", load_manifest()["_comment"]["about"])
+        head = read(CHANGELOG).split("## 1.4.2")[0]
+        self.assertIn("## 1.5.0", head)
+
+    def test_slider_is_the_only_new_client_module(self):
+        code = read(os.path.join(self.SITE, "site-pricing-slider.client.tsx"))
+        self.assertIn('"use client";', code)
+        self.assertNotIn("use client", read(os.path.join(self.SITE, "site-price.ts")))
+        sections = code_of(os.path.join(self.SITE, "site-sections.tsx"))
+        for needle in ("tier.slider", "tier.fine", "tier.art", "SitePricingSlider"):
+            self.assertIn(needle, sections)
+
+    def test_bottle_rolls_and_runs(self):
+        art = code_of(os.path.join(self.SITE, "site-art.tsx"))
+        for needle in ("labels={art.labels}", "rollCss(", "cs-roll-next", "cs-run-trail", "WATER_LEVEL", "label.mark"):
+            self.assertIn(needle, art)
+        css = read(os.path.join(self.SITE, "site.css"))
+        reduced = css.split("@media (prefers-reduced-motion: reduce)")[1].split("/* ---")[0]
+        for needle in (".cs-roll-face", ".cs-roll-next", ".cs-run", ".cs-run-trail"):
+            self.assertIn(needle, reduced)
+
+    def test_header_and_footer_logo(self):
+        self.assertIn("wordmark === false", code_of(os.path.join(self.SITE, "site-header-menu.ts")))
+        footer = code_of(os.path.join(self.SITE, "site-footer-section.tsx"))
+        self.assertIn("site?.footer?.logo", footer)
+        self.assertIn("cs-footer-logo", read(os.path.join(self.SITE, "site.css")))
+
+    def test_price_words(self):
+        """Executes site-price.ts under node with type stripping."""
+        node = shutil.which("node")
+        if not node:
+            raise unittest.SkipTest("node not reachable")
+        with tempfile.TemporaryDirectory() as tmp:
+            shutil.copy(os.path.join(self.SITE, "site-price.ts"), os.path.join(tmp, "site-price.ts"))
+            probe = os.path.join(tmp, "probe.mts")
+            with open(probe, "w", encoding="utf-8") as f:
+                f.write("import { fillPriceWords, formatMoney } from './site-price.ts';\n"
+                        "const w = { n: 10, price: 'R150', perCase: 24 };\n"
+                        "console.log(fillPriceWords('{n} cases · {units} bottles|{n} × {price} · {each} a bottle|{total}', w));\n"
+                        "console.log(fillPriceWords('{each}', { price: 'R180', perCase: 24 }), formatMoney(9000, 'R'), fillPriceWords('{each}', { price: 'Ask' }));\n")
+            run = subprocess.run([node, "--experimental-strip-types", "--no-warnings", probe],
+                                 capture_output=True, text=True, timeout=60, cwd=tmp)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.assertEqual(run.stdout.splitlines(), [
+            "10 cases · 240 bottles|10 × R150 · R6.25 a bottle|R1,500",
+            "R7.50 R9,000 {each}",
+        ])
 
 
 if __name__ == "__main__":
