@@ -10,5 +10,9 @@
     "desktop": "latest/desktop-light.webp",
     "phone": "latest/phone-light.webp"
   },
-  "logo_back": null
+  "logo_back": null,
+  "award": {
+    "label": "Top 200",
+    "detail": "GSE 2026 Digital Startup Accelerator"
+  }
 }
