@@ -36,19 +36,16 @@ import {
   StudioDealAlt,
   StudioHeader,
   StudioPrice,
-  StudioWorkTabs,
 } from "./studio-client";
 import {
-  STUDIO_CASES,
   STUDIO_CONTACT,
   STUDIO_DESIGN_CASES,
   STUDIO_DESIGN_HEAD,
   STUDIO_DESIGN_STEPS,
   STUDIO_FOOTER,
   STUDIO_HERO,
-  STUDIO_LOGO_COPY,
-  STUDIO_LOGO_STAGES,
   STUDIO_MARK_COPY,
+  STUDIO_MARKS_ROKCT,
   STUDIO_PRICE_ROWS,
   STUDIO_PRICES_HEAD,
   STUDIO_PROCESS,
@@ -59,15 +56,15 @@ import {
   STUDIO_WHATSAPP_DISPLAY,
   STUDIO_WHATSAPP_URL,
   STUDIO_WORK_HEAD,
-  STUDIO_WORK_TABS,
   studioDesignImage,
   studioSchemeVars,
   studioWhatsApp,
-  type StudioCase,
   type StudioDesignCase,
   type StudioMarkSet,
   type StudioServicePrice,
 } from "./studio-copy";
+import { StudioShowcaseRow, StudioShowcaseScope, StudioShowcaseSection, type ShowcaseBacks } from "./studio-showcase-client";
+import { SHOWCASE_HOME_COUNT, SHOWCASE_PAGE_HREF, type ShowcaseSite } from "./studio-showcase";
 import { StudioSketchSheet } from "./studio-sketch";
 import { isStudioShotSite, studioShotSrc, type StudioShotSiteId } from "./studio-shots";
 
@@ -247,146 +244,37 @@ function Swatches({ id }: { id: keyof typeof STUDIO_SCHEMES }) {
   );
 }
 
-function TurnGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5" /></svg>
-  );
-}
-
-// The portfolio card's front (1.8.0): the case exactly as the page showed
-// it before, desktop and phone proofs and the words, now inside its own
-// colour scheme. A case with a back carries a "turn" hint.
-function WorkFront({ c }: { c: StudioCase }) {
-  return (
-    <article className="case">
-      <DeskProof site={c.site} alt={c.desk.alt} url={c.desk.url} caption={c.desk.caption} side="Proof · desktop" />
-      <PhoneProof site={c.site} alt={c.phone.alt} caption="Phone" side="390" />
-      <div className="case-text">
-        <div>
-          <p className="kick">{c.kicker}</p>
-          <h3>{c.title}</h3>
-          {(c.marks || c.logo.length > 0) && (
-            <span className="pf-turn" aria-hidden="true">
-              <TurnGlyph />
-              {c.marks ? STUDIO_MARK_COPY.turn : STUDIO_LOGO_COPY.turn}
-            </span>
-          )}
-        </div>
-        <div>
-          <p>{c.body}</p>
-          <dl className="spec">
-            <dt>Made</dt>
-            <dd>{c.made}</dd>
-            <dt>Look</dt>
-            <dd>{c.look}</dd>
-          </dl>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-// The portfolio card's back (1.8.0): the logo process, only the stages
-// that have real material (studio-copy.ts), in the order they happened.
-function WorkBack({ c }: { c: StudioCase }) {
-  const stages = STUDIO_LOGO_STAGES.map((st) => ({ ...st, stage: c.logo.find((l) => l.kind === st.kind) })).filter(
-    (x) => x.stage && x.stage.pictures.length > 0,
-  );
-  return (
-    <div className="lg">
-      <div className="lg-top">
-        <p className="kick">{STUDIO_LOGO_COPY.kicker}</p>
-        <h3>{c.tab}</h3>
-        <span className="pf-turn" aria-hidden="true">
-          <TurnGlyph />
-          {STUDIO_LOGO_COPY.back}
-        </span>
-      </div>
-      <ol className="lg-stages">
-        {stages.map(({ kind, label, stage }, i) => (
-          <li key={kind} className={`lg-stage lg-${kind}`}>
-            <p className="dz-step">
-              <i>{String(i + 1).padStart(2, "0")}</i> {label}
-            </p>
-            <div className="lg-pics">
-              {stage!.pictures.map((pic) => (
-                <figure key={pic.src + pic.caption} className="lg-pic">
-                  <div className="lg-tile">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- the client's own file, served as-is */}
-                    <img src={pic.src} alt={pic.alt} width={pic.width} height={pic.height} loading="lazy" decoding="async" />
-                  </div>
-                  <figcaption>{pic.caption}</figcaption>
-                </figure>
-              ))}
-            </div>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-// The ROKCT card's back (1.10.0): the sketch sheet, a cross splitting it
-// into four hand-drawn logos with the picked one circled (studio-sketch.tsx),
-// and beside it the picked mark as the clean final file, drawn as a mask in
-// the panel's ink so one file serves light and dark, at full size and at
-// avatar sizes. The example brief is one line above, why it won below.
-function MarkBack({ c, m }: { c: StudioCase; m: StudioMarkSet }) {
+// The ROKCT card's back in the portfolio row (1.11.0): the 1.10.0 logo
+// back cut to the card - the same sketch sheet (studio-sketch.tsx) and the
+// picked mark as the final file (a CSS mask in the panel's ink, as in the
+// .mk-* back), with the one line on why it won. The row turns the grown
+// card to it; `logo_back: "rokct"` in a showcase file asks for it.
+function ShowcaseMarkBack({ m }: { m: StudioMarkSet }) {
   const letter = m.chosen.toUpperCase();
+  const picked = m.options.find((o) => o.key === m.chosen);
   const notes = m.options.map((o) => `${o.key.toUpperCase()}, ${o.name}: ${o.note}`).join(" ");
   const mark = { ["--mk" as string]: `url("${m.final.src}")` };
   return (
-    <div className="mk">
-      <div className="lg-top">
-        <p className="kick">{STUDIO_MARK_COPY.kicker}</p>
-        <h3>{c.tab}</h3>
-        <span className="pf-turn" aria-hidden="true">
-          <TurnGlyph />
-          {STUDIO_MARK_COPY.back}
+    <div className="sr-mk">
+      <div className="sr-mk-sheet">
+        <StudioSketchSheet title={STUDIO_MARK_COPY.sheetLabel(notes)} />
+      </div>
+      <div className="sr-mk-fin">
+        <span className="mk-av sr-mk-av">
+          <span className="mk-mark" role="img" aria-label={m.final.alt} style={mark} />
         </span>
+        <span className="sr-mk-k">
+          {letter} · {picked ? picked.name : STUDIO_MARK_COPY.final}
+        </span>
+        <p>{STUDIO_MARK_COPY.picked}</p>
       </div>
-
-      <p className="mk-ask">
-        <span className="stamp">{STUDIO_MARK_COPY.stamp}</span>
-        <q>{m.ask}</q>
-      </p>
-
-      <div className="mk-g">
-        <figure className="mk-sheet">
-          <p className="dz-step">
-            <i>01</i> {STUDIO_MARK_COPY.sheet}
-          </p>
-          <StudioSketchSheet title={STUDIO_MARK_COPY.sheetLabel(notes)} />
-        </figure>
-
-        <div className="mk-final">
-          <p className="dz-step">
-            <i>02</i> {STUDIO_MARK_COPY.final} · {letter}
-          </p>
-          <div className="mk-tile">
-            <span className="mk-mark" role="img" aria-label={m.final.alt} style={mark} />
-            <span className="mk-spec">{STUDIO_MARK_COPY.finalSub}</span>
-          </div>
-          <div className="mk-sizes" aria-hidden="true">
-            <span className="mk-av">
-              <span className="mk-mark" style={mark} />
-            </span>
-            <span className="mk-s32 mk-mark" style={mark} />
-            <span className="mk-s20 mk-mark" style={mark} />
-            <span className="fine">{STUDIO_MARK_COPY.sizes}</span>
-          </div>
-          <div className="mk-why">
-            <p className="dz-step">
-              <i>03</i> {STUDIO_MARK_COPY.why(letter)}
-            </p>
-            <p className="why">{m.why}</p>
-          </div>
-        </div>
-      </div>
-
-      <p className="fine mk-foot">{STUDIO_MARK_COPY.foot}</p>
     </div>
   );
+}
+
+/** The backs a showcase card can turn to, by `logo_back` value. */
+export function studioShowcaseBacks(): ShowcaseBacks {
+  return { rokct: <ShowcaseMarkBack m={STUDIO_MARKS_ROKCT} /> };
 }
 
 // One "how we design" case: the example brief, the three options with the
@@ -489,7 +377,41 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
   );
 }
 
-export function StudioHome({ fontClassName }: { fontClassName: string }) {
+/** The studio footer: the mark, the line, the motto and base_sdk's site credit (also on /work). */
+export function StudioFooter() {
+  return (
+    <footer className="ft">
+      <div className="wrap ft-in">
+        <div>
+          <span className="mark">
+            ROKCT
+            <i aria-hidden="true" />
+          </span>
+          <p className="sm">{STUDIO_FOOTER.about}</p>
+        </div>
+        <div className="r">
+          <span className="motto">{STUDIO_FOOTER.motto}</span>
+          {/* base_sdk 1.54.0's site credit: `© <year> <PLATFORM_NAME> · Built
+              with ♥ by ROKCT`, in the studio's own fine type and middle dot. */}
+          <span className="fine">
+            <SiteCredit as="span" siteName={STUDIO_FOOTER.siteName} /> · {STUDIO_FOOTER.prices}
+          </span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+export function StudioHome({
+  fontClassName,
+  showcase,
+  rescue = [],
+}: {
+  fontClassName: string;
+  showcase: ShowcaseSite[];
+  /** The built-in stand-in if every showcase site drops in the browser (loadShowcase). */
+  rescue?: ShowcaseSite[];
+}) {
   const H = STUDIO_HERO;
   const P = STUDIO_PROCESS;
   const C = STUDIO_CONTACT;
@@ -613,22 +535,24 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
           </section>
 
           {/* ---------------------------------------------------------- work */}
-          <section className="sec" id="work">
-            <div className="wrap">
-              <SectionHead {...STUDIO_WORK_HEAD} />
-              <StudioWorkTabs
-                tabs={STUDIO_CASES.map((c) => ({ id: c.site, label: c.tab, sub: c.sector }))}
-                schemes={STUDIO_CASES.map((c) => studioSchemeVars(c.site))}
-                labels={STUDIO_WORK_TABS}
-                cards={STUDIO_CASES.map((c) => ({
-                  front: <WorkFront c={c} />,
-                  back: c.marks ? <MarkBack c={c} m={c.marks} /> : c.logo.length > 0 ? <WorkBack c={c} /> : null,
-                  flipLabel: c.marks ? STUDIO_MARK_COPY.flip(c.tab) : STUDIO_LOGO_COPY.flip(c.tab),
-                  flipBackLabel: c.marks ? STUDIO_MARK_COPY.flipBack(c.tab) : STUDIO_LOGO_COPY.flipBack(c.tab),
-                }))}
+          {/* 1.11.0: the phones row from the shell's ranked showcase list
+              (studio-showcase.ts), the top SHOWCASE_HOME_COUNT and a "See
+              more" card to /work. It replaces 1.8.0's tabs over flip cards.
+              The section hides whole if no site is left to show. */}
+          <StudioShowcaseScope>
+            <StudioShowcaseSection className="sec" id="work">
+              <div className="wrap">
+                <SectionHead {...STUDIO_WORK_HEAD} />
+              </div>
+              <StudioShowcaseRow
+                sites={showcase.slice(0, SHOWCASE_HOME_COUNT)}
+                total={showcase.length}
+                backs={studioShowcaseBacks()}
+                moreHref={SHOWCASE_PAGE_HREF}
+                rescue={rescue.slice(0, SHOWCASE_HOME_COUNT)}
               />
-            </div>
-          </section>
+            </StudioShowcaseSection>
+          </StudioShowcaseScope>
 
           {/* ------------------------------------------------- how we design */}
           <section className="sec" id="design">
@@ -771,25 +695,7 @@ export function StudioHome({ fontClassName }: { fontClassName: string }) {
           </div>
         </section>
 
-        <footer className="ft">
-          <div className="wrap ft-in">
-            <div>
-              <span className="mark">
-                ROKCT
-                <i aria-hidden="true" />
-              </span>
-              <p className="sm">{STUDIO_FOOTER.about}</p>
-            </div>
-            <div className="r">
-              <span className="motto">{STUDIO_FOOTER.motto}</span>
-              {/* base_sdk 1.54.0's site credit: `© <year> <PLATFORM_NAME> · Built
-                  with ♥ by ROKCT`, in the studio's own fine type and middle dot. */}
-              <span className="fine">
-                <SiteCredit as="span" siteName={STUDIO_FOOTER.siteName} /> · {STUDIO_FOOTER.prices}
-              </span>
-            </div>
-          </div>
-        </footer>
+        <StudioFooter />
         {/* base_sdk's "Back to top" button, framed inside .st so the
             studio's registered style (../landing/hosting-back-to-top.ts)
             resolves against the studio tokens; base's root button steps

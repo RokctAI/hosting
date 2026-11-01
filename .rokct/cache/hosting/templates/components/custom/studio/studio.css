@@ -466,7 +466,7 @@ html:has(.st){scroll-behavior:auto}
 
 
 /* 1.8.0: each case in its own colours (Ray: "each tab shows that case's own
-   colour scheme"). A case panel (.dz-panel, .pf-slide) carries `.cs` and
+   colour scheme"). A case panel (.dz-panel) carries `.cs` and
    its scheme as --cl-* (light) and --cd-* (dark) inline properties
    (studio-copy.ts studioSchemeVars); `.cs` points the studio's own tokens
    at them, so everything inside - the paper, the cards, the rules, the
@@ -478,8 +478,8 @@ html:has(.st){scroll-behavior:auto}
 .st .cs ::selection{background:var(--acc);color:var(--acc-ink)}
 /* The tab rows sit on the studio's paper; only their marker takes the
    active case's accent (each accent is >= 4.5:1 on the studio paper too). */
-.st .dz,.st .pf{--mark:var(--cl-acc-text)}
-.dark .st .dz,.dark .st .pf{--mark:var(--cd-acc-text)}
+.st .dz{--mark:var(--cl-acc-text)}
+.dark .st .dz{--mark:var(--cd-acc-text)}
 .st .dz-tabs [role="tab"]::after{background:var(--mark,var(--acc-text));transition:transform .35s cubic-bezier(.2,.7,.2,1),background-color .35s ease}
 .st .dz-ti{color:var(--mark,var(--acc-text));transition:color .35s ease}
 .st .dz-panel{margin-top:clamp(18px,2.5vw,28px);padding:clamp(18px,3vw,36px);border-radius:16px}
@@ -500,67 +500,11 @@ html:has(.st){scroll-behavior:auto}
 .st .dz-cta{grid-column:2}
 }
 
-/* The portfolio row: tabs and controls over a sideways track of full-width
-   flip cards (studio-client.tsx StudioWorkTabs; the track follows lms_sdk's
-   card deck). */
-.st .pf-bar{display:flex;align-items:flex-end;gap:16px;border-bottom:1px solid var(--rule)}
-.st .pf-tabs{flex:1;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:0}
-.st .pf-run .pf-tabs [aria-selected="true"]::after{opacity:.25}
-.st .pf-prog{position:absolute;left:0;right:0;bottom:-1px;height:3px;z-index:1;background:var(--mark);transform:scaleX(0);transform-origin:left;animation:pf-fill var(--pf-ms,8s) linear forwards}
-.st .pf-tabs [role="tab"]+[role="tab"] .pf-prog{left:16px}
-.st .pf[data-paused="true"] .pf-prog{animation-play-state:paused}
-@keyframes pf-fill{to{transform:scaleX(1)}}
-.st .pf-ctl{display:flex;gap:8px;padding:0 0 14px}
-.st .pf-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--rule-2);display:grid;place-items:center;color:var(--ink);transition:border-color .2s,background .2s}
-.st .pf-btn:hover{border-color:var(--ink)}
-.st .pf-track{display:flex;gap:16px;margin-top:clamp(18px,2.5vw,28px);overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.st .pf-track::-webkit-scrollbar{display:none}
-.st .pf-slide{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always}
-.st .pf-slide.cs{background:none}
-.st .pf-card{border-radius:16px}
-.st .pf-card>div>div{background:var(--bg);border-radius:16px;transition:background-color .35s ease}
-.st .pf-slide .case{border-top:0;padding:clamp(18px,3vw,40px)}
-.st .pf-turn{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font:700 11.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--acc-ink);background:var(--acc);padding:9px 13px;border-radius:999px}
-.st .pf-hint{margin-top:12px;display:none}
-@media (max-width:899px){
-.st .pf-slide{flex-basis:calc(100% - 28px)}
-.st .pf-hint{display:block}
-.st .pf-tabs [role="tab"]{border-bottom:0}
-}
-@media (max-width:599px){
-.st .pf-bar{flex-direction:column;align-items:stretch;gap:0}
-.st .pf-ctl{justify-content:flex-end;padding:10px 0 12px}
-}
-
-/* The back: the logo process, only the stages with real material. */
-.st .lg{padding:clamp(18px,3vw,40px);height:100%;display:flex;flex-direction:column}
-.st .lg-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;padding-bottom:16px;border-bottom:1px solid var(--rule)}
-.st .lg-top h3{font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em}
-.st .lg-top .pf-turn{margin:0 0 0 auto}
-.st .lg-stages{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:28px;flex:1;align-content:center}
-@media (min-width:900px){
-.st .lg-stages{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:28px}
-.st .lg-versions{grid-column:span 2}
-}
-.st .lg-pics{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
-.st .lg-pic{margin:0;flex:1 1 150px;min-width:0}
-.st .lg-tile{height:clamp(170px,24vw,340px);padding:clamp(18px,2.2vw,32px);border-radius:12px;background:var(--frame);overflow:hidden}
-.st .lg-tile img{width:100%;height:100%;object-fit:contain}
-.st .lg-pic figcaption{margin-top:10px;font:400 13.5px/1.45 var(--sans);color:var(--ink-2)}
-.st .pf-card>.case{background:var(--bg);border-radius:16px}
-
 /* 1.10.0: the ROKCT card's back, a logo job the way a client sees one
    (studio-home.tsx MarkBack): the example brief, four logos side by side
    with the picked one ringed and badged, then why it won. Each mark is its
    SVG file used as a mask over the panel's ink, so one file draws in light
    and dark. A third tab joins the row: ROKCT, Polaris, Supacharge. */
-@media (max-width:720px){
-.st .pf-tabs [role="tab"],.st .pf-tabs [role="tab"]+[role="tab"]{padding:14px 8px 14px 0;border-bottom:0}
-.st .pf-tabs [role="tab"]+[role="tab"]{padding-left:10px;border-left:1px solid var(--rule)}
-.st .pf-tabs .dz-tl{font-size:21px}
-.st .pf-tabs .dz-ts{font-size:11.5px}
-.st .pf-tabs [role="tab"]+[role="tab"] .pf-prog{left:10px}
-}
 .st .mk{padding:clamp(18px,3vw,40px);height:100%;display:flex;flex-direction:column;gap:clamp(18px,2.2vw,28px)}
 .st .mk-ask{margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
 .st .mk-ask q{font:italic 400 clamp(17px,1.5vw,21px)/1.35 var(--serif);color:var(--ink);quotes:"\201C" "\201D";text-wrap:pretty}
@@ -615,4 +559,187 @@ html:has(.st){scroll-behavior:auto}
 @media (max-width:899px){
 .st .mk-tile{min-height:0;aspect-ratio:4/3}
 .st .mk-why .why{font-size:18px}
+}
+
+/* 1.11.0: "Our work" as a row of phones (studio-showcase-client.tsx), after
+   the prototype Ray approved. On a wide screen the row drifts left; one
+   card at a time grows into the desktop site at the phone's own height -
+   only the width grows (--dh is --ph; --dw is the desktop picture's width
+   at that height, plus the 30px title bar and the 4px bezel). Frames are
+   the studio's thin 4px phone frames. The corner icon is the live site. */
+.st .sr,.st .wk{--pill:#3A3941;--pill-tx:#9C9AA3}
+.dark .st .sr,.dark .st .wk{--pill:#26252C}
+.st .sr{position:relative}
+.st .sr-stage{--pw:196px;--gap:30px;
+  --ph:calc((var(--pw) - 8px) * 1149 / 560 + 8px);
+  --dh:var(--ph);
+  --dw:calc((var(--ph) - 34px) * 1200 / 833 + 8px);
+  position:relative;height:calc(var(--dh) + 96px);overflow:hidden;overflow:clip;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 6%,#000 94%,transparent 100%);
+          mask-image:linear-gradient(90deg,transparent 0,#000 6%,#000 94%,transparent 100%)}
+.st .sr-track{position:absolute;inset:0 auto 0 0;will-change:transform;transition:opacity .5s cubic-bezier(.22,.8,.24,1)}
+.st .sr-rail{display:flex;align-items:center;gap:var(--gap);height:100%;padding:0 0 40px var(--gap);margin:0;list-style:none;
+  transform:translateX(var(--shift,0px));transition:transform .6s cubic-bezier(.22,.8,.24,1)}
+.st .sr-probe{position:absolute;left:0;top:0;width:var(--dw);height:0;visibility:hidden;pointer-events:none}
+@media (scripting:enabled){
+.st .sr:not([data-ready]) .sr-track,.st .sr:not([data-ready]) .sr-m{opacity:0}
+}
+
+.st .sr-card{position:relative;flex:none;width:var(--pw);height:var(--ph);margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:width .6s cubic-bezier(.22,.8,.24,1),height .6s cubic-bezier(.22,.8,.24,1),opacity .5s cubic-bezier(.22,.8,.24,1)}
+.st .sr-card.big{width:var(--dw);height:var(--dh);z-index:2}
+.st .sr-card.dim{opacity:.62}
+.st .sr-card:focus-visible,.st .sr-flip:focus-visible{outline:none}
+.st .sr-flip{position:relative;display:block;width:100%;height:100%}
+.st .sr-dev{position:relative;height:100%;background:var(--frame);border-radius:26px;padding:4px;box-shadow:var(--shadow);
+  transition:padding .6s cubic-bezier(.22,.8,.24,1),border-radius .6s cubic-bezier(.22,.8,.24,1),box-shadow .3s}
+.dark .st .sr-dev{box-shadow:0 0 0 1px rgba(255,255,255,.12),var(--shadow)}
+.st .sr-card.big .sr-dev{border-radius:12px;padding:30px 4px 4px}
+.st .sr-card:focus-visible .sr-dev,.st .sr-flip:focus-visible .sr-dev{box-shadow:var(--shadow),0 0 0 3px var(--bg),0 0 0 5px var(--acc-text)}
+.st .sr-bar{position:absolute;left:0;right:0;top:0;height:30px;display:flex;align-items:center;gap:6px;padding:0 12px;opacity:0;transition:opacity .25s}
+.st .sr-card.big .sr-bar{opacity:1;transition:opacity .35s .25s}
+.st .sr-bar i{width:8px;height:8px;border-radius:50%;background:var(--pill);flex:none}
+.st .sr-bar span{margin:0 auto;transform:translateX(-18px);font:500 11px/1 var(--sans);color:var(--pill-tx);background:var(--pill);
+  border-radius:6px;padding:5px 14px;white-space:nowrap;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;max-width:70%}
+.st .sr-screen{position:relative;width:100%;height:100%;border-radius:22px;overflow:hidden;background:#000;transition:border-radius .6s cubic-bezier(.22,.8,.24,1)}
+.st .sr-card.big .sr-screen{border-radius:6px}
+.st .sr-screen img{position:absolute;top:0;left:50%;max-width:none;height:auto}
+.st .sr-ph{width:calc(var(--pw) - 8px);transform:translateX(-50%);transition:opacity .35s .1s,transform .6s cubic-bezier(.22,.8,.24,1)}
+.st .sr-dk{width:calc(var(--dw) - 8px);transform:translateX(-50%) scale(1.03);transform-origin:50% 0;opacity:0;transition:opacity .4s,transform .7s cubic-bezier(.22,.8,.24,1)}
+.st .sr-card.big .sr-ph{opacity:0;transform:translateX(-50%) scale(.94);transition:opacity .3s,transform .6s cubic-bezier(.22,.8,.24,1)}
+.st .sr-card.big .sr-dk{opacity:1;transform:translateX(-50%) scale(1);transition:opacity .45s .12s,transform .7s cubic-bezier(.22,.8,.24,1)}
+
+/* The live site, top right. Beside the card, not in it: it never grows or turns it. */
+.st .sr-ext{position:absolute;top:-10px;right:-10px;z-index:3;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;
+  background:var(--card);color:var(--ink-2);border:1px solid var(--rule);box-shadow:0 6px 14px -8px rgba(0,0,0,.45);opacity:.8;text-decoration:none;
+  transition:opacity .3s,background-color .2s,color .2s,border-color .2s}
+.st .sr-card.big .sr-ext,.st .sr-card:hover .sr-ext,.st .sr-card:focus-within .sr-ext{opacity:1;color:var(--ink)}
+.st .sr-ext:hover{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.st .sr-card .sr-ext:hover{color:var(--acc-ink)}
+.st .sr-ext:focus-visible{outline:2px solid var(--acc-text);outline-offset:2px;opacity:1}
+
+.st .sr-cap{position:absolute;left:50%;top:calc(100% + 16px);transform:translateX(-50%);margin:0;white-space:nowrap;text-align:center;
+  font:600 11px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.st .sr-cap b{color:var(--ink);font-weight:600}
+.st .sr-cap em{font:italic 400 15px/1 var(--serif);letter-spacing:0;text-transform:none;color:var(--ink-2);margin-left:8px;
+  display:inline-block;opacity:0;max-width:0;overflow:hidden;vertical-align:bottom;transition:opacity .3s,max-width .5s cubic-bezier(.22,.8,.24,1)}
+.st .sr-card.big .sr-cap em{opacity:1;max-width:420px;transition:opacity .4s .3s,max-width .6s cubic-bezier(.22,.8,.24,1)}
+
+/* "See the logo": shown on a grown card that has a back. The whole card turns (FlipCard). */
+.st .sr-turn{position:absolute;right:14px;bottom:14px;display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);
+  border-radius:999px;padding:9px 15px 9px 12px;font:600 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+  box-shadow:0 8px 20px -8px rgba(0,0,0,.5);opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .25s,transform .35s cubic-bezier(.22,.8,.24,1)}
+.st .sr-card.big .sr-dev .sr-turn{opacity:1;transform:none;transition:opacity .35s .45s,transform .45s .45s cubic-bezier(.22,.8,.24,1)}
+.st .sr-back{height:100%;background:var(--card);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.st .sr-back-h{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;padding:0 26px 0 16px;border-bottom:1px solid var(--rule)}
+.st .sr-back-h p{margin:0;font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-text)}
+.st .sr-back-h p b{font-family:var(--disp);font-weight:800;font-size:20px;letter-spacing:0;color:var(--ink);margin-left:10px;vertical-align:-2px}
+.st .sr-back-h .sr-turn{position:static;opacity:1;transform:none;padding:8px 13px 8px 10px}
+.st .sr-back-b{flex:1;min-height:0;position:relative}
+.st .sr-mk{height:100%;display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;padding:10px 14px 12px;align-items:center}
+.st .sr-mk-sheet{height:100%;aspect-ratio:1;min-height:0}
+.st .sr-mk-sheet .sk{width:100%;height:100%;border-radius:10px}
+.st .sr-mk-fin{display:grid;gap:8px;justify-items:start;min-width:0}
+.st .sr-mk-k{font:600 10.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--acc-text)}
+.st .sr-mk-fin p{margin:0;font:400 14px/1.35 var(--serif);color:var(--ink-2)}
+
+/* "See more": the last card, the whole ranked list. */
+.st .sr-more{cursor:auto}
+.st .sr-more-in{display:flex;flex-direction:column;justify-content:flex-end;gap:8px;height:100%;padding:20px 18px;border:1.5px dashed var(--rule-2);
+  border-radius:26px;text-decoration:none;color:var(--ink);transition:border-color .2s,background-color .2s}
+.st .sr-more-in:hover{border-color:var(--acc-text);background:var(--card)}
+.st .sr-more-k{font:800 44px/.9 var(--disp);text-transform:uppercase;letter-spacing:-.005em}
+.st .sr-more-n{font:500 13px/1.35 var(--sans);color:var(--ink-2)}
+.st .sr-more-go{margin-top:10px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:var(--acc-ink);transition:transform .25s}
+.st .sr-more-in:hover .sr-more-go{transform:translateX(4px)}
+
+.st .sr-ctl{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:6px;padding:0 16px}
+.st .sr-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--rule-2);border-radius:999px;padding:9px 15px;
+  font:500 13px/1 var(--sans);color:var(--ink-2);text-decoration:none;transition:border-color .2s,color .2s}
+.st button.sr-chip{border:1px solid var(--rule-2);padding:9px 15px}
+.st .sr-chip:hover{border-color:var(--ink-3);color:var(--ink)}
+
+/* Phones: a native swipe row; a tap grows a card to the screen's width. */
+.st .sr-m{display:none}
+@media (max-width:699.98px){
+.st .sr-stage,.st .sr-ctl .sr-pause{display:none}
+.st .sr:not([hidden]){display:flex;flex-direction:column}
+.st .sr-ctl{order:2;margin-top:0}
+.st .sr-m{--pw:172px;--ph:calc((var(--pw) - 8px) * 1149 / 560 + 8px);--dw:var(--mdw,358px);--dh:calc((var(--dw) - 8px) * 833 / 1200 + 30px);
+  display:flex;align-items:center;gap:16px;list-style:none;margin:8px 0 0;
+  padding:14px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px));
+  height:calc(var(--ph) + 66px);overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none;
+  scroll-padding-inline:max(16px,env(safe-area-inset-left,0px));transition:opacity .5s}
+.st .sr-m::-webkit-scrollbar{display:none}
+.st .sr-m::after{content:"";flex:none;width:1px}
+.st .sr-m .sr-card{scroll-snap-align:start}
+.st .sr-m .sr-card.big{scroll-snap-align:center}
+.st .sr-m .sr-card.big .sr-dev{padding:26px 4px 4px}
+.st .sr-m .sr-bar{height:26px;padding:0 10px}
+.st .sr-m .sr-bar span{font-size:10px;padding:4px 10px}
+.st .sr-m .sr-cap{top:calc(100% + 12px)}
+.st .sr-m .sr-cap em{display:none}
+.st .sr-m .sr-ext{top:-8px;right:-8px}
+.st .sr-m .sr-turn{right:10px;bottom:10px;padding:8px 12px 8px 10px;font-size:10px}
+.st .sr-m .sr-back-h{height:38px;padding:0 22px 0 12px}
+.st .sr-m .sr-back-h p{font-size:10px}
+.st .sr-m .sr-back-h p b{font-size:17px;margin-left:6px}
+.st .sr-m .sr-mk{gap:12px;padding:8px 10px 10px}
+.st .sr-m .sr-mk-av{width:46px;height:46px}
+.st .sr-m .sr-mk-fin p{font-size:12.5px}
+.st .sr-more-k{font-size:38px}
+}
+@media (prefers-reduced-motion:reduce){
+.st .sr-card,.st .sr-dev,.st .sr-screen,.st .sr-rail,.st .sr-screen img,.st .sr-cap em,.st .sr-turn,.st .sr-bar{transition-duration:.2s!important;transition-delay:0s!important}
+}
+
+/* 1.11.0: /work - every site, ranked, as a grid (studio-work.tsx). Each
+   item is a proof panel: the desktop site with the phone over its corner,
+   the live-site icon top right, then the number, name, kind and line. */
+.st .wk-head{padding-block:clamp(40px,7vw,104px) clamp(28px,4vw,56px)}
+.st .wk-head .kick{margin-bottom:18px}
+.st .wk-head-g{display:grid;gap:22px}
+.st .wk-h1{font-size:clamp(50px,7.6vw,118px)}
+.st .wk-head-r{display:grid;gap:14px}
+@media (min-width:900px){
+.st .wk-head-g{grid-template-columns:7fr 5fr;gap:48px;align-items:end}
+}
+.st .wk-end{padding-bottom:clamp(64px,9vw,128px)}
+/* nothing left to show (studio-showcase-client.tsx): the section goes, frame and all */
+.st [data-showcase][hidden],.st .wk-grid[hidden]{display:none!important}
+.st .wk-grid{list-style:none;margin:0;padding:clamp(28px,4vw,48px) 0 0;border-top:1px solid var(--ink);display:grid;gap:clamp(44px,5vw,72px) clamp(24px,3vw,44px)}
+@media (min-width:900px){
+.st .wk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.st .wk-item:first-child{grid-column:1/-1;display:grid;grid-template-columns:8fr 4fr;gap:44px;align-items:end}
+.st .wk-item:first-child .wk-meta{margin-top:0;grid-template-columns:1fr;padding-bottom:12px}
+.st .wk-item:first-child .wk-n{font-size:84px}
+.st .wk-item:first-child .wk-name{font-size:clamp(30px,2.8vw,42px)}
+.st .wk-item:first-child .wk-tag{grid-column:auto;font-size:clamp(19px,1.6vw,23px)}
+}
+.st .wk-item{position:relative;min-width:0}
+.st .wk-shots{position:relative;border-radius:16px;background:var(--bg-2);padding:clamp(18px,3.2vw,44px) 22% clamp(18px,3.2vw,44px) clamp(18px,3.2vw,44px);overflow:hidden;isolation:isolate}
+.st .wk-desk{position:relative;background:var(--frame);border-radius:10px;padding:26px 4px 4px;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.22,.8,.24,1)}
+.st .wk-desk .sr-bar{height:26px;opacity:1}
+.st .wk-desk-s{border-radius:6px;overflow:hidden;aspect-ratio:1200/833;background:#000}
+.st .wk-desk-s img,.st .wk-phone img{width:100%;height:100%;object-fit:cover;object-position:top;max-width:none}
+.st .wk-phone{position:absolute;right:clamp(12px,2.4vw,34px);bottom:clamp(18px,3.2vw,44px);width:21%;background:var(--frame);border-radius:clamp(14px,1.8vw,26px);padding:4px;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.22,.8,.24,1)}
+.st .wk-phone img{aspect-ratio:560/1149;height:auto;border-radius:clamp(10px,1.4vw,22px)}
+.dark .st .wk-desk,.dark .st .wk-phone{box-shadow:0 0 0 1px rgba(255,255,255,.1),var(--shadow)}
+.st .wk-item:hover .wk-desk{transform:translateY(-4px)}
+.st .wk-item:hover .wk-phone{transform:translateY(-10px)}
+.st .wk-ext{top:14px;right:14px;opacity:1;color:var(--ink)}
+.st .wk-meta{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 18px;margin-top:20px;align-items:baseline}
+.st .wk-n{font:800 46px/.9 var(--disp);color:var(--acc-text)}
+.st .wk-name{font:700 clamp(24px,2.2vw,30px)/1.1 var(--sans);letter-spacing:-.02em;margin:0}
+.st .wk-kind{margin:6px 0 0;font:600 11.5px/1.3 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.st .wk-tag{grid-column:2;margin:8px 0 0;font:400 18px/1.4 var(--serif);color:var(--ink-2);max-width:32em;text-wrap:pretty}
+.st .wk-foot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;margin-top:clamp(48px,6vw,80px);padding-top:24px;border-top:1px solid var(--rule)}
+@media (max-width:560px){
+.st .wk-n{font-size:38px}
+.st .wk-tag{grid-column:1/-1}
+.st .wk-foot .btn{white-space:normal}
+}
+@media (prefers-reduced-motion:reduce){
+.st .wk-desk,.st .wk-phone{transition:none}
+.st .wk-item:hover .wk-desk,.st .wk-item:hover .wk-phone{transform:none}
 }

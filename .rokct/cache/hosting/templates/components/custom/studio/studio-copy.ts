@@ -299,6 +299,8 @@ export const STUDIO_MARK_COPY = {
   final: "The final",
   finalSub: "Vector, one colour",
   sizes: "As a WhatsApp picture, and at 32 and 20 pixels.",
+  /** 1.11.0: the one line under the final on the portfolio row's card back. */
+  picked: "Picked: it still reads at WhatsApp-picture size, in one colour.",
   why: (letter: string) => `Why ${letter} won`,
   foot: "The brief is an example, written for this page. C is the ROKCT mark in use today; A, B and D were sketched for this page to show how the choice is made.",
   flip: (name: string) => `${name}: turn the card to see the logo sketches and the final mark`,

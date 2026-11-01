@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "installs": [],
   "dependencies": {},
   "devDependencies": {},
@@ -38,6 +38,26 @@
         {
           "from": "templates/components/custom/studio/studio-sketch.tsx",
           "to": "components/custom/studio/studio-sketch.tsx"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-showcase.ts",
+          "to": "components/custom/studio/studio-showcase.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-showcase-load.ts",
+          "to": "components/custom/studio/studio-showcase-load.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-showcase-client.tsx",
+          "to": "components/custom/studio/studio-showcase-client.tsx"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-work.tsx",
+          "to": "components/custom/studio/studio-work.tsx"
+        },
+        {
+          "from": "templates/app/work/page.tsx",
+          "to": "app/work/page.tsx"
         },
         {
           "from": "templates/app/studio/shots",

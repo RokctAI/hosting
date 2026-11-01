@@ -19,12 +19,15 @@
 // the price table, the five phases and the WhatsApp line. The control-site
 // plans storefront stays on base_sdk's composed /landing. The page lives in
 // components/custom/studio/ (copy in studio-copy.ts, the three faces in
-// studio-fonts.ts through next/font).
+// studio-fonts.ts through next/font). Since 1.11.0 the "Our work" row reads
+// the shell's own showcase/ folder (studio-showcase-load.ts) here, once, at
+// build time: the page is static.
 
 import type { Metadata } from "next";
 
 import { studioFontClassName } from "@/components/custom/studio/studio-fonts";
 import { StudioHome } from "@/components/custom/studio/studio-home";
+import { loadShowcase } from "@/components/custom/studio/studio-showcase-load";
 
 export const metadata: Metadata = {
   title: { absolute: "ROKCT Studio" },
@@ -33,5 +36,6 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <StudioHome fontClassName={studioFontClassName} />;
+  const { sites, rescue } = loadShowcase();
+  return <StudioHome fontClassName={studioFontClassName} showcase={sites} rescue={rescue} />;
 }

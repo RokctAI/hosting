@@ -160,6 +160,7 @@ next-env.d.ts
 /app/styles/rokct-scroll.css
 /app/team/page.tsx
 /app/twitter-image.tsx
+/app/work/page.tsx
 /components/admin/GenericReport.tsx
 /components/custom/app-sidebar.tsx
 /components/custom/auth-form.tsx
@@ -248,7 +249,11 @@ next-env.d.ts
 /components/custom/studio/studio-fonts.ts
 /components/custom/studio/studio-home.tsx
 /components/custom/studio/studio-shots.ts
+/components/custom/studio/studio-showcase-client.tsx
+/components/custom/studio/studio-showcase-load.ts
+/components/custom/studio/studio-showcase.ts
 /components/custom/studio/studio-sketch.tsx
+/components/custom/studio/studio-work.tsx
 /components/custom/studio/studio.css
 /components/custom/submit-button.tsx
 /components/custom/theme-provider.client.tsx

@@ -108,8 +108,8 @@ class TestStudioShotsWiring(unittest.TestCase):
         self.assertIn('src={live ? studioShotSrc(live, "option-dark.webp") : studioDesignImage(c.id, o, "dark")}', home)
         self.assertIn('<DeskProof\n                site="polaris"', home)
         self.assertIn('<PhoneProof\n                site="supacharge"', home)
-        self.assertIn("<DeskProof site={c.site}", home)
-        self.assertIn("<PhoneProof site={c.site}", home)
+        # 1.11.0: the "Our work" proofs left with the tabs row; the phones
+        # row draws the shots its showcase list names.
         self.assertNotIn("STUDIO_IMAGES", home)
         css = read(CSS)
         for rule in (".st .shot .th-d{display:none}", ".dark .st .shot .th-l{display:none}",

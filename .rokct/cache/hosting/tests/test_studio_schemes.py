@@ -134,73 +134,14 @@ class TestCaseSchemes(unittest.TestCase):
         self.assertIn("export function studioSchemeVars(id: StudioSchemeId)", copy)
         home = read(HOME)
         self.assertIn("schemes={STUDIO_DESIGN_CASES.map((c) => studioSchemeVars(c.id))}", home)
-        self.assertIn("schemes={STUDIO_CASES.map((c) => studioSchemeVars(c.site))}", home)
         self.assertIn("<Swatches id={c.id} />", home)
         self.assertIn('className="btn btn-acc btn-sm"', home.split("function DesignCase", 1)[1])
         client = read(CLIENT)
         self.assertIn('className="dz-panel cs"', client)
-        self.assertIn('className="pf-slide cs"', client)
 
 
-class TestWorkRow(unittest.TestCase):
-    def test_tablist_pattern(self):
-        client = read(CLIENT)
-        body = client.split("export function StudioWorkTabs", 1)[1]
-        for needle in (
-            'role="tablist" aria-label={labels.label}',
-            'role="tab"',
-            "aria-controls={`pf-panel-${t.id}`}",
-            "aria-selected={i === active}",
-            "tabIndex={i === active ? 0 : -1}",
-            'role="tabpanel"',
-            "aria-labelledby={`pf-tab-${tabs[i].id}`}",
-            "inert={i !== active}",
-            'aria-live={running ? "off" : "polite"}',
-            'e.key === "ArrowRight"',
-            'e.key === "Home"',
-        ):
-            self.assertIn(needle, body, needle)
-
-    def test_auto_advance_rules(self):
-        body = read(CLIENT).split("export function StudioWorkTabs", 1)[1]
-        # Never under reduced motion: it only starts when the query does not match.
-        self.assertIn('window.matchMedia?.("(prefers-reduced-motion: reduce)")', body)
-        self.assertIn("if (!rm?.matches) setRunning(true);", body)
-        # Paused on hover, focus, off screen and a hidden page.
-        self.assertIn("const paused = hovered || focused || !visible || pageHidden;", body)
-        self.assertIn("IntersectionObserver", body)
-        self.assertIn("visibilitychange", body)
-        # The bar is the timer.
-        self.assertIn("onAnimationEnd={advance}", body)
-        css = read(CSS)
-        self.assertIn('.st .pf[data-paused="true"] .pf-prog{animation-play-state:paused}', css)
-        # Stops for good on a tab, an arrow, a swipe and a flip.
-        self.assertGreaterEqual(body.count("stop();"), 4)
-        self.assertIn("if (gesture.current) stop();", body)
-        self.assertIn("onFlip={stop}", body)
-        # A pause control (WCAG 2.2.2).
-        self.assertIn("aria-label={running ? labels.pause : labels.play}", body)
-
-    def test_scroll_snap_row(self):
-        css = read(CSS)
-        for needle in (
-            "scroll-snap-type:x mandatory",
-            "scroll-snap-align:start;scroll-snap-stop:always",
-            ".st .pf-track::-webkit-scrollbar{display:none}",
-        ):
-            self.assertIn(needle, css, needle)
-        self.assertRegex(css, r"@media \(prefers-reduced-motion:reduce\)\{\n\.st \*,\.st \*::before,\.st \*::after\{animation:none!important")
-
-    def test_card_is_base_flip_card(self):
-        client = read(CLIENT)
-        self.assertIn('import { FlipCard } from "@/components/custom/flip-card";', client)
-        self.assertIn('layout="stack"', client)
-        self.assertIn("hoverDelayMs={450}", client)
-        manifest = json.loads(read(MANIFEST))
-        self.assertGreaterEqual(tuple(int(x) for x in manifest["version"].split(".")), (1, 8, 0))
-        self.assertIn("components/custom/flip-card.tsx", manifest["app_type"]["hosting"]["requires"])
-        installs = {e.get("from"): e.get("to") for e in manifest["app_type"]["hosting"]["installs"]}
-        self.assertEqual(installs.get("templates/public/studio/logo"), "public/studio/logo")
+# 1.11.0: 1.8.0's tabs row (StudioWorkTabs) gave way to the phones row;
+# its rules are in test_studio_showcase.py.
 
 
 class TestLogoProcess(unittest.TestCase):
@@ -221,13 +162,6 @@ class TestLogoProcess(unittest.TestCase):
         # Every file in public/studio/logo is used (nothing parked as a stand-in).
         on_disk = {f"/studio/logo/{f}" for f in os.listdir(os.path.join(TEMPLATES, "public", "studio", "logo"))}
         self.assertEqual(on_disk, set(srcs) | set(mark_srcs))
-
-    def test_back_shows_only_present_stages_and_no_back_means_no_flip(self):
-        home = read(HOME)
-        self.assertIn("(x) => x.stage && x.stage.pictures.length > 0", home)
-        self.assertIn("back: c.marks ? <MarkBack c={c} m={c.marks} /> : c.logo.length > 0 ? <WorkBack c={c} /> : null,", home)
-        client = read(CLIENT)
-        self.assertIn('<div className="pf-card">{c.front}</div>', client)
 
 
 if __name__ == "__main__":

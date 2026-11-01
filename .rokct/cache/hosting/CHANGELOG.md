@@ -1,5 +1,84 @@
 # Changelog
 
+## 1.11.0
+
+* "Our work" is a row of phones from a ranked list (Ray approved the
+  prototype "Phones at rest. Desktop on hover."; then "sites come from a
+  list, not hard-coded"). Before, the home page drew three hard-coded
+  cases as tabs over full-width flip cards (1.8.0 `StudioWorkTabs`); now
+  every site is a phone in one row that drifts left on a wide screen, and
+  one card at a time grows into the desktop site at the phones' own
+  height (only the width grows). Pointing at, focusing or tapping a card
+  grows it too; a grown card with a logo back turns over to it (base_sdk's
+  FlipCard, controlled). A Remixicon `external-link-line` icon in each
+  card's top-right corner opens the live site in a new tab (`target=_blank`,
+  `rel="noopener noreferrer"`); it sits beside the card, so pointing at,
+  focusing or clicking it never grows or turns the card. A site is drawn
+  only once its phone and desktop pictures have both loaded; if either
+  fails the site leaves the row and the row closes up. Reduced motion: no
+  drift and no automatic turns; a "Pause the motion" button for everyone.
+  On a phone the row is a native swipe row (scroll snap) and a tap grows a
+  card to the screen's width. Phone frames are the studio's thin 4px.
+  New `studio-showcase-client.tsx` (`StudioShowcaseRow`,
+  `StudioShowcaseGrid`, `useShotStatus`).
+* The list is the hosting shell's own `showcase/` folder: one
+  `<owner>__<repo>.json` per site (`name`, `kind`, `tagline`, `url`,
+  `repo`, `rank` 1-10, `shots.branch` / `shots.desktop` / `shots.phone`,
+  optional `logo_back`), each picture at
+  `https://raw.githubusercontent.com/<repo>/<shots.branch>/<path>`. New
+  `studio-showcase.ts` holds the rules (parse, check, order; no imports):
+  a file that does not parse, misses a field, has a rank outside 1-10, a
+  non-https site, a shots path that leaves the branch or a name that does
+  not match its repo is skipped, never thrown; a repo listed twice keeps
+  its first file. Order: rank high to low, then name, then repo.
+  `logo_back: "rokct"` turns the card to the ROKCT logo back; any other
+  value means no flip. New `studio-showcase-load.ts` reads the folder
+  server side from `process.cwd()` (the way base_sdk finds a host icon,
+  `hostIconExists()`), once, at build time: `/` and `/work` are static.
+  When the folder is missing or gives no site, a built-in list stands in
+  (ROKCT https://hosting-beta-one.vercel.app, Polaris
+  https://polaris-web-nu.vercel.app, Supacharge https://supacharge.school,
+  pictures from the studio's own `/studio/shots/` route), so the page is
+  never empty. Pictures are plain `<img>`, as everywhere on the studio
+  page; no `next/image` config is needed.
+* No out-link on the card for the site the visitor is already on (Ray).
+  Which card that is comes from config, not a name in code:
+  `STUDIO_SITE_REPO`, else base_sdk's site-shots rule (`SITE_SHOTS_REPO`,
+  else the repo Vercel built from, `VERCEL_GIT_REPO_OWNER` /
+  `VERCEL_GIT_REPO_SLUG`), so renaming the hosting repo needs no change
+  (`showcaseOwnRepo`, `markOwnSite`). In the browser a card whose live
+  address is the page's own host also drops it (`showcaseIsHost`).
+* If every site the folder gave drops in the browser (say each one's
+  `latest/` shots are not published yet), the row and `/work` swap to the
+  built-in list rather than ending empty, as long as its pictures are
+  bundled with the site (root-relative, `showcaseIsLocal`,
+  `showcaseRescueList`). When there is nothing left to show, the home
+  page's work section hides completely: no empty frame, no "See more" card.
+  On `/work` the grid and its count hide, and the way home and the
+  WhatsApp button stay (`showcasePhase`, `StudioShowcaseScope`,
+  `StudioShowcaseSection`).
+* The home row shows the top 6 (`SHOWCASE_HOME_COUNT`), then a "See more"
+  card to the new `/work` page (new `app/work/page.tsx` and
+  `studio-work.tsx`): every site, ranked, as a grid, each a proof panel
+  with the desktop shot and the phone over its corner (the same picture
+  rule), the corner link, the number, name, kind and line; light and
+  dark. The header's section links point back at the home page there
+  (`StudioHeader base="/"`), and the footer is shared (`StudioFooter`).
+* The ROKCT back on the row is the 1.10.0 logo back cut to the card: the
+  same sketch sheet (`StudioSketchSheet`) and the picked mark as a mask in
+  the panel's ink, with one line on why it won
+  (`STUDIO_MARK_COPY.picked`). 1.8.0's tabs row, its `MarkBack` /
+  `WorkBack` / `WorkFront` and their CSS are gone. Supacharge's
+  logo-process back no longer shows: only `logo_back: "rokct"` flips for
+  now (its copy and files stay in `studio-copy.ts` and
+  `public/studio/logo/`).
+* test: `tests/test_studio_showcase.py` (runs the list rules and the
+  loader under node: loading, validation, order, duplicates, the
+  fallback; the own site's card without an out-link, with hosting at
+  rank 5; the picture rule; the link's target and rel; Remixicon only);
+  the tab-row tests in `test_studio_schemes.py` and `test_studio_marks.py`
+  follow the row.
+
 ## 1.10.0
 
 * The ROKCT card flips to the logo sketches (Ray: "studio showcase can
