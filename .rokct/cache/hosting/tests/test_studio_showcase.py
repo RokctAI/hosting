@@ -193,7 +193,8 @@ class TestListLoading(unittest.TestCase):
         shots = read(os.path.join(STUDIO, "studio-shots.ts"))
         for s in self.out["empty"]["sites"]:
             for key in ("phone", "desktop"):
-                m = re.fullmatch(r"/studio/shots/(studio|polaris|supacharge)/((?:phone|desktop)-light\.webp)", s[key])
+                # 1.15.0: the ROKCT and Polaris cards are their dark first screens.
+                m = re.fullmatch(r"/studio/shots/(studio|polaris|supacharge)/((?:phone|desktop)-(?:light|dark)\.webp)", s[key])
                 self.assertTrue(m, s[key])
                 self.assertIn(f"{m.group(1)}: {{ repo:", shots)
         self.assertIn('const WORK: SiteShotFile[] = ["desktop-light.webp", "desktop-dark.webp", "phone-light.webp", "phone-dark.webp"];', shots)

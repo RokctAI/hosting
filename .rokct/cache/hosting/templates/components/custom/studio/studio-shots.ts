@@ -24,7 +24,8 @@
 // pictures committed under public/studio/.
 //
 // Only the picked option of each "How we design" case and the "Our work"
-// (and hero) proofs are live. Options A and B are fixed, committed images.
+// proofs are live (1.15.0: the hero's proofs left; see studio-home.tsx).
+// Options A and B are fixed, committed images.
 //
 // A site with no `origin` (its public address is not known yet) always
 // shows its committed pictures. STUDIO_SHOTS_ORIGIN_<SITE> (POLARIS,
@@ -107,7 +108,8 @@ export function studioShotTheme(file: SiteShotFile): StudioShotTheme {
 /**
  * The committed picture served while a site has no good live copy: the
  * picked option's thumbnail under public/studio/process/, or the "Our
- * work" proof under public/studio/work/ (one picture for both themes).
+ * work" proof under public/studio/work/ (one picture for both themes;
+ * since 1.15.0 the Polaris and ROKCT ones are their dark first screens).
  */
 export function studioShotFallback(site: StudioShotSiteId, file: SiteShotFile): string | null {
   if (!isSiteShotFile(file) || !STUDIO_SHOT_SITES[site].files.includes(file)) return null;

@@ -1,5 +1,64 @@
 # Changelog
 
+## 1.15.0
+
+Ray's studio notes of 2026-11-01:
+
+* The header logo links to `"/"`, the root, on every studio page; it no
+  longer points at `#top` ("clicking logo ... should not take us to /#top
+  but root. root always show from top anyway").
+* One "Our work" on the home page: the hero's collage (Polaris on a
+  desktop, Supacharge on a phone, "Built by our team") is gone. It was a
+  second "Our work" above the showcase row ("studio seem to have two our
+  work"). The showcase cards (#work, after Services) stay where they were.
+  The hero's `note` copy and the collage's CSS went with it.
+* A card's "Back to the site" now sits where its "See the logo" sits, in
+  the same corner ("see logo and back to site in different positions not
+  convenient"): the bottom right of a home-row card, the bottom left of a
+  `/work` card. It is no longer in the logo side's header. On a phone the
+  back chip keeps its words.
+* The Polaris and ROKCT cards show their sites in dark mode ("let polaris
+  and studio be taken in dark mode"). Their committed pictures under
+  `public/studio/work/` were recaptured with Playwright and the dark colour
+  scheme (desktop 1440 x 1000 at 1x into 1200 x 833, phone 390 x 800 at 2x
+  into 560 x 1149, WebP quality 82, as the shell's site-shots workflow
+  takes them). The built-in cards ask the shots route for the `-dark`
+  files. Supacharge stays light.
+* The portfolio filter covers every product the studio sells ("in
+  portfolio add all products we do"): a "Starter kit" service
+  (`starter-kit`) joins Website, Logo, Social posts, Business plan, Pitch
+  deck and Print, so each entry of STUDIO_SERVICES has a service. A chip
+  still shows only while a card names its service, so a product with no
+  work to show has no chip ("make the filter not show if it is empty").
+* No giant brand name at the bottom of the page (Ray's rule: an oversized
+  wordmark there reads as AI-made). The studio has none; the footer keeps
+  its small mark and the "© 2026 ROKCT · Built with ♥ by ROKCT" credit. A
+  test now holds footer type to 32px at most.
+* The page scrollbar is the studio's primary colour: an oxblood thumb
+  (`--acc`, #8C1A2D) on paper. On the dark page that oxblood is close to
+  invisible on the track (under 3:1), so the thumb takes the dark page's
+  accent text colour (#F2818F) instead. Set with `scrollbar-color`, plus
+  `::-webkit-scrollbar` for Safari.
+* Juvo moved to https://platform.juvo.app/ (repo RokctAI/Juvo-platforms).
+  The studio has no Juvo card or link yet; a test checks that any Juvo
+  link added later uses the new address and repo.
+* Tests: test_studio_fixes.py. test_studio_shots.py and
+  test_studio_showcase.py were updated for the hero proofs leaving and for
+  the dark fallback pictures.
+
+## 1.14.1
+
+* Studio domain wording (Ray, 2026-11-01 12:39Z: "we do [hold the domain]
+  we just wont renew it if not paid. the fee they pay include first year of
+  that domain"). The hosting promise, the costs list, the Launch phase and
+  the Domain line now say the fee includes the domain's first year, we
+  register and hold it, and we renew it each year the renewal is paid. They
+  no longer say the client registers it or that we never hold it. The
+  included domain is a standard one: .co.za, .com, .net or .org (Ray
+  12:40Z: "just standard domains. like .co.za or international at that
+  rate"; .com, .net and .org are the international names that renew at
+  about that rate).
+
 ## 1.14.0
 
 * "Portfolio" in the studio header (Ray, 2026-11-01 11:14Z: "/work should
