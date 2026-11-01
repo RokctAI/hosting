@@ -10,5 +10,9 @@
     "desktop": "latest/desktop-light.webp",
     "phone": "latest/phone-light.webp"
   },
-  "logo_back": null
+  "logo_back": null,
+  "award": {
+    "label": "Selected",
+    "detail": "2026 GSE Digital Startup Accelerator"
+  }
 }
