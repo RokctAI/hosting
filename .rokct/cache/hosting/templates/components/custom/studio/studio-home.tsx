@@ -77,6 +77,7 @@ import {
 } from "./studio-copy";
 import { StudioShowcaseRow, StudioShowcaseScope, StudioShowcaseSection, type ShowcaseBacks } from "./studio-showcase-client";
 import { SHOWCASE_HOME_COUNT, SHOWCASE_PAGE_HREF, showcaseSitesOnly, type ShowcaseEntry } from "./studio-showcase";
+import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF } from "./studio-order";
 import { ShowcaseLiftBack } from "./studio-showcase-lift";
 import { isStudioShotSite, studioShotSrc } from "./studio-shots";
 
@@ -646,6 +647,10 @@ export function StudioHome({
                   <p className="kick">{P.intake.kicker}</p>
                   <h3 className="intake-h">{P.intake.title}</h3>
                   <p className="sm intake-p">{P.intake.text}</p>
+                  {/* 1.18.0: the questions are a real form now (/order). */}
+                  <a className="btn btn-acc btn-sm intake-cta" href={STUDIO_ORDER_HREF}>
+                    {STUDIO_ORDER_COPY.homeCta}
+                  </a>
                 </div>
                 <ol className="chips">
                   {P.intake.questions.map((q) => (
@@ -675,6 +680,9 @@ export function StudioHome({
                   {C.primary}
                 </a>
                 <StudioCopyNumber />
+                <a className="btn btn-line" href={STUDIO_ORDER_HREF}>
+                  {STUDIO_ORDER_COPY.homeCta}
+                </a>
               </div>
             </div>
           </div>

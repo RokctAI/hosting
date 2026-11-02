@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "installs": [],
   "dependencies": {},
   "devDependencies": {},
@@ -62,6 +62,38 @@
         {
           "from": "templates/app/work/page.tsx",
           "to": "app/work/page.tsx"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-order.ts",
+          "to": "components/custom/studio/studio-order.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-order-config.ts",
+          "to": "components/custom/studio/studio-order-config.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-order-mail.ts",
+          "to": "components/custom/studio/studio-order-mail.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-order-send.ts",
+          "to": "components/custom/studio/studio-order-send.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-order-form.tsx",
+          "to": "components/custom/studio/studio-order-form.tsx"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-order-page.tsx",
+          "to": "components/custom/studio/studio-order-page.tsx"
+        },
+        {
+          "from": "templates/app/order/page.tsx",
+          "to": "app/order/page.tsx"
+        },
+        {
+          "from": "templates/app/api/studio/order/route.ts",
+          "to": "app/api/studio/order/route.ts"
         },
         {
           "from": "templates/app/studio/shots",
@@ -159,9 +191,12 @@
       "dependencies": {
         "@remixicon/react": "^4.6.0",
         "@radix-ui/react-toast": "^1.2.15",
-        "next-themes": "^0.4.6"
+        "next-themes": "^0.4.6",
+        "nodemailer": "^10.3.1"
       },
-      "devDependencies": {},
+      "devDependencies": {
+        "@types/nodemailer": "^8.0.2"
+      },
       "integrations": [
         {
           "target": "components/custom/landing/hero-copy.ts",
@@ -293,6 +328,7 @@
     "components/custom/landing/site-shots.ts": "installed by base_sdk >= 1.55.0 (the site-shots manifest and image checks app/studio/shots/[site]/[file]/route.ts applies to each client site's /site-shots/). hosting_sdk 1.6.0 therefore needs base_sdk >= 1.55.0",
     "components/custom/flip-card.tsx": "installed by base_sdk >= 1.58.0 (FlipCard, the tutor-card flip lms_sdk drew as LmsFlipCard, moved to base so every shell shares it; the studio portfolio card turns over to its logo process with it, layout=\"stack\"). hosting_sdk 1.8.0 therefore needs base_sdk >= 1.58.0",
     "app/services/control/base.ts": "shipped by this SDK for the hosting shell (in rokctapp the file is host-owned). Same ControlBaseService / routeControlCmd surface as RokctAI_frontend's copy, but over base_sdk's platformCall pinned to the control site (NEXT_PUBLIC_FRAPPE_URL or ROKCT_BASE_URL), because the hosting shell has no app/lib/gateway-rpc.ts and its getControlClient() returns a { app, call } adapter rather than a FrappeApp.",
-    "components/custom/header-auth-slot.tsx": "installed by base_sdk >= 1.60.0 (HeaderAuthSlot: the header's Log in / Sign up slot, filled by the SDK that owns sign-in - auth_sdk >= 1.11.0 - and empty without one). StudioHeader renders it on the bar (.hd-r, before WhatsApp us) and at the end of the phone menu (.mnav) with the studio's own classes (Ray, 2026-11-01: sites that compose auth_sdk show Log in / Sign up in the header). hosting_sdk 1.16.0 therefore needs base_sdk >= 1.60.0"
+    "components/custom/header-auth-slot.tsx": "installed by base_sdk >= 1.60.0 (HeaderAuthSlot: the header's Log in / Sign up slot, filled by the SDK that owns sign-in - auth_sdk >= 1.11.0 - and empty without one). StudioHeader renders it on the bar (.hd-r, before WhatsApp us) and at the end of the phone menu (.mnav) with the studio's own classes (Ray, 2026-11-01: sites that compose auth_sdk show Log in / Sign up in the header). hosting_sdk 1.16.0 therefore needs base_sdk >= 1.60.0",
+    "studio order flow": "Since 1.18.0: /order (app/order/page.tsx, components/custom/studio/studio-order-page.tsx and studio-order-form.tsx) posts the studio order form to app/api/studio/order/route.ts, which checks it on the server (studio-order.ts: fields, Terms, a simple per-instance rate limit), builds the order and the client acknowledgement (studio-order-mail.ts) and sends both over SMTP through our own mail VPS with nodemailer (studio-order-send.ts; no Rokct SDK carried a mail helper, so nodemailer and @types/nodemailer are this SDK's npm deps; no third-party mail API). Settings are environment variables only (studio-order-config.ts): SMTP_HOST (default mail.rokct.ai), SMTP_PORT (default 587), SMTP_USER, SMTP_PASS, STUDIO_MAIL_FROM and the optional STUDIO_ORDERS_EMAIL override. The orders address is orders@<the host the site is served on, without www.>, worked out per request; *.vercel.app, localhost and IP hosts fall back to orders@rokct.ai. Without SMTP_USER and SMTP_PASS the form answers 503 with a plain message and a WhatsApp button; it never crashes."
   }
 }

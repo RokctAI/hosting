@@ -106,6 +106,7 @@ import {
   type ShowcaseLogoBack,
   type ShowcaseSite,
 } from "./studio-showcase";
+import { liftImageUrls } from "./studio-showcase-lift";
 
 /** The backs a card can turn to, rendered on the server (studio-home.tsx). */
 export type ShowcaseBacks = Partial<Record<ShowcaseLogoBack, ReactNode>>;
@@ -122,6 +123,45 @@ const LIFT_AFTER = FLIP_DURATION_MS + 60;
 const LIFT_BACK = 700;
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/** 1.17.1: the longest the drawings wait for the logo back's pictures before lifting anyway. */
+const LIFT_WAIT_MAX = 2500;
+
+const liftLoads: Partial<Record<"light" | "dark", Promise<void>>> = {};
+
+/**
+ * Fetches and decodes the logo back's pictures for the page's theme, once
+ * (Ray: "logo card in showcase let it predownload. the pen highlight shows
+ * before it loads and just circle empty"). The row starts this while the
+ * visitor looks at the fronts; a turn waits on it before the drawings lift.
+ */
+function preloadLift(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+  const have = liftLoads[theme];
+  if (have) return have;
+  const p = Promise.all(
+    liftImageUrls(theme).map(
+      (u) =>
+        new Promise<void>((resolve) => {
+          const im = new Image();
+          im.decoding = "async";
+          im.onload = () => {
+            (im.decode ? im.decode() : Promise.resolve()).catch(() => undefined).then(() => resolve());
+          };
+          im.onerror = () => resolve();
+          im.src = u;
+        }),
+    ),
+  ).then(() => undefined);
+  liftLoads[theme] = p;
+  return p;
+}
+
+/** Resolves when the logo back's pictures are in, or after LIFT_WAIT_MAX. */
+function liftReady(): Promise<void> {
+  return Promise.race([preloadLift(), new Promise<void>((r) => setTimeout(r, LIFT_WAIT_MAX))]);
+}
 
 function probe(src: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -400,9 +440,14 @@ function useTurn(find: (g: number) => HTMLElement | null, mobile: () => boolean,
       S.t = setTimeout(() => {
         S.t = 0;
         if (S.flipped !== g) return;
-        const card = find(g);
-        if (card) placeLifts(card, mobile(), band());
-        put(g, g);
+        // 1.17.1: lift only once the back's pictures are in, so the pen
+        // never draws around an empty C.
+        void liftReady().then(() => {
+          if (S.flipped !== g || S.lifted === g) return;
+          const card = find(g);
+          if (card) placeLifts(card, mobile(), band());
+          put(g, g);
+        });
       }, LIFT_AFTER);
     } else if (S.lifted === g) {
       put(g, null);
@@ -541,6 +586,19 @@ export function StudioShowcaseRow({
   const total = showcaseMoreCount(givenTotal, list.length, shown.length, rescued, rescue.length);
   const items: Item[] = [...shown.map((site) => ({ more: false as const, site })), { more: true as const }];
   const showKey = shown.map((s) => s.repo).join(",");
+  const hasLift = shown.some((s) => !!s.logoBack && backs[s.logoBack] !== undefined);
+
+  // 1.17.1: fetch the logo back's pictures once the fronts are in, so a turn never shows the pen ring around an empty sheet.
+  useEffect(() => {
+    if (!hasLift || !ready) return;
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    if (w.requestIdleCallback) {
+      const id = w.requestIdleCallback(() => void preloadLift(), { timeout: 2000 });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(() => void preloadLift(), 300);
+    return () => clearTimeout(t);
+  }, [hasLift, ready]);
 
   const mobile = useMedia("(max-width: 699.98px)");
   const reduce = useMedia("(prefers-reduced-motion: reduce)");
