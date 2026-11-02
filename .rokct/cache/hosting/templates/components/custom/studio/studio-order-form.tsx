@@ -396,6 +396,19 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
               {STUDIO_ADDONS.map((a) => {
                 const z = studioAddonZar(a, row);
                 const on = addons.includes(a.name);
+                if (z === 0)
+                  return (
+                    <div key={a.name} className="op-card op-card-inc">
+                      <svg className="op-tick" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      <span className="op-card-t">
+                        <b>{a.label}</b>
+                        <span className="sm">{a.what}</span>
+                      </span>
+                      <span className="op-card-p num">
+                        <b>Included</b>
+                      </span>
+                    </div>
+                  );
                 return (
                   <label key={a.name} className={`op-card${on ? " on" : ""}`}>
                     <input type="checkbox" name={a.name} value="yes" checked={on} onChange={() => toggleAddon(a.name)} />

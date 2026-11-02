@@ -6,6 +6,8 @@
   half its old height and carries a "Forever hosting, free" callout: the
   site stays hosted for as long as it is with us, free for the first 1,000
   businesses.
+* An add-on included in the package (logo design in the bundle) shows as
+  a fixed line with a tick and "Included", not a checkbox.
 * The form is a five-step stepper: package, add-ons, your business,
   contact, review and pay. One step shows at a time with Back and Next, a
   progress rail, and a check of each step's required answers. The review

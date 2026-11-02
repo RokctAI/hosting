@@ -1033,3 +1033,6 @@ html:has(.st){scroll-behavior:auto}
 .st .od{padding-bottom:72px}
 }
 @media (prefers-reduced-motion:reduce){.st .op-bar i{transition:none}}
+
+.st .op-card-inc{cursor:default;border-style:dashed}
+.st .op-card-inc .op-tick{color:var(--acc-text);flex:none}
