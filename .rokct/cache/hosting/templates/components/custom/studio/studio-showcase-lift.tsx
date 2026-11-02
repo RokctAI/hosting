@@ -100,6 +100,20 @@ const PEN_SKETCHES: Pen = {
 
 const src = (name: string, theme: "light" | "dark", nored = false) => `${LIFT_DIR}/rokct-${name}-${theme}${nored ? "-nored" : ""}.webp`;
 
+/**
+ * Every picture the logo back shows, in one theme (1.17.1). The showcase
+ * row fetches these while the visitor looks at the fronts, and the
+ * drawings lift (and the red pen draws around C) only once they have
+ * loaded, so the pen never circles an empty space.
+ */
+export function liftImageUrls(theme: "light" | "dark"): string[] {
+  const urls: string[] = [];
+  for (const name of ["logo-sheet", "logo-sketches"]) urls.push(src(name, theme), src(name, theme, true));
+  for (const l of LIFT_SHEET) urls.push(src(`lift-sheet-${l.key}`, theme));
+  for (const l of LIFT_SKETCHES) urls.push(src(`lift-sketches-${l.key}`, theme));
+  return urls;
+}
+
 function PenMarks({ pen }: { pen: Pen }) {
   return (
     <svg className="sr-pen" viewBox={pen.viewBox} preserveAspectRatio="none" aria-hidden="true" focusable="false" style={{ ["--sw" as string]: String(pen.width) }}>

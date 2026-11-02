@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.17.1
+
+* The ROKCT logo back in the home row loads its pictures before the
+  drawings lift (Ray, 2026-11-01: "logo card in showcase let it
+  predownload. the pen highlight shows before it loads and just circle
+  empty"). Once the fronts are in, the row fetches and decodes the
+  sheet, its no-ring copy and every cut-out for the page's theme while
+  the browser is idle (`liftImageUrls` in studio-showcase-lift.tsx lists
+  them). A turn waits for those pictures before it adds `lift`, so the
+  red pen ring is only drawn over a sheet that is there; on a slow line
+  it lifts anyway after 2.5 seconds. Switching theme loads that theme's
+  set the first time a card turns.
+
 ## 1.17.0
 
 * Award badge on showcase cards (Ray wants Supacharge's "Top 200 · GSE
