@@ -66,8 +66,8 @@
       "cache": ".rokct/cache/hosting",
       "git": "https://github.com/RokctAI/hardware",
       "path": "../hardware/hosting/nextjs",
-      "ref": "claude/project-thread-3o3tuh-studio-order",
-      "commit": "baa4dd5dc55b375a9b711a8dd45d078aae4fb431",
+      "ref": "main",
+      "commit": "9e2156ac4ec00f6982500b32575ce09914b6eed8",
       "version": "1.19.0",
       "install_py_sha256": "a2f6b895733cacd18dac6f63228bb5537e4ac6ea20c33009a211db2984b4e25f",
       "content_sha256": "a7522cd884da7b4e3cd8e2fc01d92eb70e65f7322fa6299ee41c26a2e5dbd150"
