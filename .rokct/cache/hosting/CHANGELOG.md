@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.19.0
+
+* The studio /order page reworked (Ray, 2026-11-02). The hero is about
+  half its old height and carries a "Forever hosting, free" callout: the
+  site stays hosted for as long as it is with us, free for the first 1,000
+  businesses.
+* An add-on included in the package (logo design in the bundle) shows as
+  a fixed line with a tick and "Included", not a checkbox.
+* The form is a five-step stepper: package, add-ons, your business,
+  contact, review and pay. One step shows at a time with Back and Next, a
+  progress rail, and a check of each step's required answers. The review
+  step shows the order, the 24-hour first render or full refund promise,
+  cancel anytime (keep what is delivered), and the full Terms.
+* A live price follows the package and add-ons: a sticky card on desktop,
+  a bar at the bottom on mobile. Every figure comes from studio-copy.ts:
+  the price rows, the deal, and the new `STUDIO_ADDONS` (logo design,
+  included in the bundle; two extra pages; a stock photo set; the figures
+  are proposals for Ray). The order email gains "Price shown" and a flag
+  per add-on.
+* Payment without a backend: `studio-pay.ts` is the only gateway code. On
+  the last step the order email goes first, then the browser is sent to
+  PayFast with a plain form POST (merchant id and key, amount in rand,
+  item name, our reference, return and cancel URLs back to /order, which
+  show a thank-you or a cancelled note). No passphrase signature, since
+  that needs a server. Settings: `NEXT_PUBLIC_PAYFAST_MERCHANT_ID`,
+  `NEXT_PUBLIC_PAYFAST_MERCHANT_KEY`, `NEXT_PUBLIC_PAYFAST_SANDBOX`. With
+  no merchant id or key, or a quoted package, the pay button is hidden and
+  the order goes by email only. The gateway SDK replaces this one file
+  when the backend lands.
+
 ## 1.18.0
 
 * The studio order flow (Ray, 2026-11-01). A new page, `/order`, has a

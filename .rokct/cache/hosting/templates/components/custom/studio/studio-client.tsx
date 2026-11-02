@@ -65,6 +65,11 @@ const CurrencyContext = createContext<{ cur: StudioCurrency; setCur: (c: StudioC
   setCur: () => {},
 });
 
+/** The visitor's currency (1.19.0: the order stepper's live price reads it). */
+export function useStudioCurrency() {
+  return useContext(CurrencyContext);
+}
+
 export function StudioCurrencyProvider({ children }: { children: ReactNode }) {
   const [cur, setState] = useState<StudioCurrency>("ZAR");
   useEffect(() => {

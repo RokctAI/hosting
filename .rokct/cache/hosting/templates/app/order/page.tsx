@@ -29,10 +29,14 @@ import { StudioOrder } from "@/components/custom/studio/studio-order-page";
 
 export const metadata: Metadata = {
   title: { absolute: "Order · ROKCT Studio" },
-  description: "Order from the ROKCT studio: ten short answers, your logo and photos. We send your brief back to confirm, and your first render within 24 hours of it.",
+  description: "Order from the ROKCT studio, with forever hosting: five short steps, your logo and photos. We send your brief back to confirm, and your first render within 24 hours of it.",
 };
 
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const ordersEmail = studioOrdersEmail(undefined, studioRequestHost(await headers()));
-  return <StudioOrder fontClassName={studioFontClassName} ordersEmail={ordersEmail} />;
+  // PayFast's return_url and cancel_url (studio-pay.ts) land back here.
+  const q = await searchParams;
+  const paid = typeof q.paid === "string" ? q.paid.replace(/[^A-Za-z0-9-]/g, "").slice(0, 40) : null;
+  const back = paid !== null ? { kind: "paid" as const, ref: paid } : q.cancelled ? { kind: "cancelled" as const } : null;
+  return <StudioOrder fontClassName={studioFontClassName} ordersEmail={ordersEmail} back={back} />;
 }

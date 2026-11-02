@@ -33,10 +33,14 @@ export const STUDIO_ORDER_API = "/api/studio/order";
 
 export const STUDIO_ORDER_COPY = {
   kicker: "Order",
-  title: "Tell us about your business.",
-  lede: "Ten short answers, your logo and your photos. We turn them into a one-page brief and send it back to you to confirm.",
-  aside:
-    "About two minutes. Only the starred answers are needed: if something is missing we make a sensible choice for your kind of business and show it to you in the render.",
+  title: "Order your site.",
+  lede: "Five short steps, about two minutes. We turn your answers into a brief and send it back to you to confirm.",
+  foreverTitle: "Forever hosting, free",
+  foreverText: "Your site stays hosted for as long as it is with us. Free for the first 1,000 businesses.",
+  paidTitle: "Payment received. Thank you.",
+  paidText: "Your order and payment are in. We send your brief to confirm, and your first render within 24 hours of it.",
+  cancelTitle: "Payment cancelled.",
+  cancelText: "Nothing was charged. Your order details reached us; pay below when you are ready, or WhatsApp us.",
   homeCta: "Fill in the order form",
   submit: "Send my order",
   sending: "Sending…",
@@ -97,13 +101,16 @@ export const STUDIO_ORDER_FIELDS: readonly StudioOrderField[] = [
   { name: "siteContact", label: "Phone, WhatsApp and email to show on your site", kind: "textarea", max: 500 },
   { name: "asks", label: "Anything customers always ask you", kind: "textarea", max: 2000 },
   { name: "notes", label: "Anything else we should know", kind: "textarea", max: 2000 },
+  // Filled by the stepper from studio-copy.ts, so the email shows the price the client saw.
+  { name: "total", label: "Price shown", kind: "text", max: 80 },
 ];
 
 /** Yes/no answers (checkboxes), with the label the emails print. */
 export const STUDIO_ORDER_FLAGS = [
   { name: "noLogo", label: "I don't have a logo" },
-  { name: "designLogo", label: "Design my logo for me (paid add-on, quoted)" },
-  { name: "stockPhotos", label: "I need stock photos" },
+  { name: "designLogo", label: "Add-on: logo design" },
+  { name: "extraPages", label: "Add-on: two extra pages" },
+  { name: "stockPhotos", label: "Add-on: stock photo set" },
   { name: "wantShop", label: "I'd like an online shop too" },
   { name: "wantApp", label: "I'd like an app too" },
 ] as const;
