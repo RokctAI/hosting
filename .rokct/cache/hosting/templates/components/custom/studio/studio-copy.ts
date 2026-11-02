@@ -727,6 +727,51 @@ export const STUDIO_PRICE_ROWS: StudioPriceRow[] = [
   { name: "Social post pack", what: "A month of posts, captions and a calendar.", price: { kind: "quoted", unit: "per pack" } },
 ];
 
+// ---- Order add-ons and the order total (1.19.0) ---------------------------
+// The /order stepper's live price reads ONLY this block and the price rows
+// above: a package's figure in rand (the deal's offer, a fixed row at the
+// fixed rate, or null for a quoted row) plus the add-ons below. Add-on
+// figures are proposals for Ray (set in US dollars like every fixed row);
+// change them here and the stepper, the summary bar, the order email and
+// the PayFast amount all follow.
+export interface StudioAddon {
+  /** The form field (a yes/no flag in studio-order.ts) the add-on posts as. */
+  name: "designLogo" | "extraPages" | "stockPhotos";
+  label: string;
+  what: string;
+  usd: number;
+  /** Already part of the website and brand bundle, so free with it. */
+  inBundle?: boolean;
+}
+export const STUDIO_ADDONS: readonly StudioAddon[] = [
+  { name: "designLogo", label: "Logo design", what: "A logo drawn for your business, with colour and mono versions.", usd: 60, inBundle: true },
+  { name: "extraPages", label: "Two extra pages", what: "Beyond the four: a menu, price list, gallery or FAQ.", usd: 50 },
+  { name: "stockPhotos", label: "Stock photo set", what: "Licensed photos chosen for your trade, if you have none.", usd: 20 },
+];
+
+/** A package's price in whole rand: the deal's offer, a fixed row at the fixed rate, or null when quoted. */
+export function studioRowZar(row: StudioPriceRow | undefined): number | null {
+  if (!row) return null;
+  if (row.price.kind === "deal") return STUDIO_DEAL_ZAR.offer;
+  if (row.price.kind === "fixed") return Math.round(row.price.usd * STUDIO_ZAR_PER_USD);
+  return null;
+}
+/** An add-on's price in whole rand with this package (0 when the bundle includes it). */
+export function studioAddonZar(a: StudioAddon, row: StudioPriceRow | undefined): number {
+  return a.inBundle && row?.price.kind === "deal" ? 0 : Math.round(a.usd * STUDIO_ZAR_PER_USD);
+}
+/** The order total in whole rand, or null when the package is quoted. */
+export function studioOrderZar(service: string, addons: readonly string[]): number | null {
+  const row = STUDIO_PRICE_ROWS.find((r) => r.name === service);
+  const base = studioRowZar(row);
+  if (base === null) return null;
+  return STUDIO_ADDONS.filter((a) => addons.includes(a.name)).reduce((n, a) => n + studioAddonZar(a, row), base);
+}
+/** A rand amount in the chosen currency (dollars at the same fixed rate). */
+export function studioMoney(zarAmount: number, cur: StudioCurrency): string {
+  return cur === "ZAR" ? groupZar(zarAmount) : dollars(Math.round(zarAmount / STUDIO_ZAR_PER_USD));
+}
+
 // ---- What you get with ROKCT hosting (1.13.0) ---------------------------
 // The client list in website-service/year-of-hosting.md (1 Nov 2026). Only
 // lines that are true today, plus the weekly items that start in November

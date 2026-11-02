@@ -449,7 +449,7 @@ class TestWiring(unittest.TestCase):
 
     def test_manifest_installs_every_new_file(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.18.0")
+        self.assertEqual(m["version"], "1.19.0")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for path in NEW_FILES:
             rel = os.path.relpath(path, SDK_ROOT).replace(os.sep, "/")
@@ -464,17 +464,46 @@ class TestWiring(unittest.TestCase):
         body = read(PAGE_BODY)
         self.assertIn("studioOrderTerms(ordersEmail)", body)
         self.assertIn("STUDIO_ORDER_PROMISE", body)
-        self.assertIn("<StudioOrderForm />", body)
+        self.assertIn("<StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} />", body)
 
     def test_changelog_lists_env_vars_by_name(self):
         log = read(CHANGELOG)
-        self.assertTrue(log.startswith("# Changelog\n\n## 1.18.0\n"))
+        self.assertTrue(log.startswith("# Changelog\n\n## 1.19.0\n"))
         entry = log.split("## 1.18.0", 1)[1].split("\n## ", 1)[0]
         for name in ENV_VARS:
             self.assertIn(name, entry)
         self.assertIn("Vercel", entry)
         self.assertIn("www.", entry)
         self.assertIn("vercel.app", entry)
+
+
+class TestStepperAndPay(unittest.TestCase):
+    """1.19.0: the stepper, the live price from one data file, PayFast in one module."""
+
+    def test_prices_come_from_studio_copy_only(self):
+        form = read(os.path.join(STUDIO, "studio-order-form.tsx"))
+        self.assertIn("studioOrderZar(", form)
+        self.assertNotRegex(form, r"\bR\d|usd:\s*\d")
+        copy = read(os.path.join(STUDIO, "studio-copy.ts"))
+        self.assertIn("export const STUDIO_ADDONS", copy)
+
+    def test_five_steps_with_back_and_next(self):
+        form = read(os.path.join(STUDIO, "studio-order-form.tsx"))
+        self.assertEqual(form.count("hidden={step !== "), 5)
+        self.assertIn("Back", form)
+        self.assertIn("Next: ", form)
+
+    def test_payfast_is_isolated_and_unsigned(self):
+        pay = read(os.path.join(STUDIO, "studio-pay.ts"))
+        for k in ("merchant_id", "merchant_key", "amount", "item_name", "return_url", "cancel_url"):
+            self.assertIn(f'"{k}"', pay)
+        self.assertNotIn("passphrase\"", pay)
+        self.assertNotIn("signature\"", pay)
+        for v in ("NEXT_PUBLIC_PAYFAST_MERCHANT_ID", "NEXT_PUBLIC_PAYFAST_MERCHANT_KEY", "NEXT_PUBLIC_PAYFAST_SANDBOX"):
+            self.assertIn(f"process.env.{v}", pay)
+        for name in os.listdir(STUDIO):
+            if name != "studio-pay.ts" and name.endswith((".ts", ".tsx", ".css")):
+                self.assertNotIn("payfast.co.za", read(os.path.join(STUDIO, name)), name)
 
 
 if __name__ == "__main__":

@@ -14,14 +14,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// /order (hosting_sdk 1.18.0): the studio's order form on its own page, in
-// the studio's language - the header, a ledger head, the form
-// (studio-order-form.tsx), the Terms beside it with the 24-hour promise, the
-// WhatsApp way in and the footer. Server component; the orders address it
-// prints is the one the route sends to (studio-order-config.ts), passed in
-// by app/order/page.tsx from the request's host.
+// /order (hosting_sdk 1.19.0): the studio's order page. A short hero with
+// the forever-hosting callout, then the five-step stepper with its live
+// price (studio-order-form.tsx). `?paid=<ref>` and `?cancelled=1` are the
+// PayFast return and cancel states (studio-pay.ts). Server component; the
+// orders address it prints is the one the route sends to
+// (studio-order-config.ts), passed in by app/order/page.tsx from the host.
 
 import "./studio.css";
+
+import { RiCheckboxCircleLine, RiCloseCircleLine, RiInfinityLine } from "@remixicon/react";
 
 import { BackToTop } from "@/components/custom/back-to-top";
 
@@ -31,7 +33,17 @@ import { StudioFooter } from "./studio-home";
 import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF, STUDIO_ORDER_PROMISE, studioOrderTerms } from "./studio-order";
 import { StudioOrderForm } from "./studio-order-form";
 
-export function StudioOrder({ fontClassName, ordersEmail }: { fontClassName: string; ordersEmail: string }) {
+export type StudioOrderReturn = { kind: "paid"; ref: string } | { kind: "cancelled" } | null;
+
+export function StudioOrder({
+  fontClassName,
+  ordersEmail,
+  back = null,
+}: {
+  fontClassName: string;
+  ordersEmail: string;
+  back?: StudioOrderReturn;
+}) {
   const C = STUDIO_ORDER_COPY;
   const terms = studioOrderTerms(ordersEmail);
   return (
@@ -39,41 +51,55 @@ export function StudioOrder({ fontClassName, ordersEmail }: { fontClassName: str
       <div id="top" className={`st ${fontClassName}`}>
         <StudioHeader base="/" current={STUDIO_ORDER_HREF} />
         <main className="od">
-          <section className="wk-head">
-            <div className="wrap">
-              <p className="kick">{C.kicker}</p>
-              <div className="wk-head-g">
-                <h1 className="disp wk-h1">{C.title}</h1>
-                <div className="wk-head-r">
-                  <p className="lede">{C.lede}</p>
-                  <p className="sm">{C.aside}</p>
+          <section className="od-hero">
+            <div className="wrap od-hero-g">
+              <div>
+                <p className="kick">{C.kicker}</p>
+                <h1 className="disp od-h1">{C.title}</h1>
+                <p className="lede">{C.lede}</p>
+              </div>
+              <div className="od-forever">
+                <RiInfinityLine size={28} aria-hidden="true" />
+                <div>
+                  <b>{C.foreverTitle}</b>
+                  <span>{C.foreverText}</span>
                 </div>
               </div>
             </div>
           </section>
+          {back ? (
+            <section className="od-back" role="status">
+              <div className="wrap">
+                {back.kind === "paid" ? (
+                  <div className="od-back-in ok">
+                    <RiCheckboxCircleLine size={26} aria-hidden="true" />
+                    <div>
+                      <b>{C.paidTitle}</b>
+                      <span>
+                        {C.paidText}
+                        {back.ref ? ` Your reference: ${back.ref}.` : ""}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="od-back-in">
+                    <RiCloseCircleLine size={26} aria-hidden="true" />
+                    <div>
+                      <b>{C.cancelTitle}</b>
+                      <span>{C.cancelText}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          ) : null}
           <section className="od-body" aria-label="Order form">
-            <div className="wrap od-g">
-              <StudioOrderForm />
-              <aside className="od-side">
-                <div className="refund">
-                  <p className="kick">{C.termsKicker}</p>
-                  <p className="big">{STUDIO_ORDER_PROMISE}</p>
-                </div>
-                <h2 className="od-terms-h">{C.termsTitle}</h2>
-                <ol className="terms od-terms">
-                  {terms.map((t) => (
-                    <li key={t.b}>
-                      <b>{t.b}</b>
-                      <span>{t.t}</span>
-                    </li>
-                  ))}
-                </ol>
-                <p className="fine">{C.termsNote}</p>
-                <p className="sm od-wa">
-                  Rather talk? <a href={STUDIO_WHATSAPP_URL}>WhatsApp {STUDIO_WHATSAPP_DISPLAY}</a>. Files can also go to{" "}
-                  <a href={`mailto:${ordersEmail}`}>{ordersEmail}</a>.
-                </p>
-              </aside>
+            <div className="wrap">
+              <StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} />
+              <p className="sm od-wa">
+                Rather talk? <a href={STUDIO_WHATSAPP_URL}>WhatsApp {STUDIO_WHATSAPP_DISPLAY}</a>. Files can also go to{" "}
+                <a href={`mailto:${ordersEmail}`}>{ordersEmail}</a>.
+              </p>
             </div>
           </section>
         </main>
