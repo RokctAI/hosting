@@ -1,5 +1,61 @@
 # Changelog
 
+## 1.18.0
+
+* The studio order flow (Ray, 2026-11-01). A new page, `/order`, has a
+  real form for the intake questions in the studio's own style: what you
+  are ordering (the price table's rows), your name, email and WhatsApp
+  number, the ten intake answers, logo and photo uploads (pictures or PDF,
+  up to 8 files and 4 MB in all, which keeps the request under Vercel's
+  4.5 MB function limit), the "online shop / app too" choices with the
+  outside-the-special wording, and a terms box. The Terms sit beside the
+  form. The home page links to it from "What we ask you" and from Contact.
+* `POST /api/studio/order` rate-limits each address (5 per 15 minutes per
+  server instance), checks every answer and file again on the server, then
+  sends two emails over SMTP through our own mail VPS. No third-party mail
+  API is used.
+  * The order goes to the orders address with every answer and every file
+    attached, and Reply-To set to the client.
+  * Once the order has gone, an acknowledgement goes to the client. It
+    thanks them, restates what they ordered, and says the first render
+    comes within 24 hours of the confirmed brief or they get a full refund.
+    It also shows the ten Terms from website-service/offer-and-intake.md
+    and says replies and extra files go to the orders address (Reply-To
+    is set to it).
+* The orders address follows the site's domain (Ray's correction,
+  2026-11-01). It is orders@<the host the site is served on, without
+  "www.">, worked out for each request, so it moves with the site when
+  the site moves to a new domain. A host that can't receive mail
+  (*.vercel.app, localhost, an IP address) falls back to orders@rokct.ai,
+  so no order is lost. `STUDIO_ORDERS_EMAIL` is an optional override, and
+  it wins when set. The /order page shows the same address the route
+  sends to.
+* Step values (Terms point 6) are an empty slot. `STUDIO_STEP_VALUES_ZAR`
+  in `studio-order-config.ts` holds five nulls (marked
+  `@studio-step-values-slot`) because Ray has not agreed the split of the
+  R8,500 yet. The acknowledgement prints no figure until all five values
+  are set.
+* Fails gracefully: without `SMTP_USER` and `SMTP_PASS`, the route answers
+  503 with a plain message, and the form shows it with a "Send it on
+  WhatsApp instead" button that carries the order's gist. The same happens
+  for a failed send, a network error or a reply that is not JSON. The route
+  always answers JSON and never throws. Logs carry error codes and variable
+  names only, never a value.
+* New npm dependencies: `nodemailer` ^10.3.1 and the dev dependency
+  `@types/nodemailer` ^8.0.2. No Rokct SDK had a mail helper. 10.3.1 is
+  past the two SMTP command-injection advisories that npm audit reports
+  for nodemailer <= 10.1.3. next-auth declares an optional peer of
+  nodemailer ^7.0.7 for its email sign-in provider, which the shell does
+  not use, so `npm ls` flags the peer while `npm ci`, `tsc` and
+  `next build` all pass. The hosting shell's next refresh adds both
+  packages to its package.json and package-lock.json.
+* **Needs Vercel environment variables** on the hosting project (names
+  only): `SMTP_USER` and `SMTP_PASS` (required, or the form falls back to
+  WhatsApp), `SMTP_HOST` (default mail.rokct.ai), `SMTP_PORT` (default
+  587, STARTTLS; 465 means TLS), `STUDIO_MAIL_FROM` (default
+  "ROKCT Studio <the orders address>") and, optionally,
+  `STUDIO_ORDERS_EMAIL`.
+
 ## 1.17.1
 
 * The ROKCT logo back in the home row loads its pictures before the
