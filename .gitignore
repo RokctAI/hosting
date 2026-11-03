@@ -241,6 +241,7 @@ next-env.d.ts
 /components/custom/site-back-to-top.ts
 /components/custom/site-credit.tsx
 /components/custom/site-frame.tsx
+/components/custom/site-shell.tsx
 /components/custom/site-theme.tsx
 /components/custom/studio/fonts/OFL-caveat.txt
 /components/custom/studio/fonts/OFL.txt

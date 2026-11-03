@@ -19,7 +19,7 @@
       "git": "https://github.com/RokctAI/core",
       "path": "../core/telemetry/nextjs",
       "ref": "main",
-      "commit": "4951a205303883eba4ab357f0f96744facc9bf85",
+      "commit": "e6c38214d1fb35c0d56abfb6cb8ac59793baf2e9",
       "version": "1.2.2",
       "install_py_sha256": "318d20eb7123ffaa549618d06b4530dfce5df9ba0b07df2328c0c6e1738e36c4",
       "content_sha256": "97652d52df5b1f4fada6bfb41793a47df1b90cc5343aaf317139683cd75db1c1"
@@ -31,10 +31,10 @@
       "git": "https://github.com/RokctAI/core",
       "path": "../core/base/nextjs",
       "ref": "main",
-      "commit": "4951a205303883eba4ab357f0f96744facc9bf85",
+      "commit": "e6c38214d1fb35c0d56abfb6cb8ac59793baf2e9",
       "version": "1.60.0",
       "install_py_sha256": "b6c434a1c05611d29f1018f68b9423383f7ecfbf9cc1efe74825ba6c4df98fff",
-      "content_sha256": "d6cd7f7c8e267f55bc75b2aab6df6468f3da7b6bb1b80d8c2d33d4ca78fec7c8"
+      "content_sha256": "847fd74b20f00202364e7e14eb458ad94bb5810be6a871bc1d981715aaba9206"
     },
     {
       "name": "auth_sdk",
@@ -43,10 +43,10 @@
       "git": "https://github.com/RokctAI/Users",
       "path": "../Users/auth/nextjs",
       "ref": "main",
-      "commit": "6b8ab11be383309113b6cc004162ccaadb7655f7",
-      "version": "1.11.0",
+      "commit": "e7bf4bee5df30fc7d7d265d7c79deb1192a01aa8",
+      "version": "1.12.1",
       "install_py_sha256": "b9b0d4156a68d46f528be2b885eed17cc7dba21f6b4b48b2991ba2c3274ae21b",
-      "content_sha256": "a12f4695cc5e71cb1e41471f8df26a8e4a4b98119859236a331c09b52739b9e9"
+      "content_sha256": "b66a7408d06a6e51319b3a43440884930187ac533f0864ff1de375f2bdd02bcb"
     },
     {
       "name": "corporate_sdk",
@@ -55,10 +55,10 @@
       "git": "https://github.com/RokctAI/corporate",
       "path": "../corporate/corporate/nextjs",
       "ref": "main",
-      "commit": "6f0fc852cdfef1d8c3ffc256f08fbe4fb7f23844",
-      "version": "1.5.0",
+      "commit": "b27c980fe4469a0236876ea23d0ba6f578a1463b",
+      "version": "1.7.1",
       "install_py_sha256": "6e03485fd03617ea1e175adc50354a91af25e213908371fa3581083d8aa7d4ba",
-      "content_sha256": "4f10951fd68754301fa6a60e413279a6a4066149ac248673d30773bad5ea17ab"
+      "content_sha256": "33980ab80e2e0267411ac3fa4ae92266cb99ba8fed465012eec847b345ca5690"
     },
     {
       "name": "hosting_sdk",

@@ -1,3 +1,18 @@
+## 1.12.1
+
+- Inputs on the login and register cards are bordered (`border-input` on `bg-background`) instead of borderless `bg-muted`, so they read in any site shell.
+- The mark above the card comes from `SiteShellLogo` in `components/custom/site-shell.tsx` (default: the `BrandLogo` seam), so a home SDK shows the same logo its header does.
+
+## 1.12.0
+
+* **The auth pages wear the site's own header and footer.** Login, register
+  and forgot-password render inside `SiteShell`
+  (`components/custom/site-shell.tsx`) instead of importing base's generic
+  `Header`. auth_sdk installs the default, that same `Header` above the page,
+  so a site without a home SDK shell looks as before. A home SDK ships its own
+  `site-shell.tsx` with the same `SiteShell` export; the installer keeps the
+  home SDK's copy whatever the compose order.
+
 ## 1.11.0
 
 * **The header's Log in / Sign up come from this SDK** (Ray, 2026-11-01:
