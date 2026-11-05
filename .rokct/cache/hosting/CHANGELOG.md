@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.20.0
+
+* The intake form (Ray, 2026-10-31: the intake "doesn't upsell to app
+  development"). Under the ten questions in "How it works" the visitor now
+  sends their brief from a form: `StudioIntakeForm` in `studio-client.tsx`,
+  every word in `STUDIO_INTAKE_FORM` (`studio-copy.ts`).
+* The special stays the website and brand bundle, named at the top of the
+  form with its offer and normal price and what it covers (logo and brand,
+  four-page website, copy, free lifetime hosting for the first 1,000).
+* Two add-ons OUTSIDE the special, each a real checkbox with its label and
+  a one-line benefit: "Online shop" and "Mobile app" (Android and iOS apps
+  for bookings, ordering or a loyalty card). Either, both or neither can be
+  ticked; nothing blocks sending. No price is shown: both are "quoted
+  separately, after a short call with our team".
+* When one or both are ticked, a polite live note reads "This isn't part
+  of the special, but we'll pass it to our team so it can be included.
+  They'll quote it for you separately." (plural for both). The same note
+  shows on the summary after sending.
+* The form is a GET to `wa.me` with the message in a hidden `text` field:
+  "Hi ROKCT, I'd like to start my brief for the Website and brand bundle
+  (the special)." then, for each add-on, a line under "Add-ons, outside the
+  special, for your team to quote separately". It opens WhatsApp in a new
+  tab, and the form shows a summary of what was sent with a link to open
+  WhatsApp again. Without script it still sends the brief for the special.
+* `STUDIO_WHATSAPP_NUMBER` is exported from `studio-copy.ts`.
+* test: `tests/test_studio_intake.py`.
 ## 1.19.0
 
 * The studio /order page reworked (Ray, 2026-11-02). The hero is about

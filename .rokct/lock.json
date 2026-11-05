@@ -4,7 +4,7 @@
   "app_type": "hosting",
   "protocol": {
     "git": "https://github.com/RokctAI/The-Rokct-Protocol",
-    "ref": "692924e743da09c8392812e50caecd2cd49c9e87",
+    "ref": "833d36c31f67d7493c68ced9b9de0f926317cf42",
     "vendored": ".rokct/cache/_composer",
     "files": {
       "sdk_composer.py": "b437f486a72eed54418ee56bc464e3c016d83a0175d35f28adfd2a9fc37ca943",
@@ -67,10 +67,10 @@
       "git": "https://github.com/RokctAI/hardware",
       "path": "../hardware/hosting/nextjs",
       "ref": "main",
-      "commit": "9e2156ac4ec00f6982500b32575ce09914b6eed8",
-      "version": "1.19.0",
+      "commit": "645997959dfd2405433891d3e692a73ac4be9b2a",
+      "version": "1.20.0",
       "install_py_sha256": "a2f6b895733cacd18dac6f63228bb5537e4ac6ea20c33009a211db2984b4e25f",
-      "content_sha256": "a7522cd884da7b4e3cd8e2fc01d92eb70e65f7322fa6299ee41c26a2e5dbd150"
+      "content_sha256": "dd071bf6734d141cc3a022c5bc636461582ed3cadb6534306b08a630ba743453"
     }
   ]
 }
