@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.20.1
+
+* Fix the build: the intake form's add-on type is now `StudioIntakeAddon`.
+  Two interfaces were both named `StudioAddon` in `studio-copy.ts` (the
+  order add-ons from 1.19.0 and the intake add-ons from 1.20.0), so
+  TypeScript merged them and the order add-ons failed to compile.
+
 ## 1.20.0
 
 * The intake form (Ray, 2026-10-31: the intake "doesn't upsell to app

@@ -954,7 +954,7 @@ export const STUDIO_PROCESS = {
 // and when one is ticked a warm note says our team will quote it separately.
 export type StudioAddonId = "shop" | "app";
 
-export interface StudioAddon {
+export interface StudioIntakeAddon {
   id: StudioAddonId;
   name: string;
   benefit: string;
@@ -984,7 +984,7 @@ export const STUDIO_INTAKE_FORM = {
         benefit: "Android and iOS apps for your business: bookings, ordering or a loyalty card your customers keep on their phone.",
         line: "Mobile app (Android and iOS)",
       },
-    ] as StudioAddon[],
+    ] as StudioIntakeAddon[],
     quoted: "Quoted separately, after a short call with our team.",
   },
   // The note shown when one or both add-ons are ticked, in the form and on
