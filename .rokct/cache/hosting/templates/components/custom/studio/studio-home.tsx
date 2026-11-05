@@ -44,6 +44,7 @@ import {
   StudioDesignTabs,
   StudioDealAlt,
   StudioHeader,
+  StudioIntakeForm,
   StudioPrice,
 } from "./studio-client";
 import {
@@ -652,11 +653,14 @@ export function StudioHome({
                     {STUDIO_ORDER_COPY.homeCta}
                   </a>
                 </div>
-                <ol className="chips">
-                  {P.intake.questions.map((q) => (
-                    <li key={q}>{q}</li>
-                  ))}
-                </ol>
+                <div className="intake-r">
+                  <ol className="chips">
+                    {P.intake.questions.map((q) => (
+                      <li key={q}>{q}</li>
+                    ))}
+                  </ol>
+                  <StudioIntakeForm />
+                </div>
               </div>
             </div>
           </section>

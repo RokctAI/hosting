@@ -346,6 +346,44 @@ html.dark:has(.st)::-webkit-scrollbar-thumb{background:#F2818F;border-color:#131
 .st .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none;counter-reset:q}
 .st .chips li{counter-increment:q;font:500 14px/1 var(--sans);padding:11px 14px 11px 10px;border:1px solid var(--rule-2);border-radius:999px;display:inline-flex;gap:8px;align-items:center;color:var(--ink)}
 .st .chips li::before{content:counter(q,decimal-leading-zero);font:600 11px/1 var(--sans);color:var(--acc-text);letter-spacing:.06em}
+/* The intake form (1.9.0): the special, the two add-ons outside it, the
+   warm note when one is ticked, and the summary after sending. */
+.st .intake-r{display:flex;flex-direction:column;gap:28px;min-width:0}
+.st .ik{display:grid;gap:0;border:1px solid var(--rule-2);border-radius:12px;background:var(--card);overflow:hidden}
+.st .ik-special{padding:22px 24px;border-bottom:1px solid var(--rule)}
+.st .ik-sn{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;margin:10px 0 6px}
+.st .ik-sn>b{font:700 20px/1.2 var(--sans);letter-spacing:-.01em}
+.st .ik-sp{display:inline-flex;align-items:baseline;gap:10px;font-variant-numeric:tabular-nums}
+.st .ik-sp b{font:700 26px/1 var(--disp);letter-spacing:.01em;color:var(--acc-text)}
+.st .ik-sp s{font:500 14px/1 var(--sans);color:var(--ink-3);text-decoration-color:var(--acc-text)}
+.st .ik-add{margin:0;padding:20px 24px 18px;border:0;min-width:0;display:grid;gap:10px}
+.st .ik-add legend{float:left;width:100%;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;padding:0;margin:0 0 4px;font:600 11.5px/1.3 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
+.st .ik-add legend span{font-weight:500;letter-spacing:.04em;text-transform:none;font-size:13px;color:var(--ink-3)}
+.st .ik-opt{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:14px 16px;border:1px solid var(--rule-2);border-radius:10px;cursor:pointer;transition:border-color .2s,background .2s}
+.st .ik-opt:hover{border-color:var(--ink-3)}
+.st .ik-opt:has(input:checked){border-color:var(--acc-text);background:var(--acc-soft)}
+.st .ik-opt:has(input:focus-visible){outline:2px solid var(--acc-text);outline-offset:3px}
+.st .ik-opt input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--acc);cursor:pointer}
+.st .ik-opt input:focus-visible{outline:none}
+.st .ik-t{display:flex;flex-direction:column;gap:4px;font:400 14.5px/1.45 var(--sans);color:var(--ink-2)}
+.st .ik-t b{font:700 16px/1.25 var(--sans);color:var(--ink);letter-spacing:-.005em}
+.st .ik-q{margin-top:2px}
+.st .ik-note{margin:0 24px;font:italic 400 16px/1.45 var(--serif);color:var(--ink);border-left:2px solid var(--acc-text);padding:0 0 0 14px;max-height:0;opacity:0;overflow:hidden;transition:max-height .3s,opacity .3s,margin .3s}
+.st .ik-note.on{max-height:12em;opacity:1;margin:0 24px 18px}
+.st .ik-go{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding:18px 24px 22px;border-top:1px solid var(--rule)}
+.st .ik-go .fine{flex:1 1 16em}
+.st .ik-done{padding:22px 24px 24px;border-top:1px solid var(--rule);background:var(--bg-2);display:grid;gap:10px}
+.st .ik-dt{margin:0;font:700 clamp(26px,2.4vw,34px)/.95 var(--disp);text-transform:uppercase}
+.st .ik-sum{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.st .ik-sum li{font:500 14px/1 var(--sans);padding:10px 14px;border:1px solid var(--rule-2);border-radius:999px;background:var(--card)}
+.st .ik-sum li:first-child{border-color:var(--acc-text);color:var(--acc-text)}
+.st .ik-dn{margin:0;font:italic 400 16px/1.45 var(--serif);color:var(--ink);border-left:2px solid var(--acc-text);padding-left:14px}
+.st .ik-done .ask{margin-top:6px;justify-self:start}
+@media (max-width:560px){
+.st .ik-special,.st .ik-add,.st .ik-go,.st .ik-done{padding-left:18px;padding-right:18px}
+.st .ik-note.on{margin:0 18px 16px}
+.st .ik-go .btn{width:100%;justify-content:center;white-space:normal}
+}
 .st .contact{background:var(--contact-bg);color:var(--contact-fg)}
 .st .contact .kick{color:var(--contact-acc)}
 .st .contact-in{display:grid;gap:36px;padding-block:clamp(64px,9vw,120px)}

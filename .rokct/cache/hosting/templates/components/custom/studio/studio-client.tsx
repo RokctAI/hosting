@@ -17,6 +17,8 @@
 // The interactive parts of the studio home: the currency every price reads
 // (rand first, the visitor's switch kept in localStorage), the header (its
 // rule on scroll, the theme switch, the currency pill, the phone menu), the
+// contact block's copy-the-number button, the "how we design" case tabs and
+// the intake form that sends the brief, with any add-ons, on WhatsApp.
 // contact block's copy-the-number button and the "how we design" case
 // tabs. The portfolio row (1.8.0's tabs over flip cards) gave way in 1.11.0
 // to the phones row in studio-showcase-client.tsx.
@@ -39,11 +41,17 @@ import { HeaderAuthSlot } from "@/components/custom/header-auth-slot";
 import {
   STUDIO_CONTACT,
   STUDIO_CURRENCY_NOTE,
+  STUDIO_INTAKE_FORM,
   STUDIO_NAV,
   STUDIO_WHATSAPP_DISPLAY,
+  STUDIO_WHATSAPP_NUMBER,
   STUDIO_WHATSAPP_URL,
   studioDeal,
+  studioIntakeLines,
+  studioIntakeMessage,
+  studioIntakeNote,
   studioPrice,
+  type StudioAddonId,
   type StudioCurrency,
   type StudioDealKey,
   type StudioPriceFormat,
@@ -357,5 +365,105 @@ export function StudioDesignTabs({
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * The intake form under the ten questions (1.9.0). The special is the
+ * website and brand bundle; an online shop and a mobile app are optional
+ * add-ons outside it, each a real checkbox with its label. Ticking one never
+ * blocks sending: it shows a warm note that our team will quote it
+ * separately. The form is a plain GET to wa.me with the message in a hidden
+ * `text` field, so Enter or the button submits it and, without script, it
+ * still sends the brief for the special. It opens WhatsApp in a new tab and
+ * the page shows a summary of what was sent, the add-on note included.
+ */
+export function StudioIntakeForm() {
+  const F = STUDIO_INTAKE_FORM;
+  const [picked, setPicked] = useState<StudioAddonId[]>([]);
+  const [sent, setSent] = useState<StudioAddonId[] | null>(null);
+  const toggle = (id: StudioAddonId, on: boolean) =>
+    setPicked((p) => F.addons.items.map((a) => a.id).filter((x) => (x === id ? on : p.includes(x))));
+  const note = studioIntakeNote(picked);
+  const message = studioIntakeMessage(picked);
+  const action = `https://wa.me/${STUDIO_WHATSAPP_NUMBER}`;
+
+  return (
+    <form
+      className="ik"
+      action={action}
+      method="get"
+      target="_blank"
+      rel="noopener"
+      onSubmit={() => setSent(picked)}
+      aria-label="Start your brief"
+    >
+      <input type="hidden" name="text" value={message} />
+      <div className="ik-special">
+        <p className="kick">{F.special.kicker}</p>
+        <p className="ik-sn">
+          <b>{F.special.name}</b>
+          <span className="ik-sp">
+            <span className="vh">Special price </span>
+            <StudioDeal k="offer" as="b" />
+            <span className="vh">, normally </span>
+            <StudioDeal k="normal" as="s" />
+          </span>
+        </p>
+        <p className="sm">{F.special.covers}</p>
+      </div>
+
+      <fieldset className="ik-add">
+        <legend>
+          {F.addons.legend}
+          <span>{F.addons.hint}</span>
+        </legend>
+        {F.addons.items.map((a) => (
+          <label className="ik-opt" key={a.id}>
+            <input
+              type="checkbox"
+              checked={picked.includes(a.id)}
+              onChange={(e) => toggle(a.id, e.target.checked)}
+              aria-describedby="ik-quoted"
+            />
+            <span className="ik-t">
+              <b>{a.name}</b>
+              <span>{a.benefit}</span>
+            </span>
+          </label>
+        ))}
+        <p className="fine ik-q" id="ik-quoted">
+          {F.addons.quoted}
+        </p>
+      </fieldset>
+
+      <p className={note ? "ik-note on" : "ik-note"} role="status" aria-live="polite">
+        {note}
+      </p>
+
+      <div className="ik-go">
+        <button className="btn btn-acc" type="submit">
+          {F.submit}
+        </button>
+        <span className="fine">{F.submitNote}</span>
+      </div>
+
+      {sent && (
+        <div className="ik-done" role="status" aria-live="polite">
+          <p className="kick">{F.done.kicker}</p>
+          <p className="ik-dt">{F.done.title}</p>
+          <ul className="ik-sum">
+            {studioIntakeLines(sent).map((l) => (
+              <li key={l}>{l}</li>
+            ))}
+          </ul>
+          {sent.length > 0 && <p className="ik-dn">{studioIntakeNote(sent)}</p>}
+          <p className="sm">{F.done.text}</p>
+          <a className="ask" href={`${action}?text=${encodeURIComponent(studioIntakeMessage(sent))}`} target="_blank" rel="noopener">
+            {F.done.again} →
+          </a>
+        </div>
+      )}
+    </form>
   );
 }

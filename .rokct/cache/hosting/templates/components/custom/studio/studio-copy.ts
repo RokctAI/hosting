@@ -19,7 +19,8 @@
 // rate), so the figure a visitor sees is the figure they pay.
 
 export const STUDIO_WHATSAPP_DISPLAY = "+27 15 000 6069";
-const WA = "https://wa.me/27150006069?text=";
+export const STUDIO_WHATSAPP_NUMBER = "27150006069";
+const WA = `https://wa.me/${STUDIO_WHATSAPP_NUMBER}?text=`;
 export const studioWhatsApp = (text = "Hi ROKCT") => WA + encodeURIComponent(text);
 export const STUDIO_WHATSAPP_URL = studioWhatsApp();
 
@@ -90,7 +91,7 @@ export const STUDIO_NAV = [
 ] as const;
 
 export const STUDIO_HERO = {
-  kicker: ["Design and hosting studio", "For small businesses", "South Africa"],
+  kicker: ["Design and hosting", "For small businesses", "Rand prices"],
   title: ["Your brand,", "taken seriously."],
   lede: "Websites, logos, business plans, pitch decks, print and social posts for small businesses. One price agreed before we start, a render for you to approve after every phase, and our team a WhatsApp message away.",
   primary: "Message us on WhatsApp",
@@ -944,6 +945,82 @@ export const STUDIO_PROCESS = {
     ],
   },
 };
+
+// ---- Intake form (1.9.0) -------------------------------------------------
+// Under the ten questions the visitor sends their brief on WhatsApp. The
+// special is the website and brand bundle, nothing else. An online shop and
+// a mobile app are add-ons OUTSIDE the special (Ray, 2026-10-31): either,
+// both or neither can be ticked, nothing is ever blocked, no price is shown,
+// and when one is ticked a warm note says our team will quote it separately.
+export type StudioAddonId = "shop" | "app";
+
+export interface StudioAddon {
+  id: StudioAddonId;
+  name: string;
+  benefit: string;
+  /** How the add-on reads in the WhatsApp message and the summary. */
+  line: string;
+}
+
+export const STUDIO_INTAKE_FORM = {
+  special: {
+    kicker: "The special",
+    name: "Website and brand bundle",
+    covers: "Logo and brand, a four-page website, copy written for you, and free lifetime hosting for the first 1,000 owners.",
+  },
+  addons: {
+    legend: "Add to your brief",
+    hint: "Optional · not part of the special",
+    items: [
+      {
+        id: "shop",
+        name: "Online shop",
+        benefit: "Take orders and payments on your website, day and night.",
+        line: "Online shop / e-commerce",
+      },
+      {
+        id: "app",
+        name: "Mobile app",
+        benefit: "Android and iOS apps for your business: bookings, ordering or a loyalty card your customers keep on their phone.",
+        line: "Mobile app (Android and iOS)",
+      },
+    ] as StudioAddon[],
+    quoted: "Quoted separately, after a short call with our team.",
+  },
+  // The note shown when one or both add-ons are ticked, in the form and on
+  // the summary after sending: a favour from our team, not a warning.
+  note: {
+    one: "This isn't part of the special, but we'll pass it to our team so it can be included. They'll quote it for you separately.",
+    both: "These aren't part of the special, but we'll pass them to our team so they can be included. They'll quote them for you separately.",
+  },
+  submit: "Send my brief on WhatsApp",
+  submitNote: "Opens WhatsApp with your choices filled in. Nothing is sent until you press send there.",
+  done: {
+    kicker: "Your brief",
+    title: "Over to WhatsApp.",
+    text: "Press send in WhatsApp and our team will reply with the ten questions in office hours.",
+    again: "Open WhatsApp again",
+  },
+};
+
+/** What the brief covers, in order: the special first, then any add-ons. */
+export function studioIntakeLines(addons: StudioAddonId[]): string[] {
+  const items = STUDIO_INTAKE_FORM.addons.items.filter((a) => addons.includes(a.id));
+  return [`${STUDIO_INTAKE_FORM.special.name} (the special)`, ...items.map((a) => a.line)];
+}
+
+export function studioIntakeNote(addons: StudioAddonId[]): string {
+  if (addons.length === 0) return "";
+  return addons.length > 1 ? STUDIO_INTAKE_FORM.note.both : STUDIO_INTAKE_FORM.note.one;
+}
+
+/** The WhatsApp message the form sends: the special, then each add-on, marked outside it. */
+export function studioIntakeMessage(addons: StudioAddonId[]): string {
+  const [special, ...extra] = studioIntakeLines(addons);
+  const head = `Hi ROKCT, I'd like to start my brief for the ${special}.`;
+  if (extra.length === 0) return head;
+  return `${head}\n\nAdd-ons, outside the special, for your team to quote separately:\n${extra.map((l) => `- ${l}`).join("\n")}`;
+}
 
 export const STUDIO_CONTACT = {
   kicker: "Contact",
