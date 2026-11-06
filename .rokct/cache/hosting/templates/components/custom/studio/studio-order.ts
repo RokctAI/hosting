@@ -30,6 +30,8 @@ import { STUDIO_PRICE_ROWS, STUDIO_WHATSAPP_DISPLAY } from "./studio-copy";
 // ---- Words ----------------------------------------------------------------
 export const STUDIO_ORDER_HREF = "/order";
 export const STUDIO_ORDER_API = "/api/studio/order";
+/** GET ?name=<domain>: is a wanted domain free to register? (1.20.3) */
+export const STUDIO_DOMAIN_API = "/api/studio/domain";
 
 export const STUDIO_ORDER_COPY = {
   kicker: "Order",
@@ -97,6 +99,11 @@ export const STUDIO_ORDER_FIELDS: readonly StudioOrderField[] = [
   { name: "area", label: "Town or area you serve", kind: "text", max: 160 },
   { name: "colour", label: "Your brand colour", kind: "text", max: 200, placeholder: "e.g. orange, or three colours or brands you like" },
   { name: "likes", label: "Three websites you like, and what you like about each", kind: "textarea", max: 2000 },
+  // The domain step (1.20.2): read with hasDomain, see STUDIO_ORDER_DOMAIN.
+  { name: "domain", label: "Your domain name", kind: "text", max: 253, placeholder: "e.g. yourbusiness.co.za" },
+  { name: "registrar", label: "Where your domain is registered", kind: "text", max: 200, placeholder: "e.g. Afrihost, xneelo, GoDaddy, or the person who set it up", hint: "So we know where to point it to your new site." },
+  // "No, I need one" (1.20.3): the name the client wants, checked for availability.
+  { name: "wantedDomain", label: "The domain name you want", kind: "text", max: 253, placeholder: "e.g. yourbusiness.co.za", hint: "A .co.za or .com only. We check if it is free to register." },
   { name: "pagesOther", label: "Other pages", kind: "text", max: 300 },
   { name: "siteContact", label: "Phone, WhatsApp and email to show on your site", kind: "textarea", max: 500 },
   { name: "asks", label: "Anything customers always ask you", kind: "textarea", max: 2000 },
@@ -104,6 +111,122 @@ export const STUDIO_ORDER_FIELDS: readonly StudioOrderField[] = [
   // Filled by the stepper from studio-copy.ts, so the email shows the price the client saw.
   { name: "total", label: "Price shown", kind: "text", max: 80 },
 ];
+
+// ---- Domain -------------------------------------------------------------------
+// Ray, 2026-11-05: the form had no way to know if the client already has a
+// domain. "Yes" asks for the domain and where it is registered, so we know
+// where to point it; "No, I need one" asks for the name they want and checks
+// it is free to register (STUDIO_DOMAIN_API, public RDAP). Ray, 2026-11-06:
+// only .co.za or .com; the first year is in the deal price, then the client
+// pays its yearly renewal; a client who already has a domain gets no
+// discount, the deal price stays the same.
+export type StudioDomainAnswer = "yes" | "no";
+export const STUDIO_ORDER_DOMAIN = {
+  name: "hasDomain",
+  question: "Do you already have a domain name?",
+  options: [
+    { value: "yes", label: "Yes" },
+    { value: "no", label: "No, I need one" },
+  ] as { value: StudioDomainAnswer; label: string }[],
+  hasOne:
+    "Only a .co.za or .com. Having your own domain does not lower the price: the deal price stays the same.",
+  needsOne:
+    "Type the name you want and we check if it is free to register. A .co.za or .com only. The first year is included in the deal price; after that you pay the domain's yearly renewal, or we don't renew it.",
+  rowLabel: "Already has a domain",
+  checkLabel: "Free to register?",
+} as const;
+
+/** The only domain endings we register or connect (Ray, 2026-11-06). */
+export const STUDIO_DOMAIN_ENDINGS = [".co.za", ".com"] as const;
+export const STUDIO_DOMAIN_ENDING_ERROR = "Only a .co.za or .com domain, e.g. yourbusiness.co.za";
+
+export type StudioDomainCheck = "available" | "taken" | "unknown";
+export const STUDIO_DOMAIN_CHECK_TEXT: Record<StudioDomainCheck, string> = {
+  available: "Looks free",
+  taken: "Already taken, try another",
+  unknown: "Could not check right now",
+};
+/** Shown with every result: a check is a guide, not a hold on the name. */
+export const STUDIO_DOMAIN_CHECK_NOTE = "The final check happens when we register it.";
+
+const DOMAIN_SHAPE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
+
+/**
+ * A typed domain, cleaned: no scheme, no www., no path, lower case. "" when
+ * it does not look like a domain at all.
+ */
+export function studioCleanDomain(raw: string): string {
+  const s = raw
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/[/?#].*$/, "")
+    .replace(/\.$/, "");
+  return s.length <= 253 && DOMAIN_SHAPE.test(s) ? s : "";
+}
+
+/** The allowed ending of a cleaned domain, or null. */
+export function studioDomainEnding(domain: string): (typeof STUDIO_DOMAIN_ENDINGS)[number] | null {
+  return STUDIO_DOMAIN_ENDINGS.find((e) => domain.endsWith(e) && domain.length > e.length) ?? null;
+}
+
+/** A name one can register: exactly one label before .co.za or .com. */
+export function studioRegistrableDomain(raw: string): string {
+  const d = studioCleanDomain(raw);
+  const end = studioDomainEnding(d);
+  if (!end) return "";
+  const label = d.slice(0, -end.length);
+  return label && !label.includes(".") ? d : "";
+}
+
+export type StudioFetch = (url: string, init: { signal: AbortSignal; headers: Record<string, string> }) => Promise<{ status: number }>;
+
+/**
+ * Is `name` free to register? Never throws; anything it cannot settle is
+ * "unknown". .com asks Verisign's public RDAP (404 = available, 200 =
+ * taken). .co.za has no public RDAP that answers for it (ZACR's
+ * rdap.registry.net.za answers 404 even for registered .co.za names, so a
+ * 404 there means nothing), so .co.za uses `hasNameservers` when given (a
+ * name with NS records is taken) and is otherwise "unknown": we never say
+ * "Available" unless a registry said so.
+ */
+export async function studioCheckDomain(
+  raw: string,
+  opts: { fetch?: StudioFetch; hasNameservers?: (name: string) => Promise<boolean | null>; timeoutMs?: number } = {},
+): Promise<StudioDomainCheck> {
+  const name = studioRegistrableDomain(raw);
+  if (!name) return "unknown";
+  const timeoutMs = opts.timeoutMs ?? 4000;
+  try {
+    if (name.endsWith(".com")) {
+      const f = opts.fetch ?? (globalThis.fetch as unknown as StudioFetch);
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), timeoutMs);
+      try {
+        const res = await f(`https://rdap.verisign.com/com/v1/domain/${encodeURIComponent(name)}`, {
+          signal: ctl.signal,
+          headers: { accept: "application/rdap+json" },
+        });
+        if (res.status === 404) return "available";
+        if (res.status === 200) return "taken";
+        return "unknown";
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    if (opts.hasNameservers) {
+      const ns = await Promise.race([
+        opts.hasNameservers(name),
+        new Promise<null>((done) => setTimeout(() => done(null), timeoutMs)),
+      ]);
+      if (ns === true) return "taken";
+    }
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
 
 /** Yes/no answers (checkboxes), with the label the emails print. */
 export const STUDIO_ORDER_FLAGS = [
@@ -157,6 +280,12 @@ export interface StudioOrder {
   pages: string[];
   pagesOther: string;
   siteContact: string;
+  hasDomain: StudioDomainAnswer | "";
+  domain: string;
+  registrar: string;
+  wantedDomain: string;
+  /** The server's own availability check of wantedDomain; "" when not asked. */
+  domainCheck: StudioDomainCheck | "";
   asks: string;
   notes: string;
   flags: Record<StudioOrderFlag, boolean>;
@@ -213,6 +342,27 @@ export function validateStudioOrder(input: StudioOrderInput, uploads: StudioOrde
   if (v.email && !errors.email && !EMAIL.test(v.email)) errors.email = "That email doesn't look right";
   if (v.phone && !/^[+()\d\s-]{6,40}$/.test(v.phone)) errors.phone = "Digits, spaces and + only";
 
+  const hasDomain = one(input[STUDIO_ORDER_DOMAIN.name]).toLowerCase();
+  if (hasDomain && hasDomain !== "yes" && hasDomain !== "no") errors[STUDIO_ORDER_DOMAIN.name] = "Pick yes or no";
+  if (hasDomain === "yes" && !errors.domain) {
+    const d = studioCleanDomain(v.domain);
+    if (!v.domain) errors.domain = "Needed: the domain you have";
+    else if (!d) errors.domain = "That domain doesn't look right, e.g. yourbusiness.co.za";
+    else if (!studioDomainEnding(d)) errors.domain = STUDIO_DOMAIN_ENDING_ERROR;
+    else v.domain = d;
+  }
+  if (hasDomain === "no" && !errors.wantedDomain) {
+    const d = studioCleanDomain(v.wantedDomain);
+    if (!v.wantedDomain) errors.wantedDomain = "Needed: the name you want";
+    else if (!d) errors.wantedDomain = "That domain doesn't look right, e.g. yourbusiness.co.za";
+    else if (!studioDomainEnding(d)) errors.wantedDomain = STUDIO_DOMAIN_ENDING_ERROR;
+    else if (!studioRegistrableDomain(d)) errors.wantedDomain = "Just the name and its ending, e.g. yourbusiness.co.za";
+    else v.wantedDomain = d;
+  }
+  const rawCheck = one(input.domainCheck);
+  const domainCheck: StudioDomainCheck | "" =
+    hasDomain !== "no" ? "" : rawCheck === "available" || rawCheck === "taken" ? rawCheck : "unknown";
+
   const rawPages = input.pages;
   const pageList = (Array.isArray(rawPages) ? rawPages : rawPages ? [rawPages] : []).map((p) => one(p));
   const pages = STUDIO_ORDER_PAGES.filter((p) => pageList.includes(p));
@@ -252,6 +402,13 @@ export function validateStudioOrder(input: StudioOrderInput, uploads: StudioOrde
       pages,
       pagesOther: v.pagesOther,
       siteContact: v.siteContact,
+      hasDomain: hasDomain === "yes" || hasDomain === "no" ? hasDomain : "",
+      // A client who needs one keeps no stray answer from the "Yes" boxes.
+      domain: hasDomain === "yes" ? v.domain : "",
+      registrar: hasDomain === "yes" ? v.registrar : "",
+      wantedDomain: hasDomain === "no" ? v.wantedDomain : "",
+      // The route replaces this with its own check before mailing.
+      domainCheck,
       asks: v.asks,
       notes: v.notes,
       flags,
@@ -313,7 +470,7 @@ export function studioOrderTerms(ordersEmail: string): StudioOrderTerm[] {
     { b: "Cancel anytime", t: "You can cancel at any time. You keep everything we have delivered, but delivered work is not refunded." },
     {
       b: "Domain",
-      t: "The first year of a standard domain name (.co.za, .com, .net or .org) is included in the fee. We register and hold it for you and renew it each year you pay the yearly renewal; if a renewal is not paid, we do not renew it.",
+      t: "We work with .co.za or .com domains only. The first year of the domain is included in the deal price. We register and hold it for you and renew it each year you pay the yearly renewal; if a renewal is not paid, we do not renew it. If you already have a domain, the deal price stays the same: there is no discount.",
     },
     { b: "Hosting", t: "Lifetime hosting is included for the life of the site, for the first 1,000 small business owners, under fair use." },
     { b: "Contact", t: `WhatsApp ${STUDIO_WHATSAPP_DISPLAY}. Briefs, logos and photos: ${ordersEmail}.` },

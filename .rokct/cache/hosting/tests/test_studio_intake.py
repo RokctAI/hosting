@@ -45,10 +45,13 @@ def read(path):
 class TestStudioIntakeForm(unittest.TestCase):
     def test_version_and_changelog(self):
         manifest = json.loads(read(os.path.join(SDK_ROOT, "manifest.json")))
-        self.assertEqual(manifest["version"], "1.20.1")
+        self.assertEqual(manifest["version"], "1.20.3")
         head = read(os.path.join(SDK_ROOT, "CHANGELOG.md")).split("## 1.7.0")[0]
         self.assertIn("## 1.20.0", head)
         self.assertIn("Mobile app", head)
+        latest = read(os.path.join(SDK_ROOT, "CHANGELOG.md")).split("## 1.20.1")[0]
+        self.assertIn("## 1.20.3", latest)
+        self.assertIn("Do you already have a domain name?", latest)
 
     def test_form_sits_under_the_ten_questions(self):
         home = read(HOME)

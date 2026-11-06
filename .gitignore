@@ -115,6 +115,7 @@ next-env.d.ts
 /app/admin/system/languages/page.tsx
 /app/admin/system/translations/page.tsx
 /app/admin/system/update/page.tsx
+/app/api/studio/domain/route.ts
 /app/api/studio/order/route.ts
 /app/brand-icon/route.tsx
 /app/handson/control/rpanel/backups/page.tsx
@@ -252,6 +253,7 @@ next-env.d.ts
 /components/custom/studio/fonts/caveat-500.woff2
 /components/custom/studio/studio-client.tsx
 /components/custom/studio/studio-copy.ts
+/components/custom/studio/studio-domain-dns.ts
 /components/custom/studio/studio-fonts.ts
 /components/custom/studio/studio-home.tsx
 /components/custom/studio/studio-order-config.ts

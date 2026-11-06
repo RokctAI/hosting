@@ -135,7 +135,7 @@ export const STUDIO_SERVICES_HEAD = {
   title: "Six things a small business needs. Done for you.",
   aside:
     "You answer a short form. Our team does the rest, and you approve the result at each step. Prices are shown in rand for South Africa, with the dollar figure beside.",
-  foot: "Free lifetime hosting is for the first 1,000 small business owners, for the life of the site, under fair use. The first year of a standard domain name (.co.za, .com, .net or .org) is included in the fee. We register and hold it for you and renew it each year you pay the yearly renewal; if a renewal isn't paid, we don't renew it.",
+  foot: "Free lifetime hosting is for the first 1,000 small business owners, for the life of the site, under fair use. The first year of a .co.za or .com domain name is included in the deal price; if you already have a domain, the price stays the same. We register and hold it for you and renew it each year you pay the yearly renewal; if a renewal isn't paid, we don't renew it.",
 };
 
 export const STUDIO_SERVICES: StudioService[] = [
@@ -819,7 +819,7 @@ export const STUDIO_HOSTING_HEAD = {
 export const STUDIO_HOSTING_COST = {
   kicker: "What it costs",
   big: "Hosting is free for the life of your site, for the first 1,000 small business owners.",
-  lines: ["Fair use. No monthly hosting fee.", "The first year of your domain name is included (.co.za, .com, .net or .org). After that you pay its yearly renewal, or we don't renew it."],
+  lines: ["Fair use. No monthly hosting fee.", "The first year of your .co.za or .com domain is included. After that you pay its yearly renewal, or we don't renew it."],
   lasts:
     "All of this lasts for as long as your site is hosted with us. If you ever move it elsewhere, it’s yours to take, and the weekly care stops.",
 };
@@ -924,7 +924,7 @@ export const STUDIO_PROCESS = {
       b: "Your delays",
       t: "If we are waiting on you for a logo, an answer or an approval, the due date moves and no refund is due. You see it as a blocker.",
     },
-    { b: "Domain", t: "The first year of a .co.za, .com, .net or .org domain is included in the fee. We hold it and renew it each year the renewal is paid. If it isn't paid, we don't renew it." },
+    { b: "Domain", t: "We work with .co.za or .com only. The first year of the domain is included in the deal price; if you already have one, the price stays the same, with no discount. We hold it and renew it each year the renewal is paid. If it isn't paid, we don't renew it." },
     { b: "Hosting", t: "Free for the life of the site for the first 1,000 small business owners, under fair use." },
   ],
   intake: {
