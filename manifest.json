@@ -1,45 +1,45 @@
 {
   "schema": 1,
   "repo": "RokctAI/hosting",
-  "commit": "fc113681ea38bd3d1e9fd028555a25f4dd30810e",
-  "taken_at": "2026-11-03T06:51:59Z",
-  "dir": "shots/fc113681ea38bd3d1e9fd028555a25f4dd30810e",
+  "commit": "36a8a06252c0c4bb17787f3806b00cf30de07405",
+  "taken_at": "2026-11-06T05:07:54Z",
+  "dir": "shots/36a8a06252c0c4bb17787f3806b00cf30de07405",
   "files": {
     "desktop-light.webp": {
       "width": 1200,
       "height": 833,
-      "bytes": 51158,
-      "sha256": "f4de86cf16ef28016da6dd404f507efbb0cc2e33a0a88c15ee8306262d49da2c"
+      "bytes": 50972,
+      "sha256": "d0fb7ee0fede5129866110c3e2579643e970b4d6ac150e2a68e9120f869fd0da"
     },
     "desktop-dark.webp": {
       "width": 1200,
       "height": 833,
-      "bytes": 51236,
-      "sha256": "b591454501eeb2b455fac303f50d3292c50c3ede6b945fb53468fd84fdacc685"
+      "bytes": 50868,
+      "sha256": "27218bfaa4021ad4c685f1756d133f22e6a0654391fbd4ce4ba95a3d69f03018"
     },
     "option-light.webp": {
       "width": 800,
       "height": 500,
-      "bytes": 27920,
-      "sha256": "38fcd7d361af1d1970426da18d3d705485d430f797449097dd5464d6f41e8430"
+      "bytes": 27740,
+      "sha256": "8cb4321b032df0d2afe807ffb70b74067a03563c6de3915aee1183f5f4444073"
     },
     "option-dark.webp": {
       "width": 800,
       "height": 500,
-      "bytes": 28020,
-      "sha256": "3926cccb38120e78386e14e6552c2f25fc834823e8b5a0c65df859dea377d3c1"
+      "bytes": 27840,
+      "sha256": "4c6ce3dab03ba39bd9b823f2ac3bac74e85601d19089c52a7392a2ba90359168"
     },
     "phone-light.webp": {
       "width": 560,
       "height": 1149,
-      "bytes": 57638,
-      "sha256": "37c430a93f9045d28c6a12f8c541d9c63f65bbd6673dae98c94d62a95de94e93"
+      "bytes": 57146,
+      "sha256": "c03df937146c99b199a410a020f65fa078edb4e3ba6602f187eccb91e89b158e"
     },
     "phone-dark.webp": {
       "width": 560,
       "height": 1149,
-      "bytes": 57108,
-      "sha256": "9c65d43e7234f75c21c5606b5a74a8901f20dfa19a6d440af66de4d1c32c3d16"
+      "bytes": 56546,
+      "sha256": "d1fa4071f6c65bf3a35adc6dd52f445760dad4a2285ac56ad312c72c1f3417f7"
     }
   }
 }
