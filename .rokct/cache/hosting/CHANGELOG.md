@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.20.3
+
+* Domain rules (Ray, 2026-11-06). Only .co.za or .com: .net and .org are
+  gone from the Terms (`studio-order.ts`, `studio-copy.ts`) and the form
+  note, and a "Yes" domain that does not end in .co.za or .com is refused
+  with a plain message. The first year of the domain stays in the deal
+  price, then the client pays its yearly renewal. A client who already has
+  a domain gets no discount: the deal price stays the same, said in the
+  form note and the Terms.
+* "No, I need one" now asks for the name the client wants and checks it:
+  new `GET /api/studio/domain?name=` (`app/api/studio/domain/route.ts`,
+  `studioCheckDomain` in `studio-order.ts`, `studio-domain-dns.ts`). .com
+  asks Verisign's public RDAP (404 free, 200 taken). ZACR has no public
+  RDAP that answers for .co.za, so a .co.za name with nameservers is taken
+  and anything else "Could not check right now". The form shows "Looks
+  free", "Already taken, try another" or "Could not check right now", always
+  with "The final check happens when we register it."; a failed check never
+  blocks the order. The order route checks the name again itself, and both
+  emails list the wanted name and the result.
+
+## 1.20.2
+
+* The order form asks "Do you already have a domain name?" (Ray,
+  2026-11-05: the form had no way to know). In the "Your business" step,
+  `STUDIO_ORDER_DOMAIN` in `studio-order.ts`: "Yes" opens a box for the
+  domain and one for where it is registered, so we know where to point it;
+  "No, I need one" notes that we suggest names, a standard .co.za, .com,
+  .net or .org only, first year in the fee and the yearly renewal paid by
+  the client. The answers (`hasDomain`, `domain`, `registrar`) are checked
+  on the server (a "Yes" needs a domain that looks like one) and listed in
+  both emails the form sends.
+
 ## 1.20.1
 
 * Fix the build: the intake form's add-on type is now `StudioIntakeAddon`.

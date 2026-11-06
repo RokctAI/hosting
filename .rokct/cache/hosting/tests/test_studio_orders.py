@@ -442,6 +442,164 @@ class TestNoThirdPartyMailApi(unittest.TestCase):
         self.assertNotIn("fetch(", code_only(read(SEND)))
 
 
+DOMAIN_PROBE = """
+import { validateStudioOrder, studioCheckDomain } from './studio-order.ts';
+import { buildStudioOrderMails } from './studio-order-mail.ts';
+const base = { service: 'Website and brand bundle', name: 'Thandi M', email: 'thandi@example.com',
+  business: 'Thandi Bakes', sells: 'Cakes', terms: 'yes' };
+const cfg = { from: 'ROKCT Studio <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
+const yes = validateStudioOrder({ ...base, hasDomain: 'yes', domain: 'thandibakes.co.za', registrar: 'Afrihost' }, []);
+const no = validateStudioOrder({ ...base, hasDomain: 'no', domain: 'stray.com', registrar: 'x', wantedDomain: 'ThandiBakes.co.za', domainCheck: 'available' }, []);
+const urls = [];
+const fake = (status) => async (url) => { urls.push(url); return { status }; };
+const boom = async () => { throw new Error('offline'); };
+const hang = (url, init) => new Promise((_, no) => init.signal.addEventListener('abort', () => no(new Error('aborted'))));
+const checks = {
+  comFree: await studioCheckDomain('https://www.ThandiBakes.com/', { fetch: fake(404) }),
+  comTaken: await studioCheckDomain('google.com', { fetch: fake(200) }),
+  comOdd: await studioCheckDomain('x1.com', { fetch: fake(503) }),
+  comDown: await studioCheckDomain('x2.com', { fetch: boom }),
+  comSlow: await studioCheckDomain('x3.com', { fetch: hang, timeoutMs: 50 }),
+  cozaNs: await studioCheckDomain('takealot.co.za', { fetch: boom, hasNameservers: async () => true }),
+  cozaNoNs: await studioCheckDomain('zzqx.co.za', { fetch: boom, hasNameservers: async () => false }),
+  cozaBare: await studioCheckDomain('zzqx.co.za', { fetch: boom }),
+  net: await studioCheckDomain('x.net', { fetch: fake(404) }),
+};
+const noCheck = validateStudioOrder({ ...base, hasDomain: 'no', wantedDomain: 'thandibakes.com', domainCheck: 'nonsense' }, []);
+const noOrder = { ...no.order, domainCheck: 'taken' };
+const out = {
+  urls, checks, noCheck: noCheck.order,
+  noTakenMail: buildStudioOrderMails(noOrder, [], cfg, 'RK-D3').order.text,
+  noAck: buildStudioOrderMails(no.order, [], cfg, 'RK-D2').ack.text,
+  yesNet: validateStudioOrder({ ...base, hasDomain: 'yes', domain: 'thandibakes.net' }, []),
+  yesOrg: validateStudioOrder({ ...base, hasDomain: 'yes', domain: 'www.thandibakes.org' }, []),
+  yesCom: validateStudioOrder({ ...base, hasDomain: 'yes', domain: 'https://www.ThandiBakes.com/' }, []),
+  noEmpty: validateStudioOrder({ ...base, hasDomain: 'no' }, []),
+  noNet: validateStudioOrder({ ...base, hasDomain: 'no', wantedDomain: 'thandibakes.net' }, []),
+  noSub: validateStudioOrder({ ...base, hasDomain: 'no', wantedDomain: 'shop.thandibakes.com' }, []),
+  yes: yes.order, no: no.order,
+  yesMail: buildStudioOrderMails(yes.order, [], cfg, 'RK-D1').order.text,
+  yesAck: buildStudioOrderMails(yes.order, [], cfg, 'RK-D1').ack.text,
+  noMail: buildStudioOrderMails(no.order, [], cfg, 'RK-D2').order.text,
+  yesEmpty: validateStudioOrder({ ...base, hasDomain: 'yes' }, []),
+  yesBad: validateStudioOrder({ ...base, hasDomain: 'yes', domain: 'not a domain' }, []),
+  bogus: validateStudioOrder({ ...base, hasDomain: 'maybe' }, []),
+  unset: validateStudioOrder(base, []),
+};
+console.log(JSON.stringify(out));
+"""
+
+
+class TestDomainStep(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.out = run_node(DOMAIN_PROBE)
+
+    def test_yes_keeps_domain_and_registrar_and_mails_them(self):
+        self.assertEqual(self.out["yes"]["hasDomain"], "yes")
+        self.assertEqual(self.out["yes"]["domain"], "thandibakes.co.za")
+        self.assertEqual(self.out["yes"]["registrar"], "Afrihost")
+        for text in (self.out["yesMail"], self.out["yesAck"]):
+            self.assertIn("Already has a domain", text)
+            self.assertIn("thandibakes.co.za", text)
+            self.assertIn("Where your domain is registered", text)
+            self.assertIn("Afrihost", text)
+
+    def test_no_drops_stray_answers_and_mails_the_note(self):
+        self.assertEqual(self.out["no"]["hasDomain"], "no")
+        self.assertEqual(self.out["no"]["domain"], "")
+        self.assertEqual(self.out["no"]["registrar"], "")
+        mail = self.out["noMail"]
+        self.assertIn("No, needs one", mail)
+        self.assertIn("check if it is free to register", mail)
+        self.assertIn("A .co.za or .com only", mail)
+        self.assertNotIn(".net", mail)
+        self.assertIn("yearly renewal", mail)
+        self.assertNotIn("stray.com", mail)
+        self.assertNotIn("Where your domain is registered", mail)
+
+    def test_yes_needs_a_real_domain(self):
+        self.assertFalse(self.out["yesEmpty"]["ok"])
+        self.assertIn("domain", self.out["yesEmpty"]["errors"])
+        self.assertFalse(self.out["yesBad"]["ok"])
+        self.assertIn("domain", self.out["yesBad"]["errors"])
+        self.assertFalse(self.out["bogus"]["ok"])
+        self.assertIn("hasDomain", self.out["bogus"]["errors"])
+        self.assertTrue(self.out["unset"]["ok"])
+
+    def test_form_asks_the_question_with_both_options(self):
+        order = read(ORDER)
+        self.assertIn('question: "Do you already have a domain name?"', order)
+        self.assertIn('{ value: "yes", label: "Yes" }', order)
+        self.assertIn('{ value: "no", label: "No, I need one" }', order)
+        form = read(FORM)
+        self.assertIn('type="radio"', form)
+        self.assertIn("name={STUDIO_ORDER_DOMAIN.name}", form)
+        self.assertIn('<Field name="domain" errors={errors} />', form)
+        self.assertIn('<Field name="registrar" errors={errors} />', form)
+        self.assertIn("STUDIO_ORDER_DOMAIN.needsOne", form)
+        self.assertIn('<Field name="wantedDomain" errors={errors} />', form)
+        self.assertIn('name="domainCheck"', form)
+        self.assertIn("STUDIO_DOMAIN_API", form)
+        self.assertIn("STUDIO_ORDER_DOMAIN.hasOne", form)
+
+    def test_only_co_za_and_com(self):
+        for key in ("yesNet", "yesOrg", "noNet"):
+            self.assertFalse(self.out[key]["ok"], key)
+        self.assertIn("Only a .co.za or .com", self.out["yesNet"]["errors"]["domain"])
+        self.assertIn("Only a .co.za or .com", self.out["noNet"]["errors"]["wantedDomain"])
+        self.assertTrue(self.out["yesCom"]["ok"])
+        self.assertEqual(self.out["yesCom"]["order"]["domain"], "thandibakes.com")
+        self.assertIn("wantedDomain", self.out["noEmpty"]["errors"])
+        self.assertIn("wantedDomain", self.out["noSub"]["errors"])
+        for path in (ORDER, COPY):
+            text = code_only(read(path))
+            self.assertNotIn(".net", text, path)
+            self.assertNotIn(".org", text.replace("gnu.org", ""), path)
+
+    def test_no_discount_and_first_year_in_the_terms(self):
+        order = read(ORDER)
+        self.assertIn("the deal price stays the same: there is no discount", order)
+        self.assertIn("The first year of the domain is included in the deal price", order)
+        self.assertIn("does not lower the price: the deal price stays the same", order)
+        self.assertIn("if you already have one, the price stays the same, with no discount", read(COPY))
+
+    def test_availability_check_with_mocked_network(self):
+        c = self.out["checks"]
+        self.assertEqual(c["comFree"], "available")
+        self.assertEqual(c["comTaken"], "taken")
+        self.assertEqual(c["comOdd"], "unknown")
+        self.assertEqual(c["comDown"], "unknown")
+        self.assertEqual(c["comSlow"], "unknown")
+        self.assertEqual(c["cozaNs"], "taken")
+        self.assertEqual(c["cozaNoNs"], "unknown")
+        self.assertEqual(c["cozaBare"], "unknown")
+        self.assertEqual(c["net"], "unknown")
+        self.assertIn("https://rdap.verisign.com/com/v1/domain/thandibakes.com", self.out["urls"])
+        self.assertFalse(any("co.za" in u or ".net" in u for u in self.out["urls"]))
+
+    def test_wanted_name_and_result_in_both_emails(self):
+        self.assertEqual(self.out["no"]["wantedDomain"], "thandibakes.co.za")
+        self.assertEqual(self.out["noCheck"]["domainCheck"], "unknown")
+        for text in (self.out["noMail"], self.out["noAck"]):
+            self.assertIn("The domain name you want", text)
+            self.assertIn("thandibakes.co.za", text)
+            self.assertIn("Free to register?", text)
+            self.assertIn("Looks free", text)
+            self.assertIn("The final check happens when we register it.", text)
+        self.assertIn("Already taken, try another", self.out["noTakenMail"])
+        self.assertNotIn("The domain name you want", self.out["yesMail"])
+
+    def test_routes_check_and_never_block(self):
+        route = read(os.path.join(TEMPLATES, "app", "api", "studio", "domain", "route.ts"))
+        self.assertTrue(route.startswith(AGPL_TS))
+        self.assertIn("export async function GET", route)
+        self.assertIn("studioCheckDomain(", read(ROUTE))
+        pairs = {(i["from"], i["to"]) for i in json.loads(read(MANIFEST))["app_type"]["hosting"]["installs"]}
+        self.assertIn(("templates/app/api/studio/domain/route.ts", "app/api/studio/domain/route.ts"), pairs)
+        self.assertIn(("templates/components/custom/studio/studio-domain-dns.ts", "components/custom/studio/studio-domain-dns.ts"), pairs)
+
+
 class TestWiring(unittest.TestCase):
     def test_new_files_carry_the_licence(self):
         for path in NEW_FILES:
@@ -449,7 +607,7 @@ class TestWiring(unittest.TestCase):
 
     def test_manifest_installs_every_new_file(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.20.1")
+        self.assertEqual(m["version"], "1.20.3")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for path in NEW_FILES:
             rel = os.path.relpath(path, SDK_ROOT).replace(os.sep, "/")
@@ -468,7 +626,7 @@ class TestWiring(unittest.TestCase):
 
     def test_changelog_lists_env_vars_by_name(self):
         log = read(CHANGELOG)
-        self.assertTrue(log.startswith("# Changelog\n\n## 1.20.1\n"))
+        self.assertTrue(log.startswith("# Changelog\n\n## 1.20.3\n"))
         entry = log.split("## 1.18.0", 1)[1].split("\n## ", 1)[0]
         for name in ENV_VARS:
             self.assertIn(name, entry)

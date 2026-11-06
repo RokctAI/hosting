@@ -42,8 +42,13 @@ import { useStudioCurrency } from "./studio-client";
 import { STUDIO_ADDONS, STUDIO_DEAL_ZAR, STUDIO_PRICE_ROWS, studioAddonZar, studioMoney, studioOrderZar, studioRowZar, studioWhatsApp } from "./studio-copy";
 import {
   STUDIO_ORDER_ACCEPT,
+  STUDIO_DOMAIN_API,
+  STUDIO_DOMAIN_CHECK_NOTE,
+  STUDIO_DOMAIN_CHECK_TEXT,
+  STUDIO_DOMAIN_ENDING_ERROR,
   STUDIO_ORDER_API,
   STUDIO_ORDER_COPY,
+  STUDIO_ORDER_DOMAIN,
   STUDIO_ORDER_FIELDS,
   STUDIO_ORDER_FILE_TYPES,
   STUDIO_ORDER_FLAGS,
@@ -52,6 +57,9 @@ import {
   STUDIO_ORDER_MESSAGES,
   STUDIO_ORDER_PAGES,
   STUDIO_ORDER_TRAP,
+  studioCleanDomain,
+  studioDomainEnding,
+  type StudioDomainCheck,
   type StudioOrderField,
   type StudioOrderTerm,
 } from "./studio-order";
@@ -191,6 +199,9 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
   const [step, setStep] = useState(0);
   const [service, setService] = useState(STUDIO_PRICE_ROWS[0].name);
   const [addons, setAddons] = useState<string[]>([]);
+  const [hasDomain, setHasDomain] = useState<"" | "yes" | "no">("");
+  // The availability check of the wanted domain: the name it was for, and its result.
+  const [domainCheck, setDomainCheck] = useState<{ name: string; result: StudioDomainCheck | "checking" } | null>(null);
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
   const [review, setReview] = useState<[string, string][]>([]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -212,7 +223,36 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
       if (!v) out[name] = name === "terms" ? "Please accept the terms to send your order." : "Needed to start your brief.";
       else if (name === "email" && !EMAIL.test(v)) out[name] = "That email doesn't look right.";
     }
+    // The domain step: "Yes" needs the domain itself, "No" the name wanted; .co.za or .com only.
+    if (i === 2) {
+      const answer = data.get(STUDIO_ORDER_DOMAIN.name);
+      const field = answer === "yes" ? "domain" : answer === "no" ? "wantedDomain" : "";
+      const typed = field ? String(data.get(field) ?? "").trim() : "";
+      if (field && !typed) out[field] = answer === "yes" ? "Needed: the domain you have." : "Needed: the name you want.";
+      else if (field && !studioDomainEnding(studioCleanDomain(typed))) out[field] = STUDIO_DOMAIN_ENDING_ERROR;
+    }
     return out;
+  }
+
+  // Asks the server whether the wanted name is free. A failed check is
+  // "unknown" and never stops the order.
+  async function checkWanted(raw: string) {
+    const name = studioCleanDomain(raw);
+    if (!name || !studioDomainEnding(name)) {
+      setDomainCheck(null);
+      return;
+    }
+    if (domainCheck?.name === name && domainCheck.result !== "checking") return;
+    setDomainCheck({ name, result: "checking" });
+    let result: StudioDomainCheck = "unknown";
+    try {
+      const res = await fetch(`${STUDIO_DOMAIN_API}?name=${encodeURIComponent(name)}`, { cache: "no-store" });
+      const body = (await res.json()) as { result?: string };
+      if (body.result === "available" || body.result === "taken") result = body.result;
+    } catch {
+      result = "unknown";
+    }
+    setDomainCheck((cur) => (cur?.name === name ? { name, result } : cur));
   }
 
   function go(to: number) {
@@ -238,6 +278,19 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
             ["What you do", s("sells")],
             ["Area", s("area")],
             ["Pages", d.getAll("pages").map(String).join(", ")],
+            [
+              "Domain",
+              s(STUDIO_ORDER_DOMAIN.name) === "yes"
+                ? [s("domain"), s("registrar") && `registered at ${s("registrar")}`].filter(Boolean).join(", ")
+                : s(STUDIO_ORDER_DOMAIN.name) === "no"
+                  ? [
+                      `You want ${s("wantedDomain")}`,
+                      domainCheck && domainCheck.result !== "checking" ? STUDIO_DOMAIN_CHECK_TEXT[domainCheck.result] : "",
+                    ]
+                      .filter(Boolean)
+                      .join(": ")
+                  : "",
+            ],
             ["Name", s("name")],
             ["Email", s("email")],
             ["WhatsApp", s("phone")],
@@ -460,6 +513,46 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
             </div>
             <div className="of-grid">
               <Field name="pagesOther" errors={errors} />
+            </div>
+            <div className="of-f of-wide of-domain" role="radiogroup" aria-labelledby="of-hasDomain-q">
+              <p id="of-hasDomain-q">{STUDIO_ORDER_DOMAIN.question}</p>
+              {STUDIO_ORDER_DOMAIN.options.map((o) => (
+                <label className="of-check" key={o.value}>
+                  <input
+                    type="radio"
+                    name={STUDIO_ORDER_DOMAIN.name}
+                    value={o.value}
+                    checked={hasDomain === o.value}
+                    onChange={() => setHasDomain(o.value)}
+                  />
+                  <span>{o.label}</span>
+                </label>
+              ))}
+              {errors[STUDIO_ORDER_DOMAIN.name] ? <small className="of-err">{errors[STUDIO_ORDER_DOMAIN.name]}</small> : null}
+            </div>
+            {/* Stays mounted when hidden, like every step; the server drops these unless "Yes". */}
+            <div className="of-grid" hidden={hasDomain !== "yes"}>
+              <Field name="domain" errors={errors} />
+              <Field name="registrar" errors={errors} />
+            </div>
+            <div className="of-grid" hidden={hasDomain !== "no"} onBlur={(e) => {
+                const t = e.target as HTMLInputElement;
+                if (t.name === "wantedDomain") void checkWanted(t.value);
+              }}>
+              <Field name="wantedDomain" errors={errors} />
+            </div>
+            <input
+              type="hidden"
+              name="domainCheck"
+              value={domainCheck && domainCheck.result !== "checking" ? domainCheck.result : ""}
+            />
+            <p className="fine" role="status" aria-live="polite">
+              {hasDomain === "no" && domainCheck
+                ? `${domainCheck.name}: ${domainCheck.result === "checking" ? "checking..." : STUDIO_DOMAIN_CHECK_TEXT[domainCheck.result]}. ${STUDIO_DOMAIN_CHECK_NOTE} `
+                : ""}
+              {hasDomain === "no" ? STUDIO_ORDER_DOMAIN.needsOne : hasDomain === "yes" ? STUDIO_ORDER_DOMAIN.hasOne : ""}
+            </p>
+            <div className="of-grid">
               <Field name="likes" errors={errors} />
               <Field name="asks" errors={errors} />
             </div>

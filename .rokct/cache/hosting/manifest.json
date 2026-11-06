@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.20.1",
+  "version": "1.20.3",
   "installs": [],
   "dependencies": {},
   "devDependencies": {},
@@ -98,6 +98,14 @@
         {
           "from": "templates/app/api/studio/order/route.ts",
           "to": "app/api/studio/order/route.ts"
+        },
+        {
+          "from": "templates/app/api/studio/domain/route.ts",
+          "to": "app/api/studio/domain/route.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-domain-dns.ts",
+          "to": "components/custom/studio/studio-domain-dns.ts"
         },
         {
           "from": "templates/app/studio/shots",

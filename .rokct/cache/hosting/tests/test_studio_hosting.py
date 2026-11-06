@@ -75,7 +75,7 @@ class TestStudioHostingCopy(unittest.TestCase):
         cost = hosting_copy()[1]
         self.assertIn("free for the life of your site, for the first 1,000 small business owners", cost)
         self.assertIn("No monthly hosting fee.", cost)
-        self.assertIn("The first year of your domain name is included (.co.za, .com, .net or .org).", cost)
+        self.assertIn("The first year of your .co.za or .com domain is included.", cost)
         self.assertNotIn("never hold", cost)
         self.assertIn(
             "All of this lasts for as long as your site is hosted with us. If you ever move it elsewhere, it’s yours to take, and the weekly care stops.",

@@ -33,6 +33,7 @@ import {
   STUDIO_ORDER_MAX_BYTES,
   STUDIO_ORDER_MESSAGES,
   createStudioRateLimiter,
+  studioCheckDomain,
   validateStudioOrder,
   type StudioOrderFileField,
   type StudioOrderInput,
@@ -40,6 +41,7 @@ import {
 } from "@/components/custom/studio/studio-order";
 import { studioMailConfig, studioRequestHost } from "@/components/custom/studio/studio-order-config";
 import { buildStudioOrderMails, type StudioMailAttachment } from "@/components/custom/studio/studio-order-mail";
+import { studioHasNameservers } from "@/components/custom/studio/studio-domain-dns";
 import { sendStudioOrderMails } from "@/components/custom/studio/studio-order-send";
 
 export const runtime = "nodejs";
@@ -135,6 +137,12 @@ export async function POST(request: Request): Promise<Response> {
         contentType: files[i].upload.type,
         content: new Uint8Array(await files[i].file.arrayBuffer()),
       });
+    }
+
+    // A wanted domain is checked again here, so the emails carry our own
+    // answer, not the browser's. A failed check is "unknown"; it never blocks.
+    if (check.order.hasDomain === "no" && check.order.wantedDomain) {
+      check.order.domainCheck = await studioCheckDomain(check.order.wantedDomain, { hasNameservers: studioHasNameservers, timeoutMs: 3000 });
     }
 
     const ref = orderRef();

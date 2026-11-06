@@ -29,6 +29,9 @@
 
 import { studioStepValues } from "./studio-order-config";
 import {
+  STUDIO_ORDER_DOMAIN,
+  STUDIO_DOMAIN_CHECK_NOTE,
+  STUDIO_DOMAIN_CHECK_TEXT,
   STUDIO_ORDER_FIELDS,
   STUDIO_ORDER_FLAGS,
   STUDIO_ORDER_PHASES,
@@ -81,6 +84,22 @@ export function studioOrderRows(order: StudioOrder): [string, string][] {
       rows.push(["Pages you want", pages.length ? pages.join(", ") : "Not given"]);
       continue;
     }
+    if (f.name === "domain") {
+      const d = order.hasDomain;
+      rows.push([STUDIO_ORDER_DOMAIN.rowLabel, d === "yes" ? "Yes" : d === "no" ? "No, needs one" : "Not given"]);
+      if (d === "no") rows.push(["Domain", STUDIO_ORDER_DOMAIN.needsOne]);
+    }
+    if (f.name === "wantedDomain") {
+      if (order.hasDomain === "no") {
+        rows.push([f.label, order.wantedDomain || "Not given"]);
+        rows.push([
+          STUDIO_ORDER_DOMAIN.checkLabel,
+          `${STUDIO_DOMAIN_CHECK_TEXT[order.domainCheck || "unknown"]}. ${STUDIO_DOMAIN_CHECK_NOTE}`,
+        ]);
+      }
+      continue;
+    }
+    if ((f.name === "domain" || f.name === "registrar") && order.hasDomain !== "yes") continue;
     const v = typeof val[f.name] === "string" ? (val[f.name] as string) : "";
     rows.push([f.label, v || "Not given"]);
   }
