@@ -1,0 +1,14 @@
+{
+  "name": "Rokct Telecom",
+  "kind": "Business phone lines",
+  "tagline": "A landline number that rings anywhere.",
+  "url": "https://telephony-frontend.vercel.app",
+  "repo": "RokctAI/telephony-frontend",
+  "rank": 7,
+  "shots": {
+    "branch": "site-shots",
+    "desktop": "latest/desktop-dark.webp",
+    "phone": "latest/phone-dark.webp"
+  },
+  "logo_back": null
+}

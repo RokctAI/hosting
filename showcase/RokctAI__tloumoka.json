@@ -1,0 +1,14 @@
+{
+  "name": "Tloumoka",
+  "kind": "Engineering and PPE",
+  "tagline": "Precision engineering and safety gear from one supplier.",
+  "url": "https://tloumoka.vercel.app",
+  "repo": "RokctAI/tloumoka",
+  "rank": 6,
+  "shots": {
+    "branch": "site-shots",
+    "desktop": "latest/desktop-dark.webp",
+    "phone": "latest/phone-dark.webp"
+  },
+  "logo_back": null
+}
