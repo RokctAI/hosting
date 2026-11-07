@@ -10,5 +10,13 @@
     "desktop": "latest/desktop-dark.webp",
     "phone": "latest/phone-dark.webp"
   },
-  "logo_back": null
+  "logo_back": null,
+  "apps": [
+    {
+      "name": "Polaris",
+      "repo": "RokctAI/polaris",
+      "branch": "main",
+      "phone": "marketing/tour/store/05-polaris_home.png"
+    }
+  ]
 }
