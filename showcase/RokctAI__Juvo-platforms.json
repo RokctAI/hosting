@@ -1,0 +1,34 @@
+{
+  "name": "Juvo Platforms",
+  "kind": "Delivery platform",
+  "tagline": "Your own delivery platform. Three apps. One brand. Yours.",
+  "url": "https://platform.juvo.app",
+  "repo": "RokctAI/Juvo-platforms",
+  "rank": 8,
+  "shots": {
+    "branch": "site-shots",
+    "desktop": "latest/desktop-dark.webp",
+    "phone": "latest/phone-dark.webp"
+  },
+  "logo_back": null,
+  "apps": [
+    {
+      "name": "Juvo Customer",
+      "repo": "RokctAI/paas_customer",
+      "branch": "main",
+      "phone": "marketing/tour/store/05-marketplace_home.png"
+    },
+    {
+      "name": "Juvo Manager",
+      "repo": "RokctAI/paas_manager",
+      "branch": "main",
+      "phone": "marketing/tour/store/05-pos_scan.png"
+    },
+    {
+      "name": "Juvo Driver",
+      "repo": "RokctAI/paas_driver",
+      "branch": "main",
+      "phone": "marketing/tour/store/05-driver_home.png"
+    }
+  ]
+}
