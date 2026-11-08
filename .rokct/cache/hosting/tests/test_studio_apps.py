@@ -89,5 +89,41 @@ class TestApps(unittest.TestCase):
         self.assertIn(".st .wk-apps{", read(CSS))
 
 
+class TestAppsFilter(unittest.TestCase):
+    """1.20.6: the Website filter hides a card's apps; App and All show them."""
+
+    @classmethod
+    def setUpClass(cls):
+        probe = """
+import { showcaseShowsApps } from './studio-showcase.ts';
+console.log(JSON.stringify(Object.fromEntries(['all','website','logo','app'].map((f) => [f, showcaseShowsApps(f)]))));
+"""
+        cls.out = run_node(probe, {})
+
+    def test_website_hides_apps(self):
+        self.assertFalse(self.out["website"])
+        self.assertFalse(self.out["logo"])
+
+    def test_app_and_all_show_apps(self):
+        self.assertTrue(self.out["app"])
+        self.assertTrue(self.out["all"])
+
+    def test_client_gates_apps_block(self):
+        src = read(CLIENT)
+        self.assertIn("showApps && site.apps.length > 0", src)
+        prop = "showApps={showcaseShowsApps(filter)}"
+        self.assertEqual(src.count(prop), 2)
+        grid = src[src.index("export function StudioShowcaseGrid("):]
+        kept = grid[grid.index("<WorkItem\n"):]
+        kept = kept[:kept.index("/>")]
+        self.assertIn("key={site.repo}", kept)
+        self.assertIn(prop, kept)
+        leaving = grid[grid.index("<WorkItem key={`out:"):]
+        self.assertIn(prop, leaving[:leaving.index("/>")])
+        row = src[src.index("export function StudioShowcaseRow("):]
+        row = row[:row.index("\nexport function ", 1)]
+        self.assertNotIn(prop, row)
+
+
 if __name__ == "__main__":
     unittest.main()

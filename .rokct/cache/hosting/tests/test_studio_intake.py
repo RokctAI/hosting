@@ -45,7 +45,7 @@ def read(path):
 class TestStudioIntakeForm(unittest.TestCase):
     def test_version_and_changelog(self):
         manifest = json.loads(read(os.path.join(SDK_ROOT, "manifest.json")))
-        self.assertEqual(manifest["version"], "1.20.5")
+        self.assertEqual(manifest["version"], "1.20.6")
         head = read(os.path.join(SDK_ROOT, "CHANGELOG.md")).split("## 1.7.0")[0]
         self.assertIn("## 1.20.0", head)
         self.assertIn("Mobile app", head)
