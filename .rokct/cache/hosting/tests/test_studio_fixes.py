@@ -289,6 +289,8 @@ class TestEveryProductAFilter(unittest.TestCase):
             "a product was added or renamed: map it to a portfolio service",
         )
         wanted = {k for keys in STUDIO_PRODUCTS.values() for k in keys}
+        # 1.20.5: "app" is work shown inside a site's card (its phone app), not a product on the price list.
+        wanted.add("app")
         self.assertEqual(set(self.out["keys"]), wanted)
         self.assertEqual(len(self.out["keys"]), len(wanted))
         self.assertIn('{ key: "starter-kit", label: "Starter kit" },', read(RULES))

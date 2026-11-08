@@ -72,6 +72,23 @@
 // too long, the wrong type) is dropped and the card shows as if it had
 // none; it never skips the card.
 //
+// 1.20.5, the apps (Ray: "Portfolio is missing apps"). A site often has
+// a phone app beside it (Supacharge, Polaris, Sticks, the Juvo Platforms
+// customer, driver and manager apps); the app sits inside its site's card,
+// never as a card of its own. One optional field, backward compatible:
+//
+//   "apps": [{"name":"Supacharge","repo":"RokctAI/supacharge",
+//             "branch":"main","phone":"marketing/tour/store/01-welcome.png",
+//             "store":"https://play.google.com/..."}]
+//
+// Up to SHOWCASE_MAX_APPS. `repo` is the app's shell repo (defaults to the
+// card's), `branch` defaults to "main", `phone` is one phone screen on that
+// branch (resolved like the shots), `store` an optional https store link
+// (left out when the app has no public listing: never made up). A bad app
+// is dropped, never the card. "app" is in a card's services exactly when it
+// has at least one app (like "logo" and its art). /work draws each app's
+// screen and name under the card's line.
+//
 // This file is the rules only - parse, check, order - with no imports, so
 // the server loader (studio-showcase-load.ts), the client row and the tests
 // all run the same code. A file that fails a check is skipped, never
@@ -86,6 +103,7 @@ export const SHOWCASE_LOGO_BACKS: readonly ShowcaseLogoBack[] = ["rokct"];
 /** A service a card can declare (1.14.0), in the order the filter chips show them. */
 export type ShowcaseService =
   | "website"
+  | "app"
   | "logo"
   | "social-posts"
   | "business-plan"
@@ -103,6 +121,7 @@ export type ShowcaseService =
  */
 export const SHOWCASE_SERVICES: readonly { key: ShowcaseService; label: string }[] = [
   { key: "website", label: "Website" },
+  { key: "app", label: "App" },
   { key: "logo", label: "Logo" },
   { key: "social-posts", label: "Social posts" },
   { key: "business-plan", label: "Business plan" },
@@ -126,6 +145,16 @@ export interface ShowcaseAward {
   detail: string | null;
 }
 
+/** One app inside a card (1.20.5 `apps`): its name, one phone screen, an optional store link. */
+export interface ShowcaseApp {
+  name: string;
+  phone: string;
+  store: string | null;
+}
+
+/** The most apps one card carries. */
+export const SHOWCASE_MAX_APPS = 4;
+
 interface ShowcaseCommon {
   /** `<owner>/<repo>`: the key, unique in the list. */
   repo: string;
@@ -141,6 +170,8 @@ interface ShowcaseCommon {
   logo: ShowcaseLogo | null;
   /** 1.17.0: the award the site declares; null when it has none. */
   award: ShowcaseAward | null;
+  /** 1.20.5: the card's apps, in file order; [] when it has none. */
+  apps: ShowcaseApp[];
   /** The site this page is served from (no out-link on its card); set by markOwnSite. */
   own?: boolean;
 }
@@ -284,6 +315,33 @@ export function showcaseAward(v: unknown): ShowcaseAward | null {
   return detail ? { label, detail } : null;
 }
 
+/**
+ * A card's `apps` (1.20.5), resolved against the card's repo. Bad entries
+ * (no name, a bad repo, branch or phone path, a store link given but not
+ * https) are dropped; at most SHOWCASE_MAX_APPS are kept.
+ */
+export function showcaseApps(v: unknown, cardRepo: string): ShowcaseApp[] {
+  if (!Array.isArray(v)) return [];
+  const out: ShowcaseApp[] = [];
+  for (const a of v) {
+    if (out.length >= SHOWCASE_MAX_APPS) break;
+    if (!a || typeof a !== "object" || Array.isArray(a)) continue;
+    const o = a as Record<string, unknown>;
+    const name = text(o.name, 40);
+    const repo = o.repo === undefined ? cardRepo : typeof o.repo === "string" && REPO_RE.test(o.repo) ? o.repo : null;
+    const branch = o.branch === undefined ? "main" : shotBranch(o.branch);
+    const phone = shotPath(o.phone);
+    let store: string | null = null;
+    if (o.store !== undefined && o.store !== null) {
+      store = showcaseUrl(o.store);
+      if (!store) continue;
+    }
+    if (!name || !repo || !branch || !phone) continue;
+    out.push({ name, phone: showcaseShotUrl(repo, branch, phone), store });
+  }
+  return out;
+}
+
 /** The award as one line: "label · detail", or the label alone. */
 export function showcaseAwardText(a: ShowcaseAward): string {
   return a.detail ? `${a.label} · ${a.detail}` : a.label;
@@ -345,9 +403,12 @@ export function parseShowcaseEntry(raw: unknown, fileName?: string): ShowcaseEnt
   const art = logo !== null || logoBack !== null;
   // Art implies the service; a claim with nothing to show is dropped.
   const withLogo = declared.includes("logo") || art;
-  const services = SHOWCASE_SERVICES.map((s) => s.key).filter((k) => (k === "logo" ? withLogo && art : declared.includes(k)));
+  const apps = showcaseApps(o.apps, repo);
+  const services = SHOWCASE_SERVICES.map((s) => s.key).filter((k) =>
+    k === "logo" ? withLogo && art : k === "app" ? apps.length > 0 : declared.includes(k),
+  );
   const award = showcaseAward(o.award);
-  const common = { repo, name, kind, tagline, rank, services, logoBack, logo, award };
+  const common = { repo, name, kind, tagline, rank, services, logoBack, logo, award, apps };
   if (!website) {
     if (!art) return null;
     return { ...common, website: false, url };
@@ -419,7 +480,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
   {
     repo: "RokctAI/hosting",
     name: "ROKCT",
-    kind: "Our own studio",
+    kind: "Our own work",
     tagline: "Our own site, made the way we make yours.",
     url: "https://hosting-beta-one.vercel.app",
     rank: 10,
@@ -428,6 +489,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     logoBack: "rokct",
     logo: null,
     award: null,
+    apps: [],
     services: ["website", "logo"],
     website: true,
   },
@@ -443,6 +505,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     logoBack: null,
     logo: null,
     award: null,
+    apps: [],
     services: ["website"],
     website: true,
   },
@@ -458,6 +521,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     logoBack: null,
     logo: null,
     award: null,
+    apps: [],
     services: ["website"],
     website: true,
   },
@@ -673,11 +737,11 @@ export const STUDIO_SHOWCASE_COPY = {
   page: {
     // 1.14.0: the header's "Portfolio" (STUDIO_NAV) opens this page.
     title: "Portfolio",
-    kicker: "ROKCT studio · Portfolio",
+    kicker: "Cortex · Portfolio",
     heading: "Everything we have made, best first.",
     lede: "Every site is live on the web, shown as it renders on a phone and a desktop. Pick a service to see only that work: a site we also drew the logo for turns over to show it.",
     count: (n: number) => (n === 1 ? "1 project" : `${n} projects`),
-    back: "Back to the studio",
+    back: "Back to Cortex",
     cta: "Want yours here? Message us on WhatsApp",
   },
 };

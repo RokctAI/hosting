@@ -909,8 +909,12 @@ html:has(.st){scroll-behavior:auto}
   border-radius:999px;background:var(--acc-soft);color:var(--acc-text);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc-text) 22%,transparent);
   font:600 11px/1.35 var(--sans);letter-spacing:.1em;text-transform:uppercase}
 .st .wk-award svg{flex:none}
+.st .wk-apps{grid-column:2;display:flex;flex-wrap:wrap;gap:12px;margin:14px 0 0;padding:0;list-style:none}
+.st .wk-apps li{display:flex;flex-direction:column;align-items:center;gap:6px;width:72px}
+.st .wk-apps img{display:block;width:72px;height:auto;aspect-ratio:9/19.5;object-fit:cover;object-position:top;border-radius:12px;box-shadow:0 0 0 1px color-mix(in srgb,currentColor 14%,transparent)}
+.st .wk-apps span,.st .wk-apps a{font:600 11px/1.3 var(--sans);text-align:center;color:inherit}
 @media (min-width:900px){
-.st .wk-item.wk-lead .wk-award{grid-column:auto}
+.st .wk-item.wk-lead .wk-award,.st .wk-item.wk-lead .wk-apps{grid-column:auto}
 }
 .st .wk-shots{position:relative;border-radius:16px;background:var(--bg-2);padding:clamp(18px,3.2vw,44px) 22% clamp(18px,3.2vw,44px) clamp(18px,3.2vw,44px);overflow:hidden;isolation:isolate}
 .st .wk-desk{position:relative;background:var(--frame);border-radius:10px;padding:26px 4px 4px;box-shadow:var(--shadow);transition:transform .4s cubic-bezier(.22,.8,.24,1)}

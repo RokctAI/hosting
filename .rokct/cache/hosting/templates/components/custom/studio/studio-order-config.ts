@@ -125,7 +125,7 @@ export function studioMailConfig(env?: StudioEnv, siteHost?: string | null): Stu
   const user = clean(e.SMTP_USER);
   const pass = e.SMTP_PASS ?? "";
   const fromRaw = clean(e.STUDIO_MAIL_FROM).replace(/[\r\n]+/g, " ");
-  const from = fromRaw || `ROKCT Studio <${ordersEmail}>`;
+  const from = fromRaw || `Cortex <${ordersEmail}>`;
   const missing: string[] = [];
   if (!user) missing.push("SMTP_USER");
   if (!pass) missing.push("SMTP_PASS");

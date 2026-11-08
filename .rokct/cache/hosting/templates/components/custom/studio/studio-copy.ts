@@ -314,7 +314,7 @@ export const STUDIO_MARK_COPY = {
 };
 
 export const STUDIO_MARKS_ROKCT: StudioMarkSet = {
-  ask: "One mark that still reads as a WhatsApp profile picture, and looks like a studio worth paying.",
+  ask: "One mark that still reads as a WhatsApp profile picture, and looks like a business worth paying.",
   options: [
     { key: "a", name: "Wordmark", note: "ROKCT in tight heavy capitals, the O drawn as an orbit with the dot as its satellite." },
     { key: "b", name: "Nose cone", note: "The tip of a rocket and nothing else, with a round porthole for the dot." },
@@ -366,17 +366,17 @@ export const STUDIO_CASES: StudioCase[] = [
   {
     site: "studio",
     tab: "ROKCT",
-    sector: "Our own studio",
+    sector: "Our own work",
     desk: {
       src: STUDIO_IMAGES.studioDesk,
-      alt: "The ROKCT studio home page on a desktop: 'Your brand, taken seriously.' in tall condensed capitals, with the WhatsApp button and the prices link",
-      url: "rokct · studio home",
+      alt: "The Cortex home page on a desktop: 'Your brand, taken seriously.' in tall condensed capitals, with the WhatsApp button and the prices link",
+      url: "cortex · home",
       caption: "ROKCT · Home",
     },
-    phone: { src: STUDIO_IMAGES.studioPhone, alt: "The ROKCT studio home page on a phone" },
-    kicker: "ROKCT · Our own studio",
+    phone: { src: STUDIO_IMAGES.studioPhone, alt: "The Cortex home page on a phone" },
+    kicker: "Cortex · Our own work",
     title: "Our own site, made the way we make yours.",
-    body: "The studio's home page: the prices on the page in rand with the dollar beside it, the website deal, how a job runs phase by phase, and a WhatsApp button wherever a question comes up. Its three first-screen options are under How we design; turn the card for its logo.",
+    body: "Our own home page: the prices on the page in rand with the dollar beside it, the website deal, how a job runs phase by phase, and a WhatsApp button wherever a question comes up. Its three first-screen options are under How we design; turn the card for its logo.",
     made: "Public website, price table, phone and desktop layouts, light and dark themes",
     look: "Tall condensed capitals, a text serif, one oxblood accent on warm paper",
     logo: [],
@@ -661,13 +661,13 @@ export const STUDIO_DESIGN_CASES: StudioDesignCase[] = [
   },
   {
     id: "studio",
-    tab: "ROKCT",
-    sector: "Our own studio",
+    tab: "Cortex",
+    sector: "Our own work",
     brief: {
-      client: "ROKCT, our own design and hosting studio",
+      client: "Cortex, our own design and hosting business",
       sells: "Websites, logos, business plans, pitch decks, print and social posts.",
       to: "Small business owners in South Africa, most of whom reach us on WhatsApp.",
-      ask: "Look like a studio worth paying, and put the prices on the page.",
+      ask: "Look like a business worth paying, and put the prices on the page.",
     },
     options: [
       { key: "a", name: "Offer first", alt: "Option A for ROKCT: 'Your brand, taken seriously.' in heavy black type with a yellow highlight, beside the website deal card" },
@@ -1035,7 +1035,7 @@ export const STUDIO_CONTACT = {
 
 export const STUDIO_FOOTER = {
   about:
-    "A design and hosting studio for small businesses: websites, logos and brands, business plans, pitch decks, print and social posts, made by our team and approved by you at every phase.",
+    "Cortex, design and hosting for small businesses: websites, logos and brands, business plans, pitch decks, print and social posts, made by our team and approved by you at every phase.",
   motto: "Your brand, taken seriously.",
   // The copyright and credit come from base_sdk's SiteCredit (1.5.1, Ray,
   // 2026-10-31: "all site will be copyright sitename then built with love
