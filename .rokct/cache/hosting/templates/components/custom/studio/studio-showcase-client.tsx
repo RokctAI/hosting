@@ -1265,6 +1265,23 @@ function WorkItem({
             <span>{showcaseAwardText(site.award)}</span>
           </p>
         )}
+        {site.apps.length > 0 && (
+          <ul className="wk-apps" aria-label={`${site.name}: apps`} data-apps="">
+            {site.apps.map((a) => (
+              <li key={a.phone}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- the app's own screen, served as-is from its repo */}
+                <img src={a.phone} alt={`${a.name} app screen`} width={90} height={195} loading="lazy" decoding="async" />
+                {a.store ? (
+                  <a href={a.store} target="_blank" rel="noopener noreferrer">
+                    {a.name}
+                  </a>
+                ) : (
+                  <span>{a.name}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
         <ul className="wk-svc" aria-label={`${site.name}: what we made`}>
           {labels.map((l) => (
             <li key={l}>{l}</li>

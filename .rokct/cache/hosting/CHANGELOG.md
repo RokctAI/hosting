@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.20.5
+
+* Apps on the portfolio (Ray, 2026-11-07: "Portfolio is missing apps").
+  A showcase card may carry `apps`: up to four `{name, repo?, branch?,
+  phone, store?}`, each one phone screen from the app's shell repo (branch
+  defaults to main) and an optional https store link, never made up. The
+  app sits inside its site's card, not as a card of its own; /work draws
+  each app's screen and name under the card's line, and a new "App" filter
+  chip shows the cards that have one ("app" is in a card's services exactly
+  when it has an app). Bad app entries are dropped, never the card.
+
+## 1.20.4
+
+* Brand rename (Ray, 2026-11-02): "ROKCT Studio" becomes plain "Cortex"
+  wherever a customer reads it, and the word "studio" leaves customer copy
+  (people took it for a photo studio). Page titles ("Cortex", "Order ·
+  Cortex", "Our work · Cortex"), meta descriptions, the footer about line,
+  the portfolio's own card ("Our own work", tab "Cortex"), the order email
+  subject line and default From name ("Cortex <...>"). Code identifiers,
+  file names, routes (/api/studio/...) and env vars are unchanged; the
+  "Built with ♥ by ROKCT" credit stays.
+
 ## 1.20.3
 
 * Domain rules (Ray, 2026-11-06). Only .co.za or .com: .net and .org are

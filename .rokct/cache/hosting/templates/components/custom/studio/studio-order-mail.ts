@@ -153,7 +153,7 @@ export function buildStudioOrderMails(
   // ---- The order, to the studio --------------------------------------------
   const orderSubject = `New order ${ref}: ${service} for ${biz}`;
   const orderText = [
-    `New studio order ${ref}`,
+    `New Cortex order ${ref}`,
     "",
     ...rows.map(([k, v]) => `${k}:\n  ${v.replace(/\n/g, "\n  ")}`),
     "",

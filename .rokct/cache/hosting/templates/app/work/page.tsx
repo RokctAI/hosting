@@ -28,8 +28,8 @@ import { loadShowcase } from "@/components/custom/studio/studio-showcase-load";
 import { StudioWork } from "@/components/custom/studio/studio-work";
 
 export const metadata: Metadata = {
-  title: { absolute: `${STUDIO_SHOWCASE_COPY.page.title} · ROKCT Studio` },
-  description: "The ROKCT studio portfolio: every site and logo we have made, best first, filtered by service. Each site live on the web, shown on a phone and a desktop.",
+  title: { absolute: `${STUDIO_SHOWCASE_COPY.page.title} · Cortex` },
+  description: "The Cortex portfolio: every site and logo we have made, best first, filtered by service. Each site live on the web, shown on a phone and a desktop.",
 };
 
 export default function Page() {

@@ -28,8 +28,8 @@ import { studioOrdersEmail, studioRequestHost } from "@/components/custom/studio
 import { StudioOrder } from "@/components/custom/studio/studio-order-page";
 
 export const metadata: Metadata = {
-  title: { absolute: "Order · ROKCT Studio" },
-  description: "Order from the ROKCT studio, with forever hosting: five short steps, your logo and photos. We send your brief back to confirm, and your first render within 24 hours of it.",
+  title: { absolute: "Order · Cortex" },
+  description: "Order from Cortex, with forever hosting: five short steps, your logo and photos. We send your brief back to confirm, and your first render within 24 hours of it.",
 };
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
