@@ -667,6 +667,15 @@ export function showcaseFace(e: ShowcaseEntry, f: ShowcaseFilter): ShowcaseFace 
   return f === "logo" && showcaseHasLogo(e) ? "logo" : "site";
 }
 
+/**
+ * 1.20.6: whether a card's apps block shows under a filter (Ray: "Selected
+ * website filter but I still see apps"). "website" shows the site alone and
+ * "logo" the logo; "all", "app" and the other services keep the apps.
+ */
+export function showcaseShowsApps(f: ShowcaseFilter): boolean {
+  return f !== "website" && f !== "logo";
+}
+
 /** The cards a filter shows, in list order. */
 export function showcaseFiltered<T extends ShowcaseEntry>(entries: T[], f: ShowcaseFilter): T[] {
   return entries.filter((e) => showcaseInFilter(e, f));

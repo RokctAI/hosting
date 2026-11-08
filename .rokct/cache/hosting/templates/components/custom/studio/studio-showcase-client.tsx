@@ -94,6 +94,7 @@ import {
   showcaseFiltered,
   showcaseFilters,
   showcaseHasLogo,
+  showcaseShowsApps,
   showcaseHost,
   showcaseIsHost,
   showcaseMoreCount,
@@ -1208,6 +1209,7 @@ function WorkItem({
   onFlip,
   onError,
   leaving,
+  showApps = true,
 }: {
   site: ShowcaseEntry;
   n: number;
@@ -1217,6 +1219,8 @@ function WorkItem({
   onFlip?: (next: boolean) => void;
   onError: (repo: string) => void;
   leaving?: Box;
+  /** 1.20.6: false hides the apps block (the Website and Logo filters). */
+  showApps?: boolean;
 }) {
   const err = () => onError(site.repo);
   const flips = site.website && showcaseHasLogo(site);
@@ -1265,7 +1269,7 @@ function WorkItem({
             <span>{showcaseAwardText(site.award)}</span>
           </p>
         )}
-        {site.apps.length > 0 && (
+        {showApps && site.apps.length > 0 && (
           <ul className="wk-apps" aria-label={`${site.name}: apps`} data-apps="">
             {site.apps.map((a) => (
               <li key={a.phone}>
@@ -1452,10 +1456,11 @@ export function StudioShowcaseGrid({
             backs={backs}
             onFlip={(next) => setManual((m) => ({ ...m, [site.repo]: next !== (showcaseFace(site, filter) === "logo") }))}
             onError={fail}
+            showApps={showcaseShowsApps(filter)}
           />
         ))}
         {leaving.map((l) => (
-          <WorkItem key={`out:${l.site.repo}`} site={l.site} n={l.n} lead={l.lead} flipped={l.flipped} backs={backs} onError={fail} leaving={l.box} />
+          <WorkItem key={`out:${l.site.repo}`} site={l.site} n={l.n} lead={l.lead} flipped={l.flipped} backs={backs} onError={fail} leaving={l.box} showApps={showcaseShowsApps(filter)} />
         ))}
       </ol>
     </>

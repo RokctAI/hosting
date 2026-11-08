@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.20.6
+
+* Portfolio filter fix (Ray, 2026-11-08: "Selected website filter but I
+  still see apps"). Under the Website filter a card shows its site alone:
+  the apps block is hidden (`showcaseShowsApps`), as it is under Logo. All,
+  App and the other services still show a card's apps.
+
 ## 1.20.5
 
 * Apps on the portfolio (Ray, 2026-11-07: "Portfolio is missing apps").
