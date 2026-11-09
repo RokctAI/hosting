@@ -4,7 +4,13 @@
  * (`PLATFORM_NAME`, `VOUCHER_OFFSET_Y`) and re-exported wholesale by
  * `app/config/platform.ts`, the way RokctAI/rokctai_frontend's copy is.
  *
- * Deliberately NEUTRAL. `PLATFORM_NAME` is the PLATFORM's wordmark, the
+ * 2026-11-09 (Ray): this site's own name is "CORTEX" (capitals, Ray: "CORTEX NOT Cortex") everywhere, auth
+ * pages included (auth_sdk's login heading prints "Welcome to
+ * {PLATFORM_NAME}" and reads only this constant; hosting_sdk >= 1.20.7
+ * names the site CORTEX in its header, footer and metadata), so
+ * PLATFORM_NAME is "CORTEX". The history below is why it was "Rokct".
+ *
+ * Deliberately NEUTRAL (until 2026-11-09). `PLATFORM_NAME` is the PLATFORM's wordmark, the
  * same value rokctai_frontend's copy of this file carries: Ray,
  * 2026-09-09, hosting is "a seperate frontend for rokctapp, but it points
  * to control site", so the header and hero wordmark base_sdk renders
@@ -20,7 +26,7 @@
  * prints the plain wordmark), so they are here only so SDK code that
  * imports them by name resolves.
  */
-export const PLATFORM_NAME = "Rokct";
+export const PLATFORM_NAME = "CORTEX";
 export const LEGAL_COMPANY_NAME = "ROKCT INTELLIGENCE (PTY) LTD";
 
 /**
