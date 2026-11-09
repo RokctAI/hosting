@@ -371,6 +371,10 @@ html.dark:has(.st)::-webkit-scrollbar-thumb{background:#F2818F;border-color:#131
 .st .ik-note{margin:0 24px;font:italic 400 16px/1.45 var(--serif);color:var(--ink);border-left:2px solid var(--acc-text);padding:0 0 0 14px;max-height:0;opacity:0;overflow:hidden;transition:max-height .3s,opacity .3s,margin .3s}
 .st .ik-note.on{max-height:12em;opacity:1;margin:0 24px 18px}
 .st .ik-go{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding:18px 24px 22px;border-top:1px solid var(--rule)}
+.st .ik-who{display:grid;gap:12px;padding:0 24px 18px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.st .ik-who label{display:grid;gap:6px;font:600 13px/1.3 var(--sans,inherit)}
+.st .ik-who input{font:inherit;font-weight:400;padding:10px 12px;border:1px solid var(--rule);background:transparent;color:inherit;min-width:0}
+.st .ik-err{margin:0 24px 14px;color:var(--acc-text)}
 .st .ik-go .fine{flex:1 1 16em}
 .st .ik-done{padding:22px 24px 24px;border-top:1px solid var(--rule);background:var(--bg-2);display:grid;gap:10px}
 .st .ik-dt{margin:0;font:700 clamp(26px,2.4vw,34px)/.95 var(--disp);text-transform:uppercase}
@@ -1078,3 +1082,26 @@ html:has(.st){scroll-behavior:auto}
 
 .st .op-card-inc{cursor:default;border-style:dashed}
 .st .op-card-inc .op-tick{color:var(--acc-text);flex:none}
+
+/* 1.20.7: the brand colours shade picker (studio-colour-picker.tsx). The
+   five shades sit right-to-left across the field, lightest at the right. */
+.st .sp{display:grid;gap:10px}
+.st .sp-label{font:inherit;font-weight:600}
+.st .sp-row{display:flex;align-items:center;gap:8px;min-width:0}
+.st .sp-field{display:grid;gap:8px;flex:1;min-width:0}
+.st .sp-field input{width:100%;min-width:0}
+.st .sp-shades{display:flex;flex-direction:row-reverse;gap:6px}
+.st .sp-sw{flex:1 1 0;min-width:0;height:44px;border:1px solid var(--rule);border-radius:6px;cursor:pointer;padding:0}
+.st .sp-sw.on,.st .sp-sw:focus-visible,.st .sp-chip:focus-visible,.st .sp-x:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.st .sp-chip{flex:1;min-width:0;height:44px;border:1px solid var(--rule);border-radius:22px;cursor:pointer;text-align:left;padding:0 16px}
+.st .sp-chip span{background:var(--paper,#fff);color:var(--ink);padding:2px 8px;border-radius:10px;font:600 13px/1.3 ui-monospace,monospace}
+.st .sp-x{width:44px;height:44px;border:1px solid var(--rule);border-radius:50%;background:transparent;color:inherit;cursor:pointer;font-size:20px}
+
+/* 1.20.7: the payment step after an order is sent. */
+.st .pay{margin-top:28px;display:grid;gap:12px;text-align:left}
+.st .pay-g{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.st .pay-opt{border:1px solid var(--rule);padding:16px;display:grid;gap:10px;align-content:start;min-width:0}
+.st .pay-dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0}
+.st .pay-dl dt{color:var(--muted,inherit);font-size:13px}
+.st .pay-dl dd{margin:0;overflow-wrap:anywhere}
+.st .pay-ref{display:flex;flex-wrap:wrap;align-items:center;gap:8px}

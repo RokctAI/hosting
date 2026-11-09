@@ -21,7 +21,7 @@
 export const STUDIO_WHATSAPP_DISPLAY = "+27 15 000 6069";
 export const STUDIO_WHATSAPP_NUMBER = "27150006069";
 const WA = `https://wa.me/${STUDIO_WHATSAPP_NUMBER}?text=`;
-export const studioWhatsApp = (text = "Hi ROKCT") => WA + encodeURIComponent(text);
+export const studioWhatsApp = (text = "Hi CORTEX") => WA + encodeURIComponent(text);
 export const STUDIO_WHATSAPP_URL = studioWhatsApp();
 
 // ---- Currency -----------------------------------------------------------
@@ -38,10 +38,32 @@ function dollars(usd: number): string {
   return "$" + usd.toLocaleString("en-US");
 }
 
+// 1.20.7: prices are set and charged in RAND. A row still written in
+// dollars is turned into rand once at the fixed rate (that rand figure is
+// the price); the dollar figure shown beside it is that rand amount at the
+// live rate (studio-rates.ts, fetched on the server), in whole dollars.
+export const STUDIO_USD_PER_ZAR_FIXED = 1 / STUDIO_ZAR_PER_USD;
+
+/** The default currency for an IP country code: rand in South Africa or when unknown, else dollars. */
+export function studioCurrencyForCountry(country: string | null | undefined): StudioCurrency {
+  const c = (country || "").trim().toUpperCase();
+  return c === "" || c === "ZA" ? "ZAR" : "USD";
+}
+
+/** A rand amount in whole units of `cur`, at `usdPerZar` dollars to the rand. */
+export function studioConvert(zarAmount: number, cur: StudioCurrency, usdPerZar: number = STUDIO_USD_PER_ZAR_FIXED): number {
+  if (cur === "ZAR") return Math.round(zarAmount);
+  const rate = Number.isFinite(usdPerZar) && usdPerZar > 0 ? usdPerZar : STUDIO_USD_PER_ZAR_FIXED;
+  return Math.round(zarAmount * rate);
+}
+
 /** `main` is the figure in the chosen currency, `alt` the other one beside it. */
-export function studioPrice(usd: number, fmt: StudioPriceFormat, cur: StudioCurrency): string {
-  const main = cur === "ZAR" ? zar(usd) : dollars(usd);
-  const alt = cur === "ZAR" ? dollars(usd) : zar(usd);
+export function studioPrice(usd: number, fmt: StudioPriceFormat, cur: StudioCurrency, usdPerZar: number = STUDIO_USD_PER_ZAR_FIXED): string {
+  const rand = Math.round(usd * STUDIO_ZAR_PER_USD);
+  const z = zar(usd);
+  const d = dollars(studioConvert(rand, "USD", usdPerZar));
+  const main = cur === "ZAR" ? z : d;
+  const alt = cur === "ZAR" ? d : z;
   if (fmt === "main") return main;
   if (fmt === "from") return "from " + main;
   if (fmt === "about") return "about " + alt;
@@ -49,33 +71,33 @@ export function studioPrice(usd: number, fmt: StudioPriceFormat, cur: StudioCurr
 }
 
 // The website and brand bundle is Ray's advert deal, set in RAND (Ray,
-// 30 Oct, website-service/offer-and-intake.md): R8,500 is the normal price,
+// 30 Oct, website-service/offer-and-intake.md): R10,500 is the normal price (R8,500 until Ray, 2026-11-09),
 // shown struck through, and R2,500 is the offer, with free lifetime hosting
 // for the first 1,000. Outside South Africa the dollar equivalent shows
 // ("dollar is fine for outsiders"): each figure converted once at the same
 // fixed rate and rounded to whole dollars, the saving taken as normal minus
 // offer in the shown currency so the three numbers always add up.
-export const STUDIO_DEAL_ZAR = { normal: 8500, offer: 2500 } as const;
+export const STUDIO_DEAL_ZAR = { normal: 10500, offer: 2500 } as const;
 export type StudioDealKey = "normal" | "offer" | "save";
 
 function groupZar(n: number): string {
   return "R" + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
 }
 
-export function studioDeal(key: StudioDealKey, cur: StudioCurrency): string {
+export function studioDeal(key: StudioDealKey, cur: StudioCurrency, usdPerZar: number = STUDIO_USD_PER_ZAR_FIXED): string {
   if (cur === "ZAR") {
     const n = key === "normal" ? STUDIO_DEAL_ZAR.normal : key === "offer" ? STUDIO_DEAL_ZAR.offer : STUDIO_DEAL_ZAR.normal - STUDIO_DEAL_ZAR.offer;
     return groupZar(n);
   }
-  const normal = Math.round(STUDIO_DEAL_ZAR.normal / STUDIO_ZAR_PER_USD);
-  const offer = Math.round(STUDIO_DEAL_ZAR.offer / STUDIO_ZAR_PER_USD);
+  const normal = studioConvert(STUDIO_DEAL_ZAR.normal, "USD", usdPerZar);
+  const offer = studioConvert(STUDIO_DEAL_ZAR.offer, "USD", usdPerZar);
   const n = key === "normal" ? normal : key === "offer" ? offer : normal - offer;
   return dollars(n);
 }
 
 export const STUDIO_CURRENCY_NOTE: Record<StudioCurrency, string> = {
-  ZAR: "Showing rand. The dollar figure is beside each price.",
-  USD: "Showing US dollars. The rand figure is beside each price.",
+  ZAR: "Showing rand. The approximate dollar figure is beside each price.",
+  USD: "Showing approximate US dollars at today's rate. You pay the rand figure beside each price.",
 };
 
 // ---- Page copy ----------------------------------------------------------
@@ -91,7 +113,9 @@ export const STUDIO_NAV = [
 ] as const;
 
 export const STUDIO_HERO = {
-  kicker: ["Design and hosting", "For small businesses", "Rand prices"],
+  kicker: ["Design and hosting", "For small businesses"],
+  /** The kicker's last item, in the visitor's currency (1.20.7). */
+  prices: { ZAR: "Rand prices", USD: "Dollar prices" } as Record<StudioCurrency, string>,
   title: ["Your brand,", "taken seriously."],
   lede: "Websites, logos, business plans, pitch decks, print and social posts for small businesses. One price agreed before we start, a render for you to approve after every phase, and our team a WhatsApp message away.",
   primary: "Message us on WhatsApp",
@@ -142,14 +166,14 @@ export const STUDIO_SERVICES: StudioService[] = [
   {
     name: "Website and brand",
     flag: "Free lifetime hosting · first 1,000",
-    body: "A finished business website and the logo and brand to go with it. Four pages, every word written for you from your answers, a WhatsApp button on every page, laid out for phones, tablets and computers.",
+    body: "A finished business website and the brand to go with it: colours and type. Four pages, every word written for you from your answers, a WhatsApp button on every page, laid out for phones, tablets and computers.",
     includes: [
-      "Logo, colours and type",
+      "Colours and type (a logo is an add-on)",
       "Home, about, services, contact",
       "Copy written from your answers",
       "Hosting free for life, for the first 1,000",
     ],
-    ask: { label: "Ask about a website", text: "Hi ROKCT, I'm asking about a website and brand" },
+    ask: { label: "Ask about a website", text: "Hi CORTEX, I'm asking about a website and brand" },
     price: { kind: "deal", unit: "once-off" },
   },
   {
@@ -160,14 +184,14 @@ export const STUDIO_SERVICES: StudioService[] = [
       { t: "Standard", usd: 250, d: "Full plan, financial tables, funding-ready layout." },
       { t: "Premium", usd: 500, d: "Full plan, a pitch deck and one round of revisions." },
     ],
-    ask: { label: "Ask about a plan", text: "Hi ROKCT, I'm asking about a business plan" },
+    ask: { label: "Ask about a plan", text: "Hi CORTEX, I'm asking about a business plan" },
     price: { kind: "from", usd: 100, unit: "three tiers" },
   },
   {
     name: "Business starter kit",
     body: "Everything a new business needs on day one, built from the same colour and logo answers as the website bundle.",
     includes: ["Logo and letterhead", "Quote template", "Invoice template", "Priced per kit on WhatsApp"],
-    ask: { label: "Ask about the kit", text: "Hi ROKCT, I'm asking about the starter kit" },
+    ask: { label: "Ask about the kit", text: "Hi CORTEX, I'm asking about the starter kit" },
     price: { kind: "quoted", unit: "per kit" },
   },
   {
@@ -179,7 +203,7 @@ export const STUDIO_SERVICES: StudioService[] = [
       "Delivered as slides and PDF",
       "Priced per deck on WhatsApp",
     ],
-    ask: { label: "Ask about a deck", text: "Hi ROKCT, I'm asking about a pitch deck" },
+    ask: { label: "Ask about a deck", text: "Hi CORTEX, I'm asking about a pitch deck" },
     price: { kind: "quoted", unit: "per deck" },
   },
   {
@@ -191,7 +215,7 @@ export const STUDIO_SERVICES: StudioService[] = [
       "Sizes to the printer's spec",
       "Priced per job on WhatsApp",
     ],
-    ask: { label: "Ask about print", text: "Hi ROKCT, I'm asking about design and print" },
+    ask: { label: "Ask about print", text: "Hi CORTEX, I'm asking about design and print" },
     price: { kind: "quoted", unit: "per job" },
   },
   {
@@ -203,7 +227,7 @@ export const STUDIO_SERVICES: StudioService[] = [
       "A posting calendar",
       "Priced per pack on WhatsApp",
     ],
-    ask: { label: "Ask about a pack", text: "Hi ROKCT, I'm asking about a social post pack" },
+    ask: { label: "Ask about a pack", text: "Hi CORTEX, I'm asking about a social post pack" },
     price: { kind: "quoted", unit: "per pack" },
   },
 ];
@@ -365,16 +389,16 @@ export const STUDIO_WORK_HEAD = {
 export const STUDIO_CASES: StudioCase[] = [
   {
     site: "studio",
-    tab: "ROKCT",
+    tab: "CORTEX",
     sector: "Our own work",
     desk: {
       src: STUDIO_IMAGES.studioDesk,
-      alt: "The Cortex home page on a desktop: 'Your brand, taken seriously.' in tall condensed capitals, with the WhatsApp button and the prices link",
-      url: "cortex · home",
-      caption: "ROKCT · Home",
+      alt: "The CORTEX home page on a desktop: 'Your brand, taken seriously.' in tall condensed capitals, with the WhatsApp button and the prices link",
+      url: "CORTEX · home",
+      caption: "CORTEX · Home",
     },
-    phone: { src: STUDIO_IMAGES.studioPhone, alt: "The Cortex home page on a phone" },
-    kicker: "Cortex · Our own work",
+    phone: { src: STUDIO_IMAGES.studioPhone, alt: "The CORTEX home page on a phone" },
+    kicker: "CORTEX · Our own work",
     title: "Our own site, made the way we make yours.",
     body: "Our own home page: the prices on the page in rand with the dollar beside it, the website deal, how a job runs phase by phase, and a WhatsApp button wherever a question comes up. Its three first-screen options are under How we design; turn the card for its logo.",
     made: "Public website, price table, phone and desktop layouts, light and dark themes",
@@ -661,18 +685,18 @@ export const STUDIO_DESIGN_CASES: StudioDesignCase[] = [
   },
   {
     id: "studio",
-    tab: "Cortex",
+    tab: "CORTEX",
     sector: "Our own work",
     brief: {
-      client: "Cortex, our own design and hosting business",
+      client: "CORTEX, our own design and hosting business",
       sells: "Websites, logos, business plans, pitch decks, print and social posts.",
       to: "Small business owners in South Africa, most of whom reach us on WhatsApp.",
       ask: "Look like a business worth paying, and put the prices on the page.",
     },
     options: [
-      { key: "a", name: "Offer first", alt: "Option A for ROKCT: 'Your brand, taken seriously.' in heavy black type with a yellow highlight, beside the website deal card" },
-      { key: "b", name: "Editorial", alt: "Option B for ROKCT: 'Your brand, taken seriously.' in a heavy grotesk on cream, with a serif lede" },
-      { key: "c", name: "Proof sheet", alt: "Option C for ROKCT: 'Your brand, taken seriously.' in tall condensed capitals, with an oxblood button" },
+      { key: "a", name: "Offer first", alt: "Option A for CORTEX: 'Your brand, taken seriously.' in heavy black type with a yellow highlight, beside the website deal card" },
+      { key: "b", name: "Editorial", alt: "Option B for CORTEX: 'Your brand, taken seriously.' in a heavy grotesk on cream, with a serif lede" },
+      { key: "c", name: "Proof sheet", alt: "Option C for CORTEX: 'Your brand, taken seriously.' in tall condensed capitals, with an oxblood button" },
     ],
     chosen: "c",
     why: "The tall type carries the confidence the brief asked for, and the price table sits on the page in rand, with the dollar beside it.",
@@ -681,9 +705,9 @@ export const STUDIO_DESIGN_CASES: StudioDesignCase[] = [
 
 export const STUDIO_PRICES_HEAD = {
   kicker: "Prices",
-  title: "Set in dollars. Shown in your money.",
+  title: "Set in rand. Shown in your money.",
   aside:
-    "Prices are set in US dollars and shown in rand for South Africa at a fixed R18.50 to the dollar, so the figure you see here is the figure you pay. The website deal is set in rand.",
+    "Prices are set and paid in rand. The dollar figure is a guide at today's exchange rate, updated twice a day and rounded to whole dollars; the rand figure is what you pay.",
   foot: "A quoted service is priced on WhatsApp before any work starts, and the price does not move once agreed. Every job is paid in full before work begins; the refund rule is below.",
 };
 
@@ -699,7 +723,7 @@ export const STUDIO_PRICE_ROWS: StudioPriceRow[] = [
   {
     name: "Website and brand bundle",
     tag: "Free lifetime hosting · first 1,000 owners",
-    what: "Logo and brand, four-page website, copy written for you, hosted for life.",
+    what: "Brand colours and type, four-page website, copy written for you, hosted for life. Logo design is an add-on.",
     price: { kind: "deal", unit: "once-off" },
     lead: true,
   },
@@ -741,11 +765,15 @@ export interface StudioAddon {
   label: string;
   what: string;
   usd: number;
-  /** Already part of the website and brand bundle, so free with it. */
-  inBundle?: boolean;
+  /** 1.20.7: a price set in rand, which wins over `usd`. */
+  zar?: number;
+  /** 1.20.7: the normal rand price, shown struck through beside `zar`. */
+  wasZar?: number;
 }
 export const STUDIO_ADDONS: readonly StudioAddon[] = [
-  { name: "designLogo", label: "Logo design", what: "A logo drawn for your business, with colour and mono versions.", usd: 60, inBundle: true },
+  // 1.20.7 (Ray): the logo is NOT part of the special. It is an add-on at a
+  // discounted R350, normally R650 (shown struck through), on any package.
+  { name: "designLogo", label: "Logo design", what: "A logo drawn for your business, with colour and mono versions. Not part of the special.", usd: 0, zar: 350, wasZar: 650 },
   { name: "extraPages", label: "Two extra pages", what: "Beyond the four: a menu, price list, gallery or FAQ.", usd: 50 },
   { name: "stockPhotos", label: "Stock photo set", what: "Licensed photos chosen for your trade, if you have none.", usd: 20 },
 ];
@@ -759,7 +787,8 @@ export function studioRowZar(row: StudioPriceRow | undefined): number | null {
 }
 /** An add-on's price in whole rand with this package (0 when the bundle includes it). */
 export function studioAddonZar(a: StudioAddon, row: StudioPriceRow | undefined): number {
-  return a.inBundle && row?.price.kind === "deal" ? 0 : Math.round(a.usd * STUDIO_ZAR_PER_USD);
+  void row;
+  return a.zar ?? Math.round(a.usd * STUDIO_ZAR_PER_USD);
 }
 /** The order total in whole rand, or null when the package is quoted. */
 export function studioOrderZar(service: string, addons: readonly string[]): number | null {
@@ -768,9 +797,9 @@ export function studioOrderZar(service: string, addons: readonly string[]): numb
   if (base === null) return null;
   return STUDIO_ADDONS.filter((a) => addons.includes(a.name)).reduce((n, a) => n + studioAddonZar(a, row), base);
 }
-/** A rand amount in the chosen currency (dollars at the same fixed rate). */
-export function studioMoney(zarAmount: number, cur: StudioCurrency): string {
-  return cur === "ZAR" ? groupZar(zarAmount) : dollars(Math.round(zarAmount / STUDIO_ZAR_PER_USD));
+/** A rand amount in the chosen currency (dollars at the live rate, whole dollars). */
+export function studioMoney(zarAmount: number, cur: StudioCurrency, usdPerZar: number = STUDIO_USD_PER_ZAR_FIXED): string {
+  return cur === "ZAR" ? groupZar(zarAmount) : dollars(studioConvert(zarAmount, "USD", usdPerZar));
 }
 
 // ---- What you get with ROKCT hosting (1.13.0) ---------------------------
@@ -811,7 +840,7 @@ export interface StudioHostingGroup {
 
 export const STUDIO_HOSTING_HEAD = {
   kicker: "Hosting",
-  title: "What you get with ROKCT hosting.",
+  title: "What you get with CORTEX hosting.",
   aside: "For as long as your site is with us. Our team looks after it, week in, week out, and you hear from us when it matters.",
   foot: "Lines marked “From November 2026” start this month. Everything else is how every site we host is looked after today.",
 };
@@ -966,7 +995,7 @@ export const STUDIO_INTAKE_FORM = {
   special: {
     kicker: "The special",
     name: "Website and brand bundle",
-    covers: "Logo and brand, a four-page website, copy written for you, and free lifetime hosting for the first 1,000 owners.",
+    covers: "Brand colours and type, a four-page website, copy written for you, and free lifetime hosting for the first 1,000 owners. A logo is not included: add it below at a discount.",
   },
   addons: {
     legend: "Add to your brief",
@@ -993,13 +1022,26 @@ export const STUDIO_INTAKE_FORM = {
     one: "This isn't part of the special, but we'll pass it to our team so it can be included. They'll quote it for you separately.",
     both: "These aren't part of the special, but we'll pass them to our team so they can be included. They'll quote them for you separately.",
   },
-  submit: "Send my brief on WhatsApp",
-  submitNote: "Opens WhatsApp with your choices filled in. Nothing is sent until you press send there.",
+  // 1.20.7 (Ray): the logo is not in the special; it is a discounted add-on.
+  logo: {
+    name: "Add a logo",
+    benefit: "A logo drawn for your business, with colour and mono versions. Not part of the special.",
+    line: "Logo design add-on",
+  },
+  // 1.20.7 (Ray): the brief goes by email (/api/studio/brief), never WhatsApp.
+  contact: { name: "Your name", email: "Your email", phone: "Phone (optional)" },
+  submit: "Send my brief",
+  sending: "Sending…",
+  submitNote: "Sent to our team by email. You get a copy, and we reply with the ten questions in office hours.",
+  errors: {
+    contact: "Add your name and a working email address so we can reply.",
+    notConfigured: "Our brief email isn't set up on this site yet, so nothing was sent. Please try again later.",
+    failed: "We couldn't send your brief just now. Nothing was lost on your side: try again in a minute.",
+  },
   done: {
     kicker: "Your brief",
-    title: "Over to WhatsApp.",
-    text: "Press send in WhatsApp and our team will reply with the ten questions in office hours.",
-    again: "Open WhatsApp again",
+    title: "Sent. Thank you.",
+    text: "Our team has your brief by email and will reply with the ten questions in office hours.",
   },
 };
 
@@ -1014,19 +1056,27 @@ export function studioIntakeNote(addons: StudioAddonId[]): string {
   return addons.length > 1 ? STUDIO_INTAKE_FORM.note.both : STUDIO_INTAKE_FORM.note.one;
 }
 
-/** The WhatsApp message the form sends: the special, then each add-on, marked outside it. */
-export function studioIntakeMessage(addons: StudioAddonId[]): string {
+/** The brief the form emails: the special, the logo add-on if ticked, then each quoted add-on. */
+export function studioIntakeMessage(addons: StudioAddonId[], logo = false): string {
   const [special, ...extra] = studioIntakeLines(addons);
-  const head = `Hi ROKCT, I'd like to start my brief for the ${special}.`;
+  let head = `Hi CORTEX, I'd like to start my brief for the ${special}.`;
+  if (logo) head += `\n\n${studioIntakeLogoLine()}`;
   if (extra.length === 0) return head;
   return `${head}\n\nAdd-ons, outside the special, for your team to quote separately:\n${extra.map((l) => `- ${l}`).join("\n")}`;
+}
+
+/** The logo add-on's line, priced in rand (the amount charged). */
+export function studioIntakeLogoLine(): string {
+  const a = STUDIO_ADDONS.find((x) => x.name === "designLogo");
+  const z = a?.zar ?? 0;
+  return `${STUDIO_INTAKE_FORM.logo.line}: ${groupZar(z)}${a?.wasZar ? ` (normally ${groupZar(a.wasZar)})` : ""}`;
 }
 
 export const STUDIO_CONTACT = {
   kicker: "Contact",
   title: "Start on WhatsApp.",
   lede: "Send your business name and what you need. Our team replies in office hours.",
-  note: "WhatsApp, text or voice note. Save the number as ROKCT.",
+  note: "WhatsApp, text or voice note. Save the number as CORTEX.",
   primary: "Message us on WhatsApp",
   copy: "Copy the number",
   copied: "Copied",
@@ -1035,13 +1085,13 @@ export const STUDIO_CONTACT = {
 
 export const STUDIO_FOOTER = {
   about:
-    "Cortex, design and hosting for small businesses: websites, logos and brands, business plans, pitch decks, print and social posts, made by our team and approved by you at every phase.",
+    "CORTEX, design and hosting for small businesses: websites, logos and brands, business plans, pitch decks, print and social posts, made by our team and approved by you at every phase.",
   motto: "Your brand, taken seriously.",
   // The copyright and credit come from base_sdk's SiteCredit (1.5.1, Ray,
   // 2026-10-31: "all site will be copyright sitename then built with love
   // (as heart) by ROKCT"); this is the note the fine line carries after it.
-  prices: "Prices in US dollars, shown in rand at R18.50",
+  prices: "Prices in rand; dollars are approximate, at today's rate",
   // The copyright names the brand as it is set, in capitals. The host's
   // PLATFORM_NAME is "Rokct", so the studio passes its own name (1.5.2).
-  siteName: "ROKCT",
+  siteName: "CORTEX",
 };

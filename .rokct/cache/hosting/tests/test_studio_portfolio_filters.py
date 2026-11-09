@@ -167,7 +167,7 @@ class TestServicesAndLogo(unittest.TestCase):
 
     def test_built_in_list_declares_its_services(self):
         self.assertEqual(self.out["fallback"], [
-            ["ROKCT", ["website", "logo"], True, None],
+            ["CORTEX", ["website", "logo"], True, None],
             ["Polaris", ["website"], True, None],
             ["Supacharge", ["website"], True, None],
         ])

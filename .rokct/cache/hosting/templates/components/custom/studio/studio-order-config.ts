@@ -125,7 +125,7 @@ export function studioMailConfig(env?: StudioEnv, siteHost?: string | null): Stu
   const user = clean(e.SMTP_USER);
   const pass = e.SMTP_PASS ?? "";
   const fromRaw = clean(e.STUDIO_MAIL_FROM).replace(/[\r\n]+/g, " ");
-  const from = fromRaw || `Cortex <${ordersEmail}>`;
+  const from = fromRaw || `CORTEX <${ordersEmail}>`;
   const missing: string[] = [];
   if (!user) missing.push("SMTP_USER");
   if (!pass) missing.push("SMTP_PASS");
@@ -141,7 +141,7 @@ export function studioMailStatus(env?: StudioEnv): { configured: boolean; missin
 // ---- Step values: THE SLOT ----------------------------------------------
 // @studio-step-values-slot
 // Terms point 6: each phase shows what it is worth. Ray has NOT agreed the
-// split of the R8,500 site yet (proposal sent 1 Nov: brief 10%, colour and
+// split of the R10,500 site yet (proposal sent 1 Nov: brief 10%, colour and
 // logo 25%, page designs 25%, build preview 25%, launch 15%), so every value
 // stays null and no email or page prints a figure. Once Ray agrees, set the
 // five rand amounts here (whole rand, in phase order); the acknowledgement

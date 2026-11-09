@@ -31,7 +31,7 @@ import { StudioCurrencyProvider, StudioHeader } from "./studio-client";
 import { STUDIO_WHATSAPP_DISPLAY, STUDIO_WHATSAPP_URL } from "./studio-copy";
 import { StudioFooter } from "./studio-home";
 import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF, STUDIO_ORDER_PROMISE, studioOrderTerms } from "./studio-order";
-import { StudioOrderForm } from "./studio-order-form";
+import { StudioOrderForm, type StudioOrderPayOptions } from "./studio-order-form";
 
 export type StudioOrderReturn = { kind: "paid"; ref: string } | { kind: "cancelled" } | null;
 
@@ -39,10 +39,13 @@ export function StudioOrder({
   fontClassName,
   ordersEmail,
   back = null,
+  pay,
 }: {
   fontClassName: string;
   ordersEmail: string;
   back?: StudioOrderReturn;
+  /** 1.20.7: the payment step's options, from the server's env. */
+  pay?: StudioOrderPayOptions;
 }) {
   const C = STUDIO_ORDER_COPY;
   const terms = studioOrderTerms(ordersEmail);
@@ -95,7 +98,7 @@ export function StudioOrder({
           ) : null}
           <section className="od-body" aria-label="Order form">
             <div className="wrap">
-              <StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} />
+              <StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} pay={pay} />
               <p className="sm od-wa">
                 Rather talk? <a href={STUDIO_WHATSAPP_URL}>WhatsApp {STUDIO_WHATSAPP_DISPLAY}</a>. Files can also go to{" "}
                 <a href={`mailto:${ordersEmail}`}>{ordersEmail}</a>.

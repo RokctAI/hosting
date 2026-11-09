@@ -50,12 +50,12 @@ export interface HostingSiteMetadata {
 }
 
 const HOSTING_SITE_METADATA: HostingSiteMetadata = {
-  siteName: "Rokct Hosting",
-  title: "Rokct Hosting — website deployments, managed databases, NVMe storage",
+  siteName: "CORTEX",
+  title: "CORTEX — website deployments, managed databases, NVMe storage",
   tagline: "Website deployments, managed databases and NVMe storage on one plan",
   description:
-    "Hosting plans from Rokct: Basic, Pro and Enterprise, billed monthly or yearly in USD, with 1 to 100 website deployments, 5 to 200 managed databases, 10GB to 500GB of NVMe storage and a 14-day trial on every plan.",
-  keywords: ["hosting", "website deployment", "managed databases", "NVMe storage", "Rokct"],
+    "Hosting plans from CORTEX: Basic, Pro and Enterprise, billed monthly or yearly in USD, with 1 to 100 website deployments, 5 to 200 managed databases, 10GB to 500GB of NVMe storage and a 14-day trial on every plan.",
+  keywords: ["hosting", "website deployment", "managed databases", "NVMe storage", "CORTEX"],
   locale: "en_ZA",
 };
 

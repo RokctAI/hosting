@@ -88,7 +88,7 @@ def webp_size(path):
 class TestLogoGoesHome(unittest.TestCase):
     def test_logo_links_to_the_root(self):
         header = read(HEADER)
-        self.assertIn('<a className="mark" href="/" aria-label="ROKCT, home">', header)
+        self.assertIn('<a className="mark" href="/" aria-label="CORTEX, home">', header)
         self.assertNotIn('"#top"', header)
         self.assertNotIn("/#top", header)
 
@@ -319,7 +319,7 @@ class TestNoGiantNameAtTheBottom(unittest.TestCase):
             read(HOME).split('<footer className="ft">', 1)[1].split("</footer>", 1)[0]
         )
         self.assertIn(
-            '<SiteCredit as="span" siteName={STUDIO_FOOTER.siteName} /> · {STUDIO_FOOTER.prices}',
+            '© {new Date().getFullYear()} {STUDIO_FOOTER.siteName}',
             footer,
         )
         # Nothing after the footer but the back-to-top button.

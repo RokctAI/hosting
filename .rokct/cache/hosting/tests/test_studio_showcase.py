@@ -181,10 +181,10 @@ class TestListLoading(unittest.TestCase):
         for root in ("empty", "missing", "bad"):
             r = self.out[root]
             self.assertTrue(r["fallback"], root)
-            self.assertEqual([s["name"] for s in r["sites"]], ["ROKCT", "Polaris", "Supacharge"], root)
+            self.assertEqual([s["name"] for s in r["sites"]], ["CORTEX", "Polaris", "Supacharge"], root)
             urls = {s["name"]: s["url"] for s in r["sites"]}
             self.assertEqual(urls, {
-                "ROKCT": "https://hosting-beta-one.vercel.app",
+                "CORTEX": "https://hosting-beta-one.vercel.app",
                 "Polaris": "https://polaris-web-nu.vercel.app",
                 "Supacharge": "https://supacharge.school",
             })
@@ -394,7 +394,7 @@ class TestAllDroppedAtRuntime(unittest.TestCase):
     def test_stand_in_only_when_its_pictures_are_bundled(self):
         o = self.out
         self.assertEqual(o["local"], [True, False, False, False, False])
-        self.assertEqual(o["bundled"], ["ROKCT", "Polaris", "Supacharge"])
+        self.assertEqual(o["bundled"], ["CORTEX", "Polaris", "Supacharge"])
         self.assertEqual(o["alreadyFallback"], [])
         self.assertEqual(o["remotePicture"], [])
         self.assertEqual(o["protocolRelative"], [])
@@ -404,7 +404,7 @@ class TestAllDroppedAtRuntime(unittest.TestCase):
         o = self.out
         self.assertEqual(o["reg"]["fallback"], False)
         self.assertEqual(o["reg"]["sites"], ["Alpha", "Beta"])
-        self.assertEqual(o["reg"]["rescue"], ["ROKCT", "Polaris", "Supacharge"])
+        self.assertEqual(o["reg"]["rescue"], ["CORTEX", "Polaris", "Supacharge"])
         self.assertEqual(o["reg"]["own"], ["RokctAI/hosting"])
         # Already showing the built-in list: nothing further to fall back to.
         self.assertEqual(o["none"], {"fallback": True, "rescue": []})

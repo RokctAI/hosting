@@ -1,5 +1,85 @@
 # Changelog
 
+## 1.21.0
+
+* Cortex login and register (Ray: every app shell gets its own design for
+  register and login). hosting_sdk, the home SDK, installs its own
+  `components/custom/site-shell.tsx` over auth_sdk's default (auth_sdk >=
+  1.12.0's SiteShell seam, the pattern delivery_sdk uses for Juvo): the
+  login, register and forgot-password pages sit inside the Cortex header and
+  footer, faces and tokens, with a brand panel beside the card
+  (`components/custom/cortex-auth/`: its copy and its CSS, which maps the
+  card's shadcn tokens to the studio palette, light and dark). Presentation
+  only: auth_sdk's views, actions and fields are untouched, and no studio
+  file changes.
+* The brand is CORTEX in capitals (Ray, 2026-11-09: "CORTEX NOT Cortex"):
+  every visible string - header and footer wordmark, `© <year> CORTEX`,
+  page titles and metadata, the auth panel and ledes, the order and brief
+  emails, PayFast item name, the own-site portfolio card - says CORTEX.
+  Code identifiers and file names stay lowercase. test_cortex_brand.py
+  rejects any other casing in visible copy.
+
+## 1.20.7
+
+* Hero follows the currency picker (Ray, 2026-11-09). The hero kicker said
+  "Rand prices" whatever the visitor picked; it now reads the shared
+  currency context (`StudioHeroCurrency`: "Rand prices" / "Dollar prices").
+* Live exchange rates. Prices stay set and charged in rand; the dollar figure
+  is the rand amount at a live rate (open.er-api.com, keyless), fetched only
+  on the server by `/api/studio/currency` (studio-rates.ts, Next revalidate
+  12 hours) with the old fixed R18.50 as the fallback, rounded to whole
+  dollars. The same route answers the default currency from the visitor's
+  IP country (x-vercel-ip-country: ZA or unknown is rand, else dollars); a
+  saved choice wins. One provider carries both the currency and the rate, so
+  hero, price rows, the deal, the order stepper and the order email agree.
+  The order total posts as the rand charge plus "approx. $N" when dollars
+  are shown; the email states the rand amount charged. The picker is also
+  in the footer.
+* Both forms submit by email (Ray). /order already posted to the SMTP
+  route; its WhatsApp fallback button and the route's `whatsapp` field are
+  gone, and the messages (SMTP not configured included) say plainly that
+  nothing was sent. The home page brief form now posts JSON to the new
+  `/api/studio/brief` route (name, email, phone, ticked add-ons), which uses
+  the same SMTP config and sender (SMTP_USER / SMTP_PASS) and answers a clear
+  503 when SMTP is not configured; no WhatsApp anywhere in either form.
+* The logo is not part of the special (Ray). Logo design is an add-on at a
+  discounted R350 with the normal R650 struck through, on every package
+  (`zar` / `wasZar` on STUDIO_ADDONS; `inBundle` removed), shown through the
+  live conversion. Bundle copy, the price row, the brief form, the order
+  stepper and summary, the totals and both emails (a server-computed
+  "Total charged (ZAR)" line) follow.
+* Brand colours shade picker (Ray). No shade picker existed in the studio
+  code, so this adds one: studio-shades.ts (a brand name table plus every
+  CSS named colour, hex input, five HSL lightness shades lightest to
+  darkest) and studio-colour-picker.tsx on the order form's business step.
+  Shades sit right-to-left; a pick collapses to a chip that reopens on tap;
+  a new field follows each pick, up to five. The step is REQUIRED with at
+  least three colours (client step check, final submit check and server
+  validation); the hex values go into the order email.
+* Pay before leaving (Ray). Once /order is sent, a payment step shows two
+  options. Bank transfer: ROKCT INTELLIGENCE (PTY) LTD, Capitec Business,
+  branch 470010, the account number from `STUDIO_BANK_ACCOUNT` (server env;
+  without it the step says our team emails it), and the order reference as
+  the payment reference with a copy button. Card: `/api/studio/pay` works
+  the rand total out on the server, signs the PayFast fields (MD5 with the
+  passphrase, studio-payfast.ts) and posts them on to PayFast with return,
+  cancel and notify URLs; `/api/studio/payfast/notify` checks each ITN's
+  signature and merchant, then confirms it with PayFast's validate
+  endpoint. Without PayFast settings card shows as "coming soon". Both
+  options are in the confirmation email. The old browser-side, unsigned
+  NEXT_PUBLIC_PAYFAST_* flow is removed. Env vars on Vercel:
+  PAYFAST_MERCHANT_ID, PAYFAST_MERCHANT_KEY, PAYFAST_PASSPHRASE,
+  PAYFAST_SANDBOX, STUDIO_BANK_ACCOUNT.
+* The deal's normal (struck-through) price is R10,500, was R8,500 (Ray,
+  2026-11-09): `STUDIO_DEAL_ZAR.normal`, which the copy, /order and the
+  emails all read; the saving shown follows.
+* The site's own name is "Cortex" everywhere it said ROKCT / Rokct Hosting:
+  header and footer mark, metadata, WhatsApp greetings, order email subject
+  and signature, PayFast item name, the own-site portfolio card. The footer
+  reads "© <year> Cortex" with no maker credit (client sites keep theirs).
+  The legal name ROKCT INTELLIGENCE (PTY) LTD and the ROKCT logo artwork
+  descriptions are unchanged.
+
 ## 1.20.6
 
 * Portfolio filter fix (Ray, 2026-11-08: "Selected website filter but I

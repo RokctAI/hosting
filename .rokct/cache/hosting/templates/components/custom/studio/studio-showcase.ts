@@ -479,7 +479,7 @@ export function buildShowcase(files: { name: string; text: string }[]): Showcase
 export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
   {
     repo: "RokctAI/hosting",
-    name: "ROKCT",
+    name: "CORTEX",
     kind: "Our own work",
     tagline: "Our own site, made the way we make yours.",
     url: "https://hosting-beta-one.vercel.app",
@@ -746,11 +746,11 @@ export const STUDIO_SHOWCASE_COPY = {
   page: {
     // 1.14.0: the header's "Portfolio" (STUDIO_NAV) opens this page.
     title: "Portfolio",
-    kicker: "Cortex · Portfolio",
+    kicker: "CORTEX · Portfolio",
     heading: "Everything we have made, best first.",
     lede: "Every site is live on the web, shown as it renders on a phone and a desktop. Pick a service to see only that work: a site we also drew the logo for turns over to show it.",
     count: (n: number) => (n === 1 ? "1 project" : `${n} projects`),
-    back: "Back to Cortex",
+    back: "Back to CORTEX",
     cta: "Want yours here? Message us on WhatsApp",
   },
 };

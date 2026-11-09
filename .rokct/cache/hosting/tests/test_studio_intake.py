@@ -45,7 +45,7 @@ def read(path):
 class TestStudioIntakeForm(unittest.TestCase):
     def test_version_and_changelog(self):
         manifest = json.loads(read(os.path.join(SDK_ROOT, "manifest.json")))
-        self.assertEqual(manifest["version"], "1.20.6")
+        self.assertEqual(manifest["version"], "1.21.0")
         head = read(os.path.join(SDK_ROOT, "CHANGELOG.md")).split("## 1.7.0")[0]
         self.assertIn("## 1.20.0", head)
         self.assertIn("Mobile app", head)
@@ -68,9 +68,10 @@ class TestStudioIntakeForm(unittest.TestCase):
         self.assertIn('<label className="ik-opt"', form)
         self.assertIn('type="checkbox"', form)
         self.assertIn('role="status" aria-live="polite"', form)
-        self.assertIn('method="get"', form)
-        self.assertIn('<input type="hidden" name="text" value={message} />', form)
-        for blocker in ("required", "disabled", "preventDefault"):
+        # 1.20.7 (Ray): the brief is emailed, never sent to WhatsApp.
+        self.assertIn('fetch("/api/studio/brief"', form)
+        self.assertNotIn("wa.me", form)
+        for blocker in ("required", "disabled"):
             self.assertNotIn(blocker, form, blocker)
 
     def test_copy_has_no_price_for_add_ons_and_no_tools(self):
@@ -111,7 +112,7 @@ class TestStudioIntakeForm(unittest.TestCase):
             )
         self.assertEqual(run.returncode, 0, run.stderr)
         out = json.loads(run.stdout)
-        head = "Hi ROKCT, I'd like to start my brief for the Website and brand bundle (the special)."
+        head = "Hi CORTEX, I'd like to start my brief for the Website and brand bundle (the special)."
         self.assertEqual(out["none"], head)
         self.assertEqual(
             out["app"],

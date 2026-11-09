@@ -115,8 +115,12 @@ next-env.d.ts
 /app/admin/system/languages/page.tsx
 /app/admin/system/translations/page.tsx
 /app/admin/system/update/page.tsx
+/app/api/studio/brief/route.ts
+/app/api/studio/currency/route.ts
 /app/api/studio/domain/route.ts
 /app/api/studio/order/route.ts
+/app/api/studio/pay/route.ts
+/app/api/studio/payfast/notify/route.ts
 /app/brand-icon/route.tsx
 /app/handson/control/rpanel/backups/page.tsx
 /app/handson/control/rpanel/cron/page.tsx
@@ -178,6 +182,8 @@ next-env.d.ts
 /components/custom/company/markdown.tsx
 /components/custom/company/team-count.tsx
 /components/custom/company/team-grid.tsx
+/components/custom/cortex-auth/cortex-auth-copy.ts
+/components/custom/cortex-auth/cortex-auth.css
 /components/custom/download-buttons.tsx
 /components/custom/flip-card.tsx
 /components/custom/footer-chrome.tsx
@@ -252,6 +258,7 @@ next-env.d.ts
 /components/custom/studio/fonts/big-shoulders-display-800.woff2
 /components/custom/studio/fonts/caveat-500.woff2
 /components/custom/studio/studio-client.tsx
+/components/custom/studio/studio-colour-picker.tsx
 /components/custom/studio/studio-copy.ts
 /components/custom/studio/studio-domain-dns.ts
 /components/custom/studio/studio-fonts.ts
@@ -263,6 +270,9 @@ next-env.d.ts
 /components/custom/studio/studio-order-send.ts
 /components/custom/studio/studio-order.ts
 /components/custom/studio/studio-pay.ts
+/components/custom/studio/studio-payfast.ts
+/components/custom/studio/studio-rates.ts
+/components/custom/studio/studio-shades.ts
 /components/custom/studio/studio-shots.ts
 /components/custom/studio/studio-showcase-client.tsx
 /components/custom/studio/studio-showcase-lift.tsx

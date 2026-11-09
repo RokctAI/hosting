@@ -27,7 +27,6 @@
 // failure, the answer is { ok: false, code, message, whatsapp } and the form
 // offers WhatsApp instead. Nothing here logs a setting's value.
 
-import { studioWhatsApp } from "@/components/custom/studio/studio-copy";
 import {
   STUDIO_ORDER_FILE_FIELDS,
   STUDIO_ORDER_MAX_BYTES,
@@ -43,6 +42,9 @@ import { studioMailConfig, studioRequestHost } from "@/components/custom/studio/
 import { buildStudioOrderMails, type StudioMailAttachment } from "@/components/custom/studio/studio-order-mail";
 import { studioHasNameservers } from "@/components/custom/studio/studio-domain-dns";
 import { sendStudioOrderMails } from "@/components/custom/studio/studio-order-send";
+import { STUDIO_ADDONS } from "@/components/custom/studio/studio-copy";
+import { studioPayHref } from "@/components/custom/studio/studio-pay";
+import { studioBankAccount, studioPayfastConfig } from "@/components/custom/studio/studio-payfast";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,8 +56,10 @@ function reply(status: number, body: Record<string, unknown>): Response {
   return Response.json(body, { status, headers: { "cache-control": "no-store" } });
 }
 
-function fail(status: number, code: string, message: string, extra: Record<string, unknown> = {}, wa = "Hi ROKCT, I'd like to place an order.") {
-  return reply(status, { ok: false, code, message, whatsapp: studioWhatsApp(wa), ...extra });
+// 1.20.7 (Ray): the order goes by email only; a failure says so plainly and
+// never falls back to WhatsApp.
+function fail(status: number, code: string, message: string, extra: Record<string, unknown> = {}) {
+  return reply(status, { ok: false, code, message, ...extra });
 }
 
 function clientKey(request: Request): string {
@@ -68,18 +72,6 @@ function orderRef(): string {
   const d = new Date();
   const day = `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
   return `RK-${day}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
-}
-
-function whatsappText(fields: StudioOrderInput): string {
-  const s = (k: string) => {
-    const v = fields[k];
-    return (Array.isArray(v) ? v[0] : v)?.toString().replace(/\s+/g, " ").trim().slice(0, 120) ?? "";
-  };
-  const parts = ["Hi ROKCT, I tried the order form."];
-  if (s("service")) parts.push(`I'd like: ${s("service")}.`);
-  if (s("business")) parts.push(`Business: ${s("business")}.`);
-  if (s("name")) parts.push(`My name: ${s("name")}.`);
-  return parts.join(" ");
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -109,7 +101,6 @@ export async function POST(request: Request): Promise<Response> {
         files.push({ upload: { field: key as StudioOrderFileField, name: value.name, type: value.type, size: value.size }, file: value });
       }
     }
-    const wa = whatsappText(fields);
 
     const check = validateStudioOrder(
       fields,
@@ -117,8 +108,8 @@ export async function POST(request: Request): Promise<Response> {
     );
     if (!check.ok) {
       if (check.bot) return reply(200, { ok: true, ref: "", ack: false });
-      if (check.tooLarge) return fail(413, "too_large", STUDIO_ORDER_MESSAGES.tooLarge, { errors: check.errors }, wa);
-      return fail(400, "invalid", STUDIO_ORDER_MESSAGES.invalid, { errors: check.errors }, wa);
+      if (check.tooLarge) return fail(413, "too_large", STUDIO_ORDER_MESSAGES.tooLarge, { errors: check.errors });
+      return fail(400, "invalid", STUDIO_ORDER_MESSAGES.invalid, { errors: check.errors });
     }
 
     // The orders address follows the host this request was served on
@@ -127,7 +118,7 @@ export async function POST(request: Request): Promise<Response> {
     if (!cfg.configured) {
       // Names only, never values: tells whoever reads the log what to set.
       console.warn("[studio-order] SMTP is not configured; missing:", cfg.missing.join(", "));
-      return fail(503, "not_configured", STUDIO_ORDER_MESSAGES.notConfigured, {}, wa);
+      return fail(503, "not_configured", STUDIO_ORDER_MESSAGES.notConfigured, {});
     }
 
     const attachments: StudioMailAttachment[] = [];
@@ -146,10 +137,14 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const ref = orderRef();
-    const mails = buildStudioOrderMails(check.order, attachments, { from: cfg.from, ordersEmail: cfg.ordersEmail }, ref);
+    const o = check.order;
+    const cardUrl = studioPayfastConfig().enabled
+      ? studioPayHref(ref, o.service, STUDIO_ADDONS.filter((a) => o.flags[a.name]).map((a) => a.name), o.name, o.email, new URL(request.url).origin)
+      : null;
+    const mails = buildStudioOrderMails(o, attachments, { from: cfg.from, ordersEmail: cfg.ordersEmail }, ref, undefined, { account: studioBankAccount(), cardUrl });
     const sent = await sendStudioOrderMails(cfg, mails);
     if (!sent.ok) {
-      return fail(502, "send_failed", STUDIO_ORDER_MESSAGES.sendFailed, {}, wa);
+      return fail(502, "send_failed", STUDIO_ORDER_MESSAGES.sendFailed, {});
     }
     return reply(200, { ok: true, ref, ack: sent.ack });
   } catch (err) {

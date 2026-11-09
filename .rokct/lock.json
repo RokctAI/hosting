@@ -19,7 +19,7 @@
       "git": "https://github.com/RokctAI/core",
       "path": "../core/telemetry/nextjs",
       "ref": "main",
-      "commit": "96c4e1c2b78ee58c10cf744cfdda2c350dfc9cce",
+      "commit": "20a4bbe1649ca565f8f9a3f2875d355d4d4b4885",
       "version": "1.2.2",
       "install_py_sha256": "318d20eb7123ffaa549618d06b4530dfce5df9ba0b07df2328c0c6e1738e36c4",
       "content_sha256": "97652d52df5b1f4fada6bfb41793a47df1b90cc5343aaf317139683cd75db1c1"
@@ -31,7 +31,7 @@
       "git": "https://github.com/RokctAI/core",
       "path": "../core/base/nextjs",
       "ref": "main",
-      "commit": "96c4e1c2b78ee58c10cf744cfdda2c350dfc9cce",
+      "commit": "20a4bbe1649ca565f8f9a3f2875d355d4d4b4885",
       "version": "1.60.0",
       "install_py_sha256": "b6c434a1c05611d29f1018f68b9423383f7ecfbf9cc1efe74825ba6c4df98fff",
       "content_sha256": "847fd74b20f00202364e7e14eb458ad94bb5810be6a871bc1d981715aaba9206"
@@ -43,7 +43,7 @@
       "git": "https://github.com/RokctAI/Users",
       "path": "../Users/auth/nextjs",
       "ref": "main",
-      "commit": "886bf617275385940be23255955495dba3f340dd",
+      "commit": "884cdcbf6166fc34bb2e5ff2b2dbe4f6996d8f6c",
       "version": "1.12.1",
       "install_py_sha256": "b9b0d4156a68d46f528be2b885eed17cc7dba21f6b4b48b2991ba2c3274ae21b",
       "content_sha256": "b66a7408d06a6e51319b3a43440884930187ac533f0864ff1de375f2bdd02bcb"
@@ -67,10 +67,10 @@
       "git": "https://github.com/RokctAI/hardware",
       "path": "../hardware/hosting/nextjs",
       "ref": "main",
-      "commit": "57d13bb13a27531b8fa89805031bd8bfc892c318",
-      "version": "1.20.6",
+      "commit": "a46f05792284c0709c3c0b811b60ff4aa901571f",
+      "version": "1.21.0",
       "install_py_sha256": "a2f6b895733cacd18dac6f63228bb5537e4ac6ea20c33009a211db2984b4e25f",
-      "content_sha256": "cd9e2bd91a0b6115bf847234764dbf2110341f6838d06031d11e5d12f75ad0a8"
+      "content_sha256": "9b6447faf6d545daef060388ba19e7fed4253ac5f30e854b3b43f2a4c0cf83fb"
     }
   ]
 }

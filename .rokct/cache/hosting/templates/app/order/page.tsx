@@ -26,10 +26,11 @@ import { headers } from "next/headers";
 import { studioFontClassName } from "@/components/custom/studio/studio-fonts";
 import { studioOrdersEmail, studioRequestHost } from "@/components/custom/studio/studio-order-config";
 import { StudioOrder } from "@/components/custom/studio/studio-order-page";
+import { studioBankAccount, studioPayfastConfig } from "@/components/custom/studio/studio-payfast";
 
 export const metadata: Metadata = {
-  title: { absolute: "Order · Cortex" },
-  description: "Order from Cortex, with forever hosting: five short steps, your logo and photos. We send your brief back to confirm, and your first render within 24 hours of it.",
+  title: { absolute: "Order · CORTEX" },
+  description: "Order from CORTEX, with forever hosting: five short steps, your logo and photos. We send your brief back to confirm, and your first render within 24 hours of it.",
 };
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -38,5 +39,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const q = await searchParams;
   const paid = typeof q.paid === "string" ? q.paid.replace(/[^A-Za-z0-9-]/g, "").slice(0, 40) : null;
   const back = paid !== null ? { kind: "paid" as const, ref: paid } : q.cancelled ? { kind: "cancelled" as const } : null;
-  return <StudioOrder fontClassName={studioFontClassName} ordersEmail={ordersEmail} back={back} />;
+  // 1.20.7: the payment step's options, from server env (no secret leaves).
+  const pay = { card: studioPayfastConfig().enabled, account: studioBankAccount() };
+  return <StudioOrder fontClassName={studioFontClassName} ordersEmail={ordersEmail} back={back} pay={pay} />;
 }
