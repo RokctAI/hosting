@@ -34,7 +34,6 @@ import {
 } from "@remixicon/react";
 
 import { BackToTop } from "@/components/custom/back-to-top";
-import { SiteCredit } from "@/components/custom/site-credit";
 
 import {
   StudioCopyNumber,
@@ -44,6 +43,7 @@ import {
   StudioDesignTabs,
   StudioDealAlt,
   StudioHeader,
+  StudioHeroCurrency,
   StudioIntakeForm,
   StudioPrice,
 } from "./studio-client";
@@ -300,7 +300,7 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
           </span>
         </p>
         <p className="dz-cta">
-          <a className="btn btn-acc btn-sm" href={studioWhatsApp(`Hi ROKCT, I'd like three options for my site, like the ${c.tab} brief.`)}>
+          <a className="btn btn-acc btn-sm" href={studioWhatsApp(`Hi CORTEX, I'd like three options for my site, like the ${c.tab} brief.`)}>
             <WhatsAppGlyph />
             Start a brief like this
           </a>
@@ -375,17 +375,23 @@ export function StudioFooter() {
       <div className="wrap ft-in">
         <div>
           <span className="mark">
-            ROKCT
+            CORTEX
             <i aria-hidden="true" />
           </span>
           <p className="sm">{STUDIO_FOOTER.about}</p>
         </div>
         <div className="r">
           <span className="motto">{STUDIO_FOOTER.motto}</span>
-          {/* base_sdk 1.54.0's site credit: `© <year> <PLATFORM_NAME> · Built
-              with ♥ by ROKCT`, in the studio's own fine type and middle dot. */}
+          {/* 1.20.7 (Ray): the currency picker sits in the footer too, on
+              every page with this footer; it shares the one provider. */}
+          <StudioCurrencyBar />
+          {/* 1.20.7 (Ray): the site's own footer is `© <year> CORTEX`, with
+              no maker credit (that one stays on client sites). */}
           <span className="fine">
-            <SiteCredit as="span" siteName={STUDIO_FOOTER.siteName} /> · {STUDIO_FOOTER.prices}
+            <span>
+              © {new Date().getFullYear()} {STUDIO_FOOTER.siteName}
+            </span>{" "}
+            · {STUDIO_FOOTER.prices}
           </span>
         </div>
       </div>
@@ -418,14 +424,15 @@ export function StudioHome({
           {/* ---------------------------------------------------------- hero */}
           <section className="hero">
             <div className="wrap">
+              {/* 1.20.7: the kicker's last item names the visitor's currency
+                  (it stayed on rand after a switch to dollars). */}
               <p className="kick">
-                {H.kicker.map((k, i) => (
+                {H.kicker.map((k) => (
                   <Fragment key={k}>
-                    {i > 0 && <>&nbsp;·&nbsp; </>}
-                    {k}
-                    {i < H.kicker.length - 1 && " "}
+                    {k} &nbsp;·&nbsp;{" "}
                   </Fragment>
                 ))}
+                <StudioHeroCurrency />
               </p>
               <div className="h1-wrap">
                 <h1 className="disp rise">

@@ -89,7 +89,7 @@ def run_node(script):
     if not node:
         raise unittest.SkipTest("node not on PATH")
     with tempfile.TemporaryDirectory() as tmp:
-        for src in (COPY, ORDER, CONFIG, MAIL):
+        for src in (COPY, ORDER, CONFIG, MAIL, os.path.join(STUDIO, "studio-shades.ts"), os.path.join(STUDIO, "studio-pay.ts")):
             body = re.sub(r'from "\./(studio-[a-z-]+)";', r'from "./\1.ts";', read(src))
             with open(os.path.join(tmp, os.path.basename(src)), "w", encoding="utf-8") as f:
                 f.write(body)
@@ -179,7 +179,7 @@ class TestMailConfig(unittest.TestCase):
         self.assertEqual(d["host"], "mail.rokct.ai")
         self.assertEqual(d["port"], 587)
         self.assertFalse(d["secure"])
-        self.assertEqual(d["from"], "Cortex <orders@mystudio.co.za>")
+        self.assertEqual(d["from"], "CORTEX <orders@mystudio.co.za>")
         self.assertEqual(d["ordersEmail"], "orders@mystudio.co.za")
 
     def test_smtp_env_overrides(self):
@@ -239,14 +239,14 @@ import { validateStudioOrder, createStudioRateLimiter, STUDIO_ORDER_MAX_BYTES, s
 import { buildStudioOrderMails } from './studio-order-mail.ts';
 const base = {
   service: 'Website and brand bundle', name: 'Thandi M', email: 'thandi@example.com', phone: '+27 82 000 0000',
-  business: 'Thandi Bakes', sells: 'Cakes for weddings', area: 'Polokwane', colour: 'orange', likes: 'a.com - clean',
+  business: 'Thandi Bakes', sells: 'Cakes for weddings', area: 'Polokwane', colour: '#ffa500, #800000, #228b22', likes: 'a.com - clean',
   pages: ['Home', 'Contact', 'Bogus'], pagesOther: 'Menu', siteContact: '082 000 0000', asks: 'Do you deliver?', notes: '',
   noLogo: 'yes', terms: 'yes',
 };
 const files = [{ field: 'logo', name: '../../etc/My Logo!.png', type: 'image/png', size: 1000 }];
 const ok = validateStudioOrder(base, files);
 const att = [{ filename: 'My Logo.png', contentType: 'image/png', content: new Uint8Array([1,2,3]) }];
-const cfg = { from: 'Cortex <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
+const cfg = { from: 'CORTEX <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
 const mails = buildStudioOrderMails(ok.order, att, cfg, 'RK-20261101-ABC123');
 const valued = buildStudioOrderMails(ok.order, att, cfg, 'RK-1', [850, 2125, 2125, 2125, 1275]);
 const partial = buildStudioOrderMails(ok.order, att, cfg, 'RK-2', [850, null, 2125, 2125, 1275]);
@@ -281,12 +281,12 @@ class TestEmails(unittest.TestCase):
         self.assertEqual(o["to"], "orders@mystudio.co.za")
         self.assertEqual(o["replyTo"], "thandi@example.com")
         for label in ("What you are ordering", "Your name", "Your email", "Your WhatsApp number", "Business name",
-                      "What you sell or do, in one sentence", "Town or area you serve", "Your brand colour",
+                      "What you sell or do, in one sentence", "Town or area you serve", "Your brand colours",
                       "Three websites you like", "Pages you want", "Phone, WhatsApp and email to show on your site",
                       "Anything customers always ask you", "Anything else we should know", "I don't have a logo",
                       "I'd like an online shop too", "I'd like an app too", "Files"):
             self.assertIn(label, o["text"], label)
-        for value in ("Thandi Bakes", "Cakes for weddings", "Polokwane", "orange", "Do you deliver?", "Home, Contact, Other: Menu"):
+        for value in ("Thandi Bakes", "Cakes for weddings", "Polokwane", "#ffa500, #800000, #228b22", "Do you deliver?", "Home, Contact, Other: Menu"):
             self.assertIn(value, o["text"])
         self.assertEqual(len(o["attachments"]), 1)
         self.assertEqual(o["attachments"][0]["filename"], "My Logo.png")
@@ -329,11 +329,14 @@ class TestEmails(unittest.TestCase):
     def test_no_step_values_while_unset(self):
         for part in ("text", "html"):
             self.assertNotIn("WHAT EACH PHASE IS WORTH", self.ack[part])
-            self.assertNotRegex(self.ack[part], r"R\s?\d")
+            # 1.20.7: the price lines (amount charged) are the only rand figures.
+            plain = re.sub(r"(Total charged \(ZAR\)|Price: [^:\n]+|Amount)[:\s]*R[\d,]+( \(normally R[\d,]+\))?", "", re.sub(r"<[^>]+>", "\n", self.ack[part]))
+            self.assertNotRegex(plain, r"R\s?\d")
             self.assertNotIn("%", re.sub(r"<[^>]+>", "", self.ack[part]))
             self.assertNotIn("What each phase is worth", self.ack[part])
         self.assertNotIn("WHAT EACH PHASE IS WORTH", self.out["partialText"])
-        self.assertNotRegex(self.out["partialText"], r"R\d")
+        partial = re.sub(r"(Total charged \(ZAR\)|Price: [^:]+|Amount): [^\n]*", "", self.out["partialText"])
+        self.assertNotRegex(partial, r"R\d")
 
     def test_step_values_show_once_all_are_set(self):
         self.assertIn("WHAT EACH PHASE IS WORTH", self.out["valuedText"])
@@ -382,11 +385,12 @@ class TestValidation(unittest.TestCase):
 
 
 class TestGracefulWithoutSmtp(unittest.TestCase):
-    def test_route_answers_503_with_whatsapp_when_unconfigured(self):
+    def test_route_answers_503_without_whatsapp_when_unconfigured(self):
         src = code_only(read(ROUTE))
         self.assertIn("if (!cfg.configured)", src)
         self.assertIn('fail(503, "not_configured", STUDIO_ORDER_MESSAGES.notConfigured', src)
-        self.assertIn("whatsapp: studioWhatsApp(", src)
+        # 1.20.7 (Ray): email only; no WhatsApp fallback anywhere in the route.
+        self.assertNotIn("whatsapp", src.lower())
         # the check comes before anything touches the transport
         self.assertLess(src.index("if (!cfg.configured)"), src.index("sendStudioOrderMails(cfg"))
 
@@ -400,13 +404,16 @@ class TestGracefulWithoutSmtp(unittest.TestCase):
         src = code_only(read(SEND))
         self.assertIn('if (!cfg.configured) return { ok: false, code: "NOT_CONFIGURED" };', src)
 
-    def test_message_offers_whatsapp(self):
+    def test_messages_are_clear_and_offer_no_whatsapp(self):
         src = read(ORDER)
         msg = re.search(r"notConfigured:\s*\"([^\"]+)\"", src).group(1)
-        self.assertIn("WhatsApp", msg)
+        self.assertIn("nothing was sent", msg)
+        block = src.split("export const STUDIO_ORDER_MESSAGES", 1)[1].split("} as const;", 1)[0]
+        self.assertNotIn("WhatsApp", block)
         form = read(FORM)
-        self.assertIn("failWhatsApp", form)
-        self.assertIn("href={state.whatsapp}", form)
+        self.assertNotIn("failWhatsApp", form)
+        self.assertNotIn("state.whatsapp", form)
+        self.assertNotIn("studioWhatsApp", form)
         self.assertIn("catch {", form)  # network errors and non-JSON replies land in the fail state
 
 
@@ -446,8 +453,8 @@ DOMAIN_PROBE = """
 import { validateStudioOrder, studioCheckDomain } from './studio-order.ts';
 import { buildStudioOrderMails } from './studio-order-mail.ts';
 const base = { service: 'Website and brand bundle', name: 'Thandi M', email: 'thandi@example.com',
-  business: 'Thandi Bakes', sells: 'Cakes', terms: 'yes' };
-const cfg = { from: 'Cortex <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
+  business: 'Thandi Bakes', sells: 'Cakes', colour: '#ffa500 #800000 #228b22', terms: 'yes' };
+const cfg = { from: 'CORTEX <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
 const yes = validateStudioOrder({ ...base, hasDomain: 'yes', domain: 'thandibakes.co.za', registrar: 'Afrihost' }, []);
 const no = validateStudioOrder({ ...base, hasDomain: 'no', domain: 'stray.com', registrar: 'x', wantedDomain: 'ThandiBakes.co.za', domainCheck: 'available' }, []);
 const urls = [];
@@ -607,7 +614,7 @@ class TestWiring(unittest.TestCase):
 
     def test_manifest_installs_every_new_file(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.20.6")
+        self.assertEqual(m["version"], "1.21.0")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for path in NEW_FILES:
             rel = os.path.relpath(path, SDK_ROOT).replace(os.sep, "/")
@@ -622,11 +629,11 @@ class TestWiring(unittest.TestCase):
         body = read(PAGE_BODY)
         self.assertIn("studioOrderTerms(ordersEmail)", body)
         self.assertIn("STUDIO_ORDER_PROMISE", body)
-        self.assertIn("<StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} />", body)
+        self.assertIn("<StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} pay={pay} />", body)
 
     def test_changelog_lists_env_vars_by_name(self):
         log = read(CHANGELOG)
-        self.assertTrue(log.startswith("# Changelog\n\n## 1.20.6\n"))
+        self.assertTrue(log.startswith("# Changelog\n\n## 1.21.0\n"))
         entry = log.split("## 1.18.0", 1)[1].split("\n## ", 1)[0]
         for name in ENV_VARS:
             self.assertIn(name, entry)
@@ -651,18 +658,24 @@ class TestStepperAndPay(unittest.TestCase):
         self.assertIn("Back", form)
         self.assertIn("Next: ", form)
 
-    def test_payfast_is_isolated_and_unsigned(self):
+    def test_payfast_signing_stays_on_the_server(self):
+        # 1.20.7: studio-pay.ts is browser-safe (no env, no node APIs); the
+        # signing and every PAYFAST_* setting live in studio-payfast.ts.
         pay = read(os.path.join(STUDIO, "studio-pay.ts"))
-        for k in ("merchant_id", "merchant_key", "amount", "item_name", "return_url", "cancel_url"):
+        for k in ("merchant_id", "merchant_key", "amount", "item_name", "return_url", "cancel_url", "notify_url"):
             self.assertIn(f'"{k}"', pay)
-        self.assertNotIn("passphrase\"", pay)
-        self.assertNotIn("signature\"", pay)
-        for v in ("NEXT_PUBLIC_PAYFAST_MERCHANT_ID", "NEXT_PUBLIC_PAYFAST_MERCHANT_KEY", "NEXT_PUBLIC_PAYFAST_SANDBOX"):
-            self.assertIn(f"process.env.{v}", pay)
+        self.assertNotIn("process.env", pay)
+        self.assertNotIn("NEXT_PUBLIC_PAYFAST", pay)
+        self.assertNotIn("node:", pay)
+        server = read(os.path.join(STUDIO, "studio-payfast.ts"))
+        self.assertIn('import { createHash } from "node:crypto";', server)
+        for v in ("PAYFAST_MERCHANT_ID", "PAYFAST_MERCHANT_KEY", "PAYFAST_PASSPHRASE", "PAYFAST_SANDBOX"):
+            self.assertIn(f"env.{v}", server)
         for name in os.listdir(STUDIO):
-            if name != "studio-pay.ts" and name.endswith((".ts", ".tsx", ".css")):
+            if name not in ("studio-pay.ts", "studio-payfast.ts") and name.endswith((".ts", ".tsx", ".css")):
                 self.assertNotIn("payfast.co.za", read(os.path.join(STUDIO, name)), name)
-
+                if name.endswith(".tsx"):
+                    self.assertNotIn("studio-payfast", read(os.path.join(STUDIO, name)), name)
 
 if __name__ == "__main__":
     unittest.main()

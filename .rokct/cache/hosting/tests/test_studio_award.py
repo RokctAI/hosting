@@ -136,7 +136,7 @@ class TestAwardSchema(unittest.TestCase):
     def test_built_in_list_hard_codes_no_award(self):
         # Ray's rule: the studio never writes another site's data; the award
         # comes from the site's own showcase file.
-        self.assertEqual(self.out["fallback"], [["ROKCT", None], ["Polaris", None], ["Supacharge", None]])
+        self.assertEqual(self.out["fallback"], [["CORTEX", None], ["Polaris", None], ["Supacharge", None]])
         code = re.sub(r"/\*.*?\*/|//[^\n]*", "", read(RULES), flags=re.DOTALL)
         self.assertNotIn("GSE", code)
         self.assertNotIn("Top 200", code)

@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.20.6",
+  "version": "1.21.0",
   "installs": [],
   "dependencies": {},
   "devDependencies": {},
@@ -104,6 +104,38 @@
           "to": "app/api/studio/domain/route.ts"
         },
         {
+          "from": "templates/app/api/studio/brief/route.ts",
+          "to": "app/api/studio/brief/route.ts"
+        },
+        {
+          "from": "templates/app/api/studio/currency/route.ts",
+          "to": "app/api/studio/currency/route.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-shades.ts",
+          "to": "components/custom/studio/studio-shades.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-colour-picker.tsx",
+          "to": "components/custom/studio/studio-colour-picker.tsx"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-payfast.ts",
+          "to": "components/custom/studio/studio-payfast.ts"
+        },
+        {
+          "from": "templates/app/api/studio/pay/route.ts",
+          "to": "app/api/studio/pay/route.ts"
+        },
+        {
+          "from": "templates/app/api/studio/payfast/notify/route.ts",
+          "to": "app/api/studio/payfast/notify/route.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-rates.ts",
+          "to": "components/custom/studio/studio-rates.ts"
+        },
+        {
           "from": "templates/components/custom/studio/studio-domain-dns.ts",
           "to": "components/custom/studio/studio-domain-dns.ts"
         },
@@ -198,6 +230,14 @@
         {
           "from": "templates/rpanel/components/ui/use-toast.ts",
           "to": "components/ui/use-toast.ts"
+        },
+        {
+          "from": "templates/components/custom/site-shell.tsx",
+          "to": "components/custom/site-shell.tsx"
+        },
+        {
+          "from": "templates/components/custom/cortex-auth",
+          "to": "components/custom/cortex-auth"
         }
       ],
       "dependencies": {

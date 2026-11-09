@@ -50,17 +50,20 @@ def code_of(path):
 class TestStudioFooterCredit(unittest.TestCase):
     def test_footer_draws_the_site_credit_then_the_prices_note(self):
         home = read(HOME)
-        self.assertIn('import { SiteCredit } from "@/components/custom/site-credit";', home)
+        # 1.20.7: the site's own footer is `© <year> CORTEX`, no credit.
+        self.assertNotIn("SiteCredit", home)
         footer = home.split('<footer className="ft">', 1)[1].split("</footer>", 1)[0]
         self.assertIn('<span className="fine">', footer)
-        self.assertIn('<SiteCredit as="span" siteName={STUDIO_FOOTER.siteName} /> · {STUDIO_FOOTER.prices}', footer)
+        self.assertIn('© {new Date().getFullYear()} {STUDIO_FOOTER.siteName}', footer)
+        self.assertIn('· {STUDIO_FOOTER.prices}', footer)
+        self.assertNotIn("Built with", footer)
         self.assertNotIn("STUDIO_FOOTER.legal", home)
 
     def test_copy_names_no_legal_entity(self):
         code = code_of(COPY)
         block = code.split("export const STUDIO_FOOTER = {", 1)[1].split("};", 1)[0]
-        self.assertIn('prices: "Prices in US dollars, shown in rand at R18.50",', block)
-        self.assertIn('siteName: "ROKCT",', block)
+        self.assertIn('prices: "Prices in rand; dollars are approximate, at today\'s rate",', block)
+        self.assertIn('siteName: "CORTEX",', block)
         for word in ("©", "PTY", "LTD", "Copyright", "legal:"):
             self.assertNotIn(word, block, word)
 

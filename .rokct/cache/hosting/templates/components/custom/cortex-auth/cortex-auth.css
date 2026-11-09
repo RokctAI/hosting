@@ -1,0 +1,68 @@
+/*
+ * Copyright (c) 2026 ROKCT INTELLIGENCE (PTY) LTD
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/* hosting_sdk 1.21.0: the CORTEX auth pages (../site-shell.tsx). The frame,
+   faces and tokens are the studio's (.st in studio.css); this file lays the
+   brand panel beside auth_sdk's card and maps the card's shadcn tokens
+   (HSL triplets) to the studio palette, so the card reads as CORTEX paper
+   and ink. Scoped to .ca so no other route changes. */
+
+.st .ca{padding-block:clamp(36px,6vw,88px) clamp(48px,7vw,104px);border-bottom:1px solid var(--rule)}
+.st .ca-g{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(32px,6vw,96px);align-items:center}
+.st .ca-side .kick{margin-bottom:22px}
+.st .ca-h{font-size:clamp(52px,7.4vw,112px)}
+.st .ca-h span{display:block}
+.st .ca-h span:last-child{color:var(--acc-text)}
+.st .ca-lede{margin-top:26px}
+.st .ca-pts{list-style:none;margin:30px 0 0;padding:0;border-top:1px solid var(--rule);max-width:30em}
+.st .ca-pts li{display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--rule);font:500 15px/1.4 var(--sans);color:var(--ink-2)}
+.st .ca-pts li::before{content:"";flex:none;width:8px;height:8px;border-radius:1px;background:var(--acc)}
+.st .ca-mark{font-size:34px;color:var(--ink)}
+@media (max-width:900px){
+.st .ca-g{grid-template-columns:minmax(0,1fr);gap:36px}
+.st .ca-card{order:-1}
+.st .ca-pts{display:none}
+.st .ca-h{font-size:clamp(46px,13vw,72px)}
+}
+
+/* auth_sdk's page body: drop its own full-height centring and background */
+.st .ca-card>div{min-height:0;background:transparent;padding:0}
+.st .ca-card>div>div{max-width:none}
+.st .ca-card{
+  --background:45 16% 94%;--foreground:252 10% 10%;--card:45 29% 97%;--card-foreground:252 10% 10%;
+  --popover:45 29% 97%;--popover-foreground:252 10% 10%;--primary:350 69% 33%;--primary-foreground:351 64% 96%;
+  --secondary:51 12% 89%;--secondary-foreground:252 10% 10%;--muted:51 12% 89%;--muted-foreground:248 5% 35%;
+  --accent:51 12% 89%;--accent-foreground:252 10% 10%;--border:52 7% 82%;--input:53 6% 73%;--ring:350 69% 33%;--radius:14px;
+  color:var(--ink);font-family:var(--sans)
+}
+.dark .st .ca-card{
+  --background:255 10% 8%;--foreground:45 19% 92%;--card:250 11% 11%;--card-foreground:45 19% 92%;
+  --popover:250 11% 11%;--popover-foreground:45 19% 92%;--primary:353 81% 73%;--primary-foreground:255 10% 8%;
+  --secondary:250 10% 11%;--secondary-foreground:45 19% 92%;--muted:249 8% 18%;--muted-foreground:45 4% 67%;
+  --accent:249 8% 18%;--accent-foreground:45 19% 92%;--border:249 8% 18%;--input:248 6% 24%;--ring:353 81% 73%
+}
+.st .ca-card h1{font-family:var(--disp);font-weight:800;text-transform:uppercase;letter-spacing:-.005em;line-height:.95;font-size:clamp(34px,3.4vw,48px);color:var(--ink);text-wrap:balance}
+.st .ca-card h1+p{font:400 15px/1.5 var(--sans);color:var(--ink-2)}
+.st .ca-card .bg-card{background:var(--card);border:1px solid var(--rule);border-radius:20px;box-shadow:var(--shadow);backdrop-filter:none}
+.st .ca-card label{font:600 11.5px/1.3 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.st .ca-card input:not([type="checkbox"]):not([type="hidden"]),.st .ca-card [role="combobox"]{height:48px;border-radius:12px;border:1px solid var(--rule-2);background:var(--bg);color:var(--ink);font:400 16px/1.2 var(--sans)}
+.st .ca-card input:focus-visible{outline:2px solid var(--acc-text);outline-offset:1px;box-shadow:none}
+/* the submit: the studio's ink pill, oxblood on hover (.btn-ink) */
+.st .ca-card button[type="submit"]{display:inline-flex;justify-content:center;align-items:center;width:100%;height:52px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);font:600 15px/1 var(--sans);letter-spacing:.01em;box-shadow:none;transform:none;transition:background .2s,border-color .2s,color .2s,transform .2s}
+.st .ca-card button[type="submit"]:hover{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);transform:translateY(-1px)}
+.st .ca-card a{font-family:var(--sans)}
+.st .ca-card .text-primary{color:var(--acc-text)}
+.st .ca-card .text-primary:hover{color:var(--ink)}

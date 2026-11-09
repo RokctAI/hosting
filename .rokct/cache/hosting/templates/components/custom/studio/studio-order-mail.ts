@@ -27,6 +27,8 @@
 // studio-order-config.ts (the slot); until then that block is left out.
 // Pure: no transport, no environment, no network.
 
+import { STUDIO_ADDONS, studioOrderZar } from "./studio-copy";
+import { STUDIO_BANK, STUDIO_PAY_COPY } from "./studio-pay";
 import { studioStepValues } from "./studio-order-config";
 import {
   STUDIO_ORDER_DOMAIN,
@@ -104,6 +106,16 @@ export function studioOrderRows(order: StudioOrder): [string, string][] {
     rows.push([f.label, v || "Not given"]);
   }
   for (const fl of STUDIO_ORDER_FLAGS) rows.push([fl.label, order.flags[fl.name] ? "Yes" : "No"]);
+  // 1.20.7: the price lines, worked out here from the order (never trusted
+  // from the browser), in rand: the amount charged. The logo add-on shows
+  // its normal price struck as "normally".
+  const picked = STUDIO_ADDONS.filter((a) => order.flags[a.name]);
+  for (const a of picked) {
+    const z = a.zar ?? null;
+    if (z !== null) rows.push([`Price: ${a.label}`, `${groupZar(z)}${a.wasZar ? ` (normally ${groupZar(a.wasZar)})` : ""}`]);
+  }
+  const charged = studioOrderZar(order.service, picked.map((a) => a.name));
+  rows.push(["Total charged (ZAR)", charged === null ? "Quoted" : groupZar(charged)]);
   rows.push(["Files", order.files.length ? order.files.map((f) => `${f.name} (${f.field})`).join(", ") : "None attached"]);
   return rows;
 }
@@ -114,7 +126,7 @@ const ACC = "#8C1A2D";
 const RULE = "#D5D4CD";
 
 function htmlShell(title: string, body: string): string {
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title></head><body style="margin:0;background:#F2F1ED;color:${INK};font:16px/1.55 Georgia,'Times New Roman',serif"><div style="max-width:640px;margin:0 auto;padding:28px 20px">${body}<p style="margin:32px 0 0;font:13px/1.5 Arial,sans-serif;color:${MUTED}">ROKCT · Your brand, taken seriously.</p></div></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title></head><body style="margin:0;background:#F2F1ED;color:${INK};font:16px/1.55 Georgia,'Times New Roman',serif"><div style="max-width:640px;margin:0 auto;padding:28px 20px">${body}<p style="margin:32px 0 0;font:13px/1.5 Arial,sans-serif;color:${MUTED}">CORTEX · Your brand, taken seriously.</p></div></body></html>`;
 }
 
 function htmlTable(rows: [string, string][]): string {
@@ -142,6 +154,8 @@ export function buildStudioOrderMails(
   cfg: { from: string; ordersEmail: string },
   ref: string,
   stepValues: readonly (number | null)[] | undefined = undefined,
+  /** 1.20.7: how to pay, both options: the bank account number (or null) and the card link (or null when off). */
+  pay: { account: string | null; cardUrl: string | null } = { account: null, cardUrl: null },
 ): StudioOrderMails {
   const rows = studioOrderRows(order);
   const who = oneLine(order.name);
@@ -153,7 +167,7 @@ export function buildStudioOrderMails(
   // ---- The order, to the studio --------------------------------------------
   const orderSubject = `New order ${ref}: ${service} for ${biz}`;
   const orderText = [
-    `New Cortex order ${ref}`,
+    `New CORTEX order ${ref}`,
     "",
     ...rows.map(([k, v]) => `${k}:\n  ${v.replace(/\n/g, "\n  ")}`),
     "",
@@ -167,8 +181,18 @@ export function buildStudioOrderMails(
       `<p style="margin:18px 0 0;font:14px/1.5 Arial,sans-serif;color:${MUTED}">Reply to this email to reach ${esc(who)} at ${esc(order.email)}. ${attachments.length} file(s) attached.</p>`,
   );
 
+  // 1.20.7: both payment options, with the order reference as the payment
+  // reference; the amount is the rand total worked out from the order.
+  const P = STUDIO_PAY_COPY;
+  const due = studioOrderZar(order.service, STUDIO_ADDONS.filter((x) => order.flags[x.name]).map((x) => x.name));
+  const payLines = [
+    due === null ? "Amount: quoted by our team before you pay." : `Amount: ${groupZar(due)} (ZAR).`,
+    `${P.bankTitle}: ${STUDIO_BANK.holder}, ${STUDIO_BANK.bank}, branch ${STUDIO_BANK.branch}, account ${pay.account ?? "(our team emails you the number)"}. Reference: ${ref}.`,
+    pay.cardUrl && due !== null ? `${P.cardTitle}: pay securely with PayFast at ${pay.cardUrl}` : `${P.cardTitle}: ${P.cardSoon}`,
+  ];
+
   // ---- The acknowledgement, to the client -----------------------------------
-  const ackSubject = `Thank you, we have your order (${ref}) · ROKCT`;
+  const ackSubject = `Thank you, we have your order (${ref}) · CORTEX`;
   const mine = rows.filter(([k]) => k !== "Your email");
   const valueLines = values ? STUDIO_ORDER_PHASES.map((ph, i) => `${i + 1}. ${ph}: ${groupZar(values[i])}`) : [];
   const ackText = [
@@ -181,17 +205,20 @@ export function buildStudioOrderMails(
     ...mine.map(([k, v]) => `${k}: ${v.replace(/\n/g, " ")}`),
     "",
     "WHAT HAPPENS NEXT",
-    "We turn your answers into a one-page brief and send it back for you to confirm. Our team shares the payment details with you; you pay the full price before work starts.",
+    "We turn your answers into a one-page brief and send it back for you to confirm. Pay the full price (how to pay is below) before work starts.",
     STUDIO_ORDER_PROMISE,
     "",
     ...(values ? ["WHAT EACH PHASE IS WORTH", ...valueLines, ""] : []),
     "THE TERMS",
     ...terms.map((t, i) => `${i + 1}. ${t.b}: ${t.t}`),
     "",
+    "HOW TO PAY",
+    ...payLines,
+    "",
     "REPLIES AND EXTRA FILES",
     `Reply to this email, or send replies and extra files (logos, photos) to ${cfg.ordersEmail}, with your reference ${ref}.`,
     "",
-    "ROKCT",
+    "CORTEX",
     "Your brand, taken seriously.",
   ].join("\n");
   const ackHtml = htmlShell(
@@ -203,12 +230,14 @@ export function buildStudioOrderMails(
       `<p style="margin:0 0 12px;font-weight:700">${esc(service)} for ${esc(biz)}</p>` +
       htmlTable(mine) +
       h("What happens next") +
-      p("We turn your answers into a one-page brief and send it back for you to confirm. Our team shares the payment details with you; you pay the full price before work starts.") +
+      p("We turn your answers into a one-page brief and send it back for you to confirm. Pay the full price (how to pay is below) before work starts.") +
       `<p style="margin:0 0 12px;padding:14px 16px;border-left:3px solid ${ACC};background:#FAF9F6;font-weight:700">${esc(STUDIO_ORDER_PROMISE)}</p>` +
       // @studio-step-values-slot: printed only when every value is set in config.
       (values ? h("What each phase is worth") + `<ol style="margin:0 0 12px;padding-left:20px">${valueLines.map((l) => `<li>${esc(l.replace(/^\d+\. /, ""))}</li>`).join("")}</ol>` : "") +
       h("The terms") +
       `<ol style="margin:0 0 12px;padding-left:20px">${terms.map((t) => `<li style="margin:0 0 8px"><b>${esc(t.b)}:</b> ${esc(t.t)}</li>`).join("")}</ol>` +
+      h("How to pay") +
+      payLines.map((l) => p(l)).join("") +
       h("Replies and extra files") +
       p(`Reply to this email, or send replies and extra files (logos, photos) to ${cfg.ordersEmail}, with your reference ${ref}.`),
   );
@@ -233,4 +262,45 @@ export function buildStudioOrderMails(
       attachments: [],
     },
   };
+}
+
+// ---- The home page brief (1.20.7) -------------------------------------------
+// Ray: the home page form sends by email, like /order. One mail to the
+// orders address (Reply-To the visitor) and a copy to the visitor.
+export interface StudioBrief {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}
+
+export function buildStudioBriefMails(brief: StudioBrief, cfg: { from: string; ordersEmail: string }, ref: string): StudioOrderMails {
+  const who = oneLine(brief.name);
+  const rows: [string, string][] = [
+    ["Name", who],
+    ["Email", oneLine(brief.email)],
+    ["Phone", oneLine(brief.phone) || "Not given"],
+    ["Brief", brief.message],
+  ];
+  const subject = `New brief ${ref} from ${who}`;
+  const order: StudioMail = {
+    from: cfg.from,
+    to: cfg.ordersEmail,
+    replyTo: oneLine(brief.email),
+    subject,
+    text: [`New CORTEX brief ${ref}`, "", ...rows.map(([k, v]) => `${k}:\n  ${v.replace(/\n/g, "\n  ")}`)].join("\n"),
+    html: htmlShell(subject, h(`New brief · ${ref}`) + htmlTable(rows)),
+    attachments: [],
+  };
+  const ackSubject = `Thank you, we have your brief (${ref}) · CORTEX`;
+  const ack: StudioMail = {
+    from: cfg.from,
+    to: oneLine(brief.email),
+    replyTo: cfg.ordersEmail,
+    subject: ackSubject,
+    text: [`Hi ${who},`, "", `Thank you. We have your brief, reference ${ref}:`, "", brief.message, "", "Our team replies with the ten questions in office hours.", "", "CORTEX", "Your brand, taken seriously."].join("\n"),
+    html: htmlShell(ackSubject, p(`Hi ${who},`) + p(`Thank you. We have your brief, reference ${ref}:`) + htmlTable([["Brief", brief.message]]) + p("Our team replies with the ten questions in office hours.")),
+    attachments: [],
+  };
+  return { order, ack };
 }

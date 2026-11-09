@@ -25,6 +25,7 @@
 // only five answers are required, because "we never ask twice": a missing
 // answer is filled with a sensible choice and shown in the render.
 
+import { STUDIO_COLOURS_ERROR, STUDIO_COLOURS_MIN, studioParseColours } from "./studio-shades";
 import { STUDIO_PRICE_ROWS, STUDIO_WHATSAPP_DISPLAY } from "./studio-copy";
 
 // ---- Words ----------------------------------------------------------------
@@ -50,7 +51,6 @@ export const STUDIO_ORDER_COPY = {
   okText: "We have emailed you a copy with the terms. Our team replies in office hours, SAST.",
   okNoAck: "We have your order, but we could not email your copy just now. Our team will be in touch in office hours, SAST.",
   okRef: "Your reference",
-  failWhatsApp: "Send it on WhatsApp instead",
   termsKicker: "The terms",
   termsTitle: "What you agree to when you order.",
   termsNote: "Draft wording in plain language. Your acknowledgement email carries the same terms.",
@@ -62,12 +62,12 @@ export const STUDIO_ORDER_COPY = {
 // The messages the route returns, so the form and the tests read the same.
 export const STUDIO_ORDER_MESSAGES = {
   invalid: "Some answers need a look. Check the marked fields and send again.",
-  tooLarge: "Those files are too big to send here (4 MB in all). Send the order without them and email the files afterwards, or send it on WhatsApp.",
-  rateLimited: "That is a lot of orders from one place in a short time. Wait a few minutes and send again, or send it on WhatsApp.",
+  tooLarge: "Those files are too big to send here (4 MB in all). Send the order without them and email the files afterwards.",
+  rateLimited: "That is a lot of orders from one place in a short time. Wait a few minutes and send again.",
   notConfigured:
-    "Our order form can't send email right now. Nothing was sent. Please send your order on WhatsApp instead and our team will take it from there.",
+    "Our order email isn't set up on this site yet, so nothing was sent. Please try again later.",
   sendFailed:
-    "We couldn't send your order just now. Nothing was lost on your side: try again in a minute, or send it on WhatsApp.",
+    "We couldn't send your order just now. Nothing was lost on your side: try again in a minute.",
 } as const;
 
 // ---- Services the form offers: the price table's rows, in its order -------
@@ -97,7 +97,7 @@ export const STUDIO_ORDER_FIELDS: readonly StudioOrderField[] = [
   { name: "business", label: "Business name", kind: "text", required: true, max: 120 },
   { name: "sells", label: "What you sell or do, in one sentence", kind: "text", required: true, max: 300 },
   { name: "area", label: "Town or area you serve", kind: "text", max: 160 },
-  { name: "colour", label: "Your brand colour", kind: "text", max: 200, placeholder: "e.g. orange, or three colours or brands you like" },
+  { name: "colour", label: "Your brand colours", kind: "text", required: true, max: 200 },
   { name: "likes", label: "Three websites you like, and what you like about each", kind: "textarea", max: 2000 },
   // The domain step (1.20.2): read with hasDomain, see STUDIO_ORDER_DOMAIN.
   { name: "domain", label: "Your domain name", kind: "text", max: 253, placeholder: "e.g. yourbusiness.co.za" },
@@ -337,6 +337,12 @@ export function validateStudioOrder(input: StudioOrderInput, uploads: StudioOrde
     if (f.required && !s) errors[f.name] = "Needed";
     else if (s.length > f.max) errors[f.name] = `Keep it under ${f.max} characters`;
     v[f.name] = f.kind === "textarea" ? s : s.replace(/\n+/g, " ");
+  }
+  // 1.20.7 (Ray): 3 to 5 brand colours, as hex from the shade picker.
+  {
+    const cols = studioParseColours(v.colour);
+    if (cols.length < STUDIO_COLOURS_MIN) errors.colour = STUDIO_COLOURS_ERROR;
+    else v.colour = cols.join(", ");
   }
   if (v.service && !STUDIO_ORDER_SERVICES.includes(v.service)) errors.service = "Pick one from the list";
   if (v.email && !errors.email && !EMAIL.test(v.email)) errors.email = "That email doesn't look right";

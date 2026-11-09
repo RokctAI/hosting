@@ -32,6 +32,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type FormEvent,
   type KeyboardEvent,
   type ReactNode,
 } from "react";
@@ -40,15 +41,17 @@ import { HeaderAuthSlot } from "@/components/custom/header-auth-slot";
 
 import {
   STUDIO_CONTACT,
+  STUDIO_ADDONS,
   STUDIO_CURRENCY_NOTE,
+  STUDIO_HERO,
+  STUDIO_USD_PER_ZAR_FIXED,
   STUDIO_INTAKE_FORM,
   STUDIO_NAV,
   STUDIO_WHATSAPP_DISPLAY,
-  STUDIO_WHATSAPP_NUMBER,
   STUDIO_WHATSAPP_URL,
   studioDeal,
   studioIntakeLines,
-  studioIntakeMessage,
+  studioMoney,
   studioIntakeNote,
   studioPrice,
   type StudioAddonId,
@@ -68,9 +71,13 @@ function readSaved(): StudioCurrency | null {
   }
 }
 
-const CurrencyContext = createContext<{ cur: StudioCurrency; setCur: (c: StudioCurrency) => void }>({
+// 1.20.7: one context carries the chosen currency AND the live rate, so
+// every price (hero, rows, deal, order stepper) reads the same figures.
+const CurrencyContext = createContext<{ cur: StudioCurrency; setCur: (c: StudioCurrency) => void; usdPerZar: number; live: boolean }>({
   cur: "ZAR",
   setCur: () => {},
+  usdPerZar: STUDIO_USD_PER_ZAR_FIXED,
+  live: false,
 });
 
 /** The visitor's currency (1.19.0: the order stepper's live price reads it). */
@@ -80,9 +87,26 @@ export function useStudioCurrency() {
 
 export function StudioCurrencyProvider({ children }: { children: ReactNode }) {
   const [cur, setState] = useState<StudioCurrency>("ZAR");
+  const [rate, setRate] = useState({ usdPerZar: STUDIO_USD_PER_ZAR_FIXED, live: false });
   useEffect(() => {
     const saved = readSaved();
     if (saved) setState(saved);
+    // Our own route answers the IP default and the server-fetched rate;
+    // on any failure the fixed rate and rand stay.
+    let gone = false;
+    fetch("/api/studio/currency")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { cur?: unknown; usdPerZar?: unknown; live?: unknown } | null) => {
+        if (gone || !d) return;
+        if (typeof d.usdPerZar === "number" && Number.isFinite(d.usdPerZar) && d.usdPerZar > 0) {
+          setRate({ usdPerZar: d.usdPerZar, live: d.live === true });
+        }
+        if (!saved && (d.cur === "ZAR" || d.cur === "USD")) setState(d.cur);
+      })
+      .catch(() => {});
+    return () => {
+      gone = true;
+    };
   }, []);
   const setCur = (c: StudioCurrency) => {
     setState(c);
@@ -92,7 +116,7 @@ export function StudioCurrencyProvider({ children }: { children: ReactNode }) {
       /* private window: the choice lasts this visit only */
     }
   };
-  return <CurrencyContext.Provider value={{ cur, setCur }}>{children}</CurrencyContext.Provider>;
+  return <CurrencyContext.Provider value={{ cur, setCur, ...rate }}>{children}</CurrencyContext.Provider>;
 }
 
 /** One price, in the visitor's currency (`main`, `from`) or the other one (`alt`, `about`). */
@@ -107,8 +131,8 @@ export function StudioPrice({
   as?: "b" | "span" | "small";
   className?: string;
 }) {
-  const { cur } = useContext(CurrencyContext);
-  return <Tag className={className}>{studioPrice(usd, fmt, cur)}</Tag>;
+  const { cur, usdPerZar } = useContext(CurrencyContext);
+  return <Tag className={className}>{studioPrice(usd, fmt, cur, usdPerZar)}</Tag>;
 }
 
 /** One figure of the website deal (normal, offer or saving) in the visitor's currency. */
@@ -121,14 +145,20 @@ export function StudioDeal({
   as?: "b" | "span" | "small" | "s";
   className?: string;
 }) {
-  const { cur } = useContext(CurrencyContext);
-  return <Tag className={className}>{studioDeal(k, cur)}</Tag>;
+  const { cur, usdPerZar } = useContext(CurrencyContext);
+  return <Tag className={className}>{studioDeal(k, cur, usdPerZar)}</Tag>;
 }
 
 /** The deal's figure in the other currency, beside the shown one. */
 export function StudioDealAlt({ k }: { k: StudioDealKey }) {
+  const { cur, usdPerZar } = useContext(CurrencyContext);
+  return <>{studioDeal(k, cur === "ZAR" ? "USD" : "ZAR", usdPerZar)}</>;
+}
+
+/** The hero kicker's currency item: "Rand prices" or "Dollar prices", following the picker. */
+export function StudioHeroCurrency() {
   const { cur } = useContext(CurrencyContext);
-  return <>{studioDeal(k, cur === "ZAR" ? "USD" : "ZAR")}</>;
+  return <>{STUDIO_HERO.prices[cur]}</>;
 }
 
 export function StudioCurrencyBar() {
@@ -197,8 +227,8 @@ export function StudioHeader({ base = "", current }: { base?: string; current?: 
   return (
     <header className={scrolled ? "hd on" : "hd"}>
       <div className="wrap hd-in">
-        <a className="mark" href="/" aria-label="ROKCT, home">
-          ROKCT
+        <a className="mark" href="/" aria-label="CORTEX, home">
+          CORTEX
           <i aria-hidden="true" />
         </a>
         <nav className="nav" aria-label="Sections">
@@ -371,34 +401,83 @@ export function StudioDesignTabs({
 /**
  * The intake form under the ten questions (1.9.0). The special is the
  * website and brand bundle; an online shop and a mobile app are optional
- * add-ons outside it, each a real checkbox with its label. Ticking one never
- * blocks sending: it shows a warm note that our team will quote it
- * separately. The form is a plain GET to wa.me with the message in a hidden
- * `text` field, so Enter or the button submits it and, without script, it
- * still sends the brief for the special. It opens WhatsApp in a new tab and
- * the page shows a summary of what was sent, the add-on note included.
+ * add-ons outside it, each a real checkbox with its label, quoted
+ * separately. 1.20.7 (Ray): the logo is not in the special but a discounted
+ * add-on (its price shown, the normal one struck through, in the visitor's
+ * currency), and the brief is sent by EMAIL to /api/studio/brief, never to
+ * WhatsApp. A failure shows a plain message; nothing falls back to WhatsApp.
  */
 export function StudioIntakeForm() {
   const F = STUDIO_INTAKE_FORM;
+  const { cur, usdPerZar } = useContext(CurrencyContext);
   const [picked, setPicked] = useState<StudioAddonId[]>([]);
-  const [sent, setSent] = useState<StudioAddonId[] | null>(null);
+  const [logo, setLogo] = useState(false);
+  const [state, setState] = useState<
+    { kind: "idle" } | { kind: "sending" } | { kind: "fail"; message: string } | { kind: "ok"; addons: StudioAddonId[]; logo: boolean }
+  >({ kind: "idle" });
   const toggle = (id: StudioAddonId, on: boolean) =>
     setPicked((p) => F.addons.items.map((a) => a.id).filter((x) => (x === id ? on : p.includes(x))));
   const note = studioIntakeNote(picked);
-  const message = studioIntakeMessage(picked);
-  const action = `https://wa.me/${STUDIO_WHATSAPP_NUMBER}`;
+  const logoAddon = STUDIO_ADDONS.find((a) => a.name === "designLogo");
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const name = String(data.get("name") ?? "").trim();
+    const email = String(data.get("email") ?? "").trim();
+    if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setState({ kind: "fail", message: F.errors.contact });
+      return;
+    }
+    setState({ kind: "sending" });
+    try {
+      const res = await fetch("/api/studio/brief", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          phone: String(data.get("phone") ?? ""),
+          addons: picked,
+          logo,
+          company_url: String(data.get("company_url") ?? ""),
+        }),
+      });
+      let body: { ok?: boolean; message?: string } = {};
+      try {
+        body = await res.json();
+      } catch {
+        body = {};
+      }
+      if (res.ok && body.ok) {
+        setState({ kind: "ok", addons: picked, logo });
+        return;
+      }
+      setState({ kind: "fail", message: body.message || F.errors.failed });
+    } catch {
+      setState({ kind: "fail", message: F.errors.failed });
+    }
+  }
+
+  if (state.kind === "ok") {
+    return (
+      <div className="ik ik-done" role="status" aria-live="polite">
+        <p className="kick">{F.done.kicker}</p>
+        <p className="ik-dt">{F.done.title}</p>
+        <ul className="ik-sum">
+          {studioIntakeLines(state.addons).map((l) => (
+            <li key={l}>{l}</li>
+          ))}
+          {state.logo && <li>{F.logo.line}</li>}
+        </ul>
+        {state.addons.length > 0 && <p className="ik-dn">{studioIntakeNote(state.addons)}</p>}
+        <p className="sm">{F.done.text}</p>
+      </div>
+    );
+  }
 
   return (
-    <form
-      className="ik"
-      action={action}
-      method="get"
-      target="_blank"
-      rel="noopener"
-      onSubmit={() => setSent(picked)}
-      aria-label="Start your brief"
-    >
-      <input type="hidden" name="text" value={message} />
+    <form className="ik" onSubmit={onSubmit} noValidate aria-label="Start your brief">
       <div className="ik-special">
         <p className="kick">{F.special.kicker}</p>
         <p className="ik-sn">
@@ -418,6 +497,17 @@ export function StudioIntakeForm() {
           {F.addons.legend}
           <span>{F.addons.hint}</span>
         </legend>
+        <label className="ik-opt">
+          <input type="checkbox" checked={logo} onChange={(e) => setLogo(e.target.checked)} />
+          <span className="ik-t">
+            <b>
+              {F.logo.name}{" "}
+              {logoAddon?.wasZar ? <s>{studioMoney(logoAddon.wasZar, cur, usdPerZar)}</s> : null}{" "}
+              {logoAddon?.zar ? <>{studioMoney(logoAddon.zar, cur, usdPerZar)}</> : null}
+            </b>
+            <span>{F.logo.benefit}</span>
+          </span>
+        </label>
         {F.addons.items.map((a) => (
           <label className="ik-opt" key={a.id}>
             <input
@@ -441,29 +531,36 @@ export function StudioIntakeForm() {
         {note}
       </p>
 
+      <div className="ik-who">
+        <label>
+          {F.contact.name}
+          <input type="text" name="name" autoComplete="name" maxLength={120} />
+        </label>
+        <label>
+          {F.contact.email}
+          <input type="email" name="email" autoComplete="email" maxLength={200} />
+        </label>
+        <label>
+          {F.contact.phone}
+          <input type="tel" name="phone" autoComplete="tel" maxLength={40} />
+        </label>
+        <div aria-hidden="true" style={{ position: "absolute", left: "-10000px" }}>
+          <input type="text" name="company_url" tabIndex={-1} autoComplete="off" />
+        </div>
+      </div>
+
+      {state.kind === "fail" && (
+        <p className="ik-err" role="alert">
+          {state.message}
+        </p>
+      )}
+
       <div className="ik-go">
-        <button className="btn btn-acc" type="submit">
-          {F.submit}
+        <button className="btn btn-acc" type="submit" aria-busy={state.kind === "sending"}>
+          {state.kind === "sending" ? F.sending : F.submit}
         </button>
         <span className="fine">{F.submitNote}</span>
       </div>
-
-      {sent && (
-        <div className="ik-done" role="status" aria-live="polite">
-          <p className="kick">{F.done.kicker}</p>
-          <p className="ik-dt">{F.done.title}</p>
-          <ul className="ik-sum">
-            {studioIntakeLines(sent).map((l) => (
-              <li key={l}>{l}</li>
-            ))}
-          </ul>
-          {sent.length > 0 && <p className="ik-dn">{studioIntakeNote(sent)}</p>}
-          <p className="sm">{F.done.text}</p>
-          <a className="ask" href={`${action}?text=${encodeURIComponent(studioIntakeMessage(sent))}`} target="_blank" rel="noopener">
-            {F.done.again} →
-          </a>
-        </div>
-      )}
     </form>
   );
 }

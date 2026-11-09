@@ -30,9 +30,9 @@ import { StudioHome } from "@/components/custom/studio/studio-home";
 import { loadShowcase } from "@/components/custom/studio/studio-showcase-load";
 
 export const metadata: Metadata = {
-  title: { absolute: "Cortex" },
+  title: { absolute: "CORTEX" },
   description:
-    "Cortex, design and hosting for small businesses. Websites, logos, business plans, pitch decks, print and social posts, with one price before work starts.",
+    "CORTEX, design and hosting for small businesses. Websites, logos, business plans, pitch decks, print and social posts, with one price before work starts.",
 };
 
 export default function Page() {

@@ -122,7 +122,7 @@ class TestStudioShotsWiring(unittest.TestCase):
 
     def test_footer_rule_untouched(self):
         home = read(HOME)
-        self.assertIn('<SiteCredit as="span" siteName={STUDIO_FOOTER.siteName} /> · {STUDIO_FOOTER.prices}', home)
+        self.assertIn('© {new Date().getFullYear()} {STUDIO_FOOTER.siteName}', home)
 
     def test_shots_rules_run(self):
         """Executes studio-shots.ts with base_sdk's site-shots rules (skips

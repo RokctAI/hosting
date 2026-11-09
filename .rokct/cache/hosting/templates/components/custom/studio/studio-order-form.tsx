@@ -39,7 +39,9 @@ import {
 import { useMemo, useRef, useState, type FormEvent } from "react";
 
 import { useStudioCurrency } from "./studio-client";
-import { STUDIO_ADDONS, STUDIO_DEAL_ZAR, STUDIO_PRICE_ROWS, studioAddonZar, studioMoney, studioOrderZar, studioRowZar, studioWhatsApp } from "./studio-copy";
+import { StudioColourPicker } from "./studio-colour-picker";
+import { STUDIO_COLOURS_ERROR, STUDIO_COLOURS_MIN, studioParseColours } from "./studio-shades";
+import { STUDIO_ADDONS, STUDIO_DEAL_ZAR, STUDIO_PRICE_ROWS, studioAddonZar, studioMoney, studioOrderZar, studioRowZar } from "./studio-copy";
 import {
   STUDIO_ORDER_ACCEPT,
   STUDIO_DOMAIN_API,
@@ -63,13 +65,13 @@ import {
   type StudioOrderField,
   type StudioOrderTerm,
 } from "./studio-order";
-import { studioPay, studioPayConfig } from "./studio-pay";
+import { STUDIO_BANK, STUDIO_PAY_COPY, studioPayHref } from "./studio-pay";
 
 type State =
   | { kind: "idle" }
   | { kind: "sending" }
-  | { kind: "ok"; ref: string; ack: boolean }
-  | { kind: "fail"; message: string; whatsapp: string; errors: Record<string, string> };
+  | { kind: "ok"; ref: string; ack: boolean; total: number | null; href: string }
+  | { kind: "fail"; message: string; errors: Record<string, string> };
 
 const C = STUDIO_ORDER_COPY;
 const FIELD = Object.fromEntries(STUDIO_ORDER_FIELDS.map((f) => [f.name, f])) as Record<string, StudioOrderField>;
@@ -86,16 +88,6 @@ export const STUDIO_ORDER_STEPS = [
 // The answers each step checks before Next.
 const STEP_REQUIRED: readonly string[][] = [["service"], [], ["business", "sells"], ["name", "email"], ["terms"]];
 
-const PAY = studioPayConfig();
-
-function gist(form: FormData): string {
-  const s = (k: string) => String(form.get(k) ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
-  const parts = ["Hi ROKCT, I tried the order form."];
-  if (s("service")) parts.push(`I'd like: ${s("service")}.`);
-  if (s("business")) parts.push(`Business: ${s("business")}.`);
-  if (s("name")) parts.push(`My name: ${s("name")}.`);
-  return studioWhatsApp(parts.join(" "));
-}
 
 function Field({ name, errors }: { name: string; errors: Record<string, string> }) {
   const f = FIELD[name];
@@ -141,12 +133,12 @@ function Flag({ name }: { name: string }) {
 
 /** The live price: a sticky card on desktop, a bottom bar on mobile. */
 export function StudioOrderSummary({ service, addons, step }: { service: string; addons: string[]; step: number }) {
-  const { cur } = useStudioCurrency();
+  const { cur, usdPerZar } = useStudioCurrency();
   const row = STUDIO_PRICE_ROWS.find((r) => r.name === service);
   const base = studioRowZar(row);
   const total = studioOrderZar(service, addons);
   const picked = STUDIO_ADDONS.filter((a) => addons.includes(a.name));
-  const totalText = total === null ? "Quoted" : studioMoney(total, cur);
+  const totalText = total === null ? "Quoted" : (cur === "USD" ? "approx. " : "") + studioMoney(total, cur, usdPerZar);
   return (
     <>
       <div className="os-card" aria-live="polite">
@@ -154,14 +146,15 @@ export function StudioOrderSummary({ service, addons, step }: { service: string;
         <ul className="os-lines">
           <li>
             <span>{service || "No package yet"}</span>
-            <b className="num">{base === null ? "Quoted" : studioMoney(base, cur)}</b>
+            <b className="num">{base === null ? "Quoted" : studioMoney(base, cur, usdPerZar)}</b>
           </li>
           {picked.map((a) => {
             const z = studioAddonZar(a, row);
             return (
               <li key={a.name}>
                 <span>{a.label}</span>
-                <b className="num">{z === 0 ? "Included" : `+ ${studioMoney(z, cur)}`}</b>
+                {a.wasZar ? <s className="num">{studioMoney(a.wasZar, cur, usdPerZar)}</s> : null}
+                <b className="num">{z === 0 ? "Included" : `+ ${studioMoney(z, cur, usdPerZar)}`}</b>
               </li>
             );
           })}
@@ -193,8 +186,82 @@ export function StudioOrderSummary({ service, addons, step }: { service: string;
   );
 }
 
-export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; promise: string }) {
-  const { cur } = useStudioCurrency();
+/** What the payment step can offer, decided on the server (1.20.7). */
+export interface StudioOrderPayOptions {
+  /** PayFast settings are present; otherwise card is "coming soon". */
+  card: boolean;
+  /** STUDIO_BANK_ACCOUNT, or null (our team emails it). */
+  account: string | null;
+}
+
+function CopyRef({ value }: { value: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      type="button"
+      className="btn btn-line btn-sm"
+      onClick={() => {
+        navigator.clipboard?.writeText(value).then(
+          () => setDone(true),
+          () => setDone(false),
+        );
+      }}
+      aria-label={`Copy payment reference ${value}`}
+    >
+      {done ? STUDIO_PAY_COPY.copied : STUDIO_PAY_COPY.copy}
+    </button>
+  );
+}
+
+/** The payment step shown once the order is sent: bank transfer and card. */
+export function StudioPayStep({ refCode, total, href, pay }: { refCode: string; total: number | null; href: string; pay: StudioOrderPayOptions }) {
+  const P = STUDIO_PAY_COPY;
+  return (
+    <section className="pay" aria-labelledby="pay-h">
+      <h3 id="pay-h" className="disp">{P.title}</h3>
+      <p className="sm">{P.lede}</p>
+      {total !== null ? (
+        <p className="pay-amt">
+          {P.amount}: <b className="num">R{total}</b>
+        </p>
+      ) : null}
+      <div className="pay-g">
+        <div className="pay-opt">
+          <h4>{P.bankTitle}</h4>
+          <dl className="pay-dl">
+            <dt>{P.holder}</dt>
+            <dd>{STUDIO_BANK.holder}</dd>
+            <dt>{P.bank}</dt>
+            <dd>{STUDIO_BANK.bank}</dd>
+            <dt>{P.branch}</dt>
+            <dd className="num">{STUDIO_BANK.branch}</dd>
+            <dt>{P.account}</dt>
+            <dd className="num">{pay.account ?? P.accountMissing}</dd>
+            <dt>{P.reference}</dt>
+            <dd className="pay-ref">
+              <b className="num">{refCode}</b> <CopyRef value={refCode} />
+            </dd>
+          </dl>
+          <p className="fine">{P.bankNote}</p>
+        </div>
+        <div className="pay-opt">
+          <h4>{P.cardTitle}</h4>
+          {pay.card && total !== null && total > 0 ? (
+            <a className="btn btn-acc" href={href}>
+              <RiLockLine size={18} aria-hidden="true" />
+              {P.cardButton}
+            </a>
+          ) : (
+            <p className="sm">{P.cardSoon}</p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function StudioOrderForm({ terms, promise, pay = { card: false, account: null } }: { terms: StudioOrderTerm[]; promise: string; pay?: StudioOrderPayOptions }) {
+  const { cur, usdPerZar } = useStudioCurrency();
   const [state, setState] = useState<State>({ kind: "idle" });
   const [step, setStep] = useState(0);
   const [service, setService] = useState(STUDIO_PRICE_ROWS[0].name);
@@ -209,8 +276,7 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
   const errors = state.kind === "fail" ? { ...state.errors, ...stepErrors } : stepErrors;
   const row = STUDIO_PRICE_ROWS.find((r) => r.name === service);
   const total = studioOrderZar(service, addons);
-  const totalText = total === null ? "Quoted" : studioMoney(total, cur);
-  const canPay = PAY.enabled && total !== null && total > 0;
+  const totalText = total === null ? "Quoted" : (cur === "USD" ? "approx. " : "") + studioMoney(total, cur, usdPerZar);
   const keyTerms = useMemo(() => terms.filter((t) => /cancel/i.test(t.b)), [terms]);
 
   function check(i: number): Record<string, string> {
@@ -222,6 +288,10 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
       const v = String(data.get(name) ?? "").trim();
       if (!v) out[name] = name === "terms" ? "Please accept the terms to send your order." : "Needed to start your brief.";
       else if (name === "email" && !EMAIL.test(v)) out[name] = "That email doesn't look right.";
+    }
+    // 1.20.7 (Ray): the brand colours are required, at least three.
+    if (i === 2 && studioParseColours(String(data.get("colour") ?? "")).length < STUDIO_COLOURS_MIN) {
+      out.colour = STUDIO_COLOURS_ERROR;
     }
     // The domain step: "Yes" needs the domain itself, "No" the name wanted; .co.za or .com only.
     if (i === 2) {
@@ -264,7 +334,8 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
     const errs = check(step);
     setStepErrors(errs);
     if (Object.keys(errs).length) {
-      const first = formRef.current?.querySelector<HTMLElement>(`[name="${Object.keys(errs)[0]}"]`);
+      const key = Object.keys(errs)[0];
+      const first = formRef.current?.querySelector<HTMLElement>(key === "colour" ? ".sp input:not([type=hidden]), .sp button" : `[name="${key}"]`);
       first?.focus();
       return;
     }
@@ -311,17 +382,23 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
     const errs = check(step);
     setStepErrors(errs);
     if (Object.keys(errs).length) return;
+    // Never send with fewer than three brand colours: back to that step.
+    const colourErr = check(2).colour;
+    if (colourErr) {
+      setStepErrors({ colour: colourErr });
+      go(2);
+      return;
+    }
     const form = new FormData(e.currentTarget);
-    form.set("total", total === null ? "Quoted" : `R${total} (${studioMoney(total, cur)} shown)`);
+    form.set("total", total === null ? "Quoted" : `R${total}${cur === "USD" ? ` (approx. ${studioMoney(total, cur, usdPerZar)})` : ""}`);
     const files = [...form.getAll("logo"), ...form.getAll("photos")].filter((v): v is File => v instanceof File && v.size > 0);
-    const wa = gist(form);
     const size = files.reduce((n, f) => n + f.size, 0);
     if (files.length > STUDIO_ORDER_MAX_FILES || size > STUDIO_ORDER_MAX_BYTES) {
-      setState({ kind: "fail", message: STUDIO_ORDER_MESSAGES.tooLarge, whatsapp: wa, errors: { files: C.filesHint } });
+      setState({ kind: "fail", message: STUDIO_ORDER_MESSAGES.tooLarge, errors: { files: C.filesHint } });
       return;
     }
     if (files.some((f) => !(f.type in STUDIO_ORDER_FILE_TYPES))) {
-      setState({ kind: "fail", message: STUDIO_ORDER_MESSAGES.invalid, whatsapp: wa, errors: { files: "Pictures or PDF only" } });
+      setState({ kind: "fail", message: STUDIO_ORDER_MESSAGES.invalid, errors: { files: "Pictures or PDF only" } });
       return;
     }
     setState({ kind: "sending" });
@@ -335,18 +412,9 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
       }
       if (res.ok && body.ok) {
         const ref = body.ref ?? "";
-        if (canPay && total !== null) {
-          studioPay({
-            amountZar: total,
-            itemName: `ROKCT ${service}`,
-            ref,
-            email: String(form.get("email") ?? ""),
-            name: String(form.get("name") ?? ""),
-            pageUrl: `${window.location.origin}${window.location.pathname}`,
-          });
-          return;
-        }
-        setState({ kind: "ok", ref, ack: body.ack !== false });
+        // 1.20.7: the client pays before leaving: the payment step follows.
+        const href = studioPayHref(ref, service, addons, String(form.get("name") ?? ""), String(form.get("email") ?? ""));
+        setState({ kind: "ok", ref, ack: body.ack !== false, total, href });
         formRef.current?.reset();
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -354,11 +422,10 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
       setState({
         kind: "fail",
         message: body.message || (res.status === 413 ? STUDIO_ORDER_MESSAGES.tooLarge : STUDIO_ORDER_MESSAGES.sendFailed),
-        whatsapp: wa,
         errors: body.errors ?? {},
       });
     } catch {
-      setState({ kind: "fail", message: STUDIO_ORDER_MESSAGES.sendFailed, whatsapp: wa, errors: {} });
+      setState({ kind: "fail", message: STUDIO_ORDER_MESSAGES.sendFailed, errors: {} });
     }
   }
 
@@ -369,6 +436,7 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
         <p className="of-ref num">{state.ref}</p>
         <h2 className="disp of-done-h">{C.okTitle}</h2>
         <p className="lede">{state.ack ? C.okText : C.okNoAck}</p>
+        <StudioPayStep refCode={state.ref} total={state.total} href={state.href} pay={pay} />
       </div>
     );
   }
@@ -405,9 +473,6 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
           {state.kind === "fail" ? (
             <div className="of-fail" role="alert">
               <p>{state.message}</p>
-              <a className="btn btn-acc btn-sm" href={state.whatsapp}>
-                {C.failWhatsApp}
-              </a>
             </div>
           ) : null}
 
@@ -433,8 +498,8 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
                       {r.lead ? <span className="op-tag">Forever hosting included</span> : null}
                     </span>
                     <span className="op-card-p num">
-                      {r.price.kind === "deal" ? <s>{studioMoney(STUDIO_DEAL_ZAR.normal, cur)}</s> : null}
-                      <b>{z === null ? "Quoted" : studioMoney(z, cur)}</b>
+                      {r.price.kind === "deal" ? <s>{studioMoney(STUDIO_DEAL_ZAR.normal, cur, usdPerZar)}</s> : null}
+                      <b>{z === null ? "Quoted" : studioMoney(z, cur, usdPerZar)}</b>
                     </span>
                   </label>
                 );
@@ -470,7 +535,8 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
                       <span className="sm">{a.what}</span>
                     </span>
                     <span className="op-card-p num">
-                      <b>{z === 0 ? "Included" : `+ ${studioMoney(z, cur)}`}</b>
+                      {a.wasZar ? <s>{studioMoney(a.wasZar, cur, usdPerZar)}</s> : null}{" "}
+                      <b>{z === 0 ? "Included" : `+ ${studioMoney(z, cur, usdPerZar)}`}</b>
                     </span>
                   </label>
                 );
@@ -501,7 +567,7 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
               <Field name="business" errors={errors} />
               <Field name="sells" errors={errors} />
               <Field name="area" errors={errors} />
-              <Field name="colour" errors={errors} />
+              <StudioColourPicker error={errors.colour} />
             </div>
             <div className="of-pages" role="group" aria-label="Pages you want">
               {STUDIO_ORDER_PAGES.map((p) => (
@@ -625,11 +691,9 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
             </label>
             {errors.terms ? <small className="of-err">{errors.terms}</small> : null}
             <p className="fine">
-              {canPay
-                ? "We email your order to our team first, then take you to PayFast to pay securely."
-                : total === null
+              {total === null
                   ? "We email your order to our team and send you a quote before any payment."
-                  : "We email your order to our team and send you payment details."}
+                  : "We email your order to our team, then show you how to pay: bank transfer or card."}
             </p>
           </fieldset>
 
@@ -649,8 +713,8 @@ export function StudioOrderForm({ terms, promise }: { terms: StudioOrderTerm[]; 
               </button>
             ) : (
               <button className="btn btn-acc" type="submit" disabled={sending} aria-busy={sending}>
-                {canPay ? <RiLockLine size={18} aria-hidden="true" /> : <RiMailSendLine size={18} aria-hidden="true" />}
-                {sending ? C.sending : canPay ? `Pay ${totalText} with PayFast` : C.submit}
+                <RiMailSendLine size={18} aria-hidden="true" />
+                {sending ? C.sending : C.submit}
               </button>
             )}
           </div>
