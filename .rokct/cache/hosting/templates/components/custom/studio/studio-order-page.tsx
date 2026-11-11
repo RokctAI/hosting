@@ -23,14 +23,13 @@
 
 import "./studio.css";
 
-import { RiCheckboxCircleLine, RiCloseCircleLine, RiInfinityLine } from "@remixicon/react";
+import { RiCheckboxCircleLine, RiCloseCircleLine, RiInfinityLine, RiShieldCheckLine } from "@remixicon/react";
 
 import { BackToTop } from "@/components/custom/back-to-top";
 
 import { StudioCurrencyProvider, StudioHeader } from "./studio-client";
-import { STUDIO_WHATSAPP_DISPLAY, STUDIO_WHATSAPP_URL } from "./studio-copy";
 import { StudioFooter } from "./studio-home";
-import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF, STUDIO_ORDER_PROMISE, studioOrderTerms } from "./studio-order";
+import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF, STUDIO_ORDER_PROMISE, STUDIO_STATUS_HREF, studioOrderTerms } from "./studio-order";
 import { StudioOrderForm, type StudioOrderPayOptions } from "./studio-order-form";
 
 export type StudioOrderReturn = { kind: "paid"; ref: string } | { kind: "cancelled" } | null;
@@ -61,11 +60,23 @@ export function StudioOrder({
                 <h1 className="disp od-h1">{C.title}</h1>
                 <p className="lede">{C.lede}</p>
               </div>
-              <div className="od-forever">
-                <RiInfinityLine size={28} aria-hidden="true" />
-                <div>
-                  <b>{C.foreverTitle}</b>
-                  <span>{C.foreverText}</span>
+              <div className="od-side-hl">
+                <div className="od-forever">
+                  <RiInfinityLine size={28} aria-hidden="true" />
+                  <div>
+                    <b>{C.foreverTitle}</b>
+                    <span>
+                      {C.foreverText} <mark>{C.foreverLimit}</mark>.
+                    </span>
+                  </div>
+                </div>
+                {/* 1.20.8 (Ray): the money-back guarantee, in yellow-orange. */}
+                <div className="od-money">
+                  <RiShieldCheckLine size={28} aria-hidden="true" />
+                  <div>
+                    <b>{C.moneyBackTitle}</b>
+                    <span>{C.moneyBackText}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -80,7 +91,8 @@ export function StudioOrder({
                       <b>{C.paidTitle}</b>
                       <span>
                         {C.paidText}
-                        {back.ref ? ` Your reference: ${back.ref}.` : ""}
+                        {back.ref ? ` Your reference is ${back.ref}.` : ""}{" "}
+                        {back.ref ? <a href={`${STUDIO_STATUS_HREF}?ref=${encodeURIComponent(back.ref)}`}>Order status</a> : null}
                       </span>
                     </div>
                   </div>
@@ -100,8 +112,9 @@ export function StudioOrder({
             <div className="wrap">
               <StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} pay={pay} />
               <p className="sm od-wa">
-                Rather talk? <a href={STUDIO_WHATSAPP_URL}>WhatsApp {STUDIO_WHATSAPP_DISPLAY}</a>. Files can also go to{" "}
-                <a href={`mailto:${ordersEmail}`}>{ordersEmail}</a>.
+                {/* 1.20.8 (Ray, 13:31Z): the order flow is email only, no WhatsApp. */}
+                Files can also go to{" "}
+                <a href={`mailto:${ordersEmail}`}>{ordersEmail}</a>. Read the full <a href="/terms">terms</a>.
               </p>
             </div>
           </section>

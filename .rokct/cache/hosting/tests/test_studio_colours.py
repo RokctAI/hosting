@@ -42,12 +42,14 @@ def read(p):
 
 
 PROBE = r"""
-import { studioColourBase as b, studioShades as sh, studioParseColours as p, STUDIO_COLOURS_ERROR } from './studio-shades.ts';
+import { studioColourBase as b, studioShades as sh, studioParseColours as p, STUDIO_COLOURS_ERROR, studioTints, studioHexToHsv, studioHsvToHex, studioParseColourRoles as pr, studioFormatColourRoles as fr } from './studio-shades.ts';
+import { studioBankQrText } from './studio-pay.ts';
 import { validateStudioOrder } from './studio-order.ts';
 import { buildStudioOrderMails } from './studio-order-mail.ts';
 const base = { service: 'Website and brand bundle', name: 'T', email: 't@example.com', business: 'B', sells: 'S', terms: 'yes' };
 const ok = validateStudioOrder({ ...base, colour: '#1A73E8, #800000, #228b22' }, []);
-const two = validateStudioOrder({ ...base, colour: '#1a73e8, #800000' }, []);
+const two = validateStudioOrder({ ...base, colour: 'Secondary #1a73e8, Accent #800000' }, []);
+const one = validateStudioOrder({ ...base, colour: 'Primary #1a73e8' }, []);
 const none = validateStudioOrder({ ...base }, []);
 const mail = buildStudioOrderMails(ok.order, [], { from: 'a@b.co', ordersEmail: 'o@b.co' }, 'R1');
 const light = (h) => { const n = parseInt(h.slice(1), 16); return ((n >> 16) & 255) + ((n >> 8) & 255) + (n & 255); };
@@ -59,7 +61,15 @@ console.log(JSON.stringify({
   parsed: [p('#AABBCC, #112233 bad #445566'), p('#1,#2,#3'), p('#111111 #222222 #333333 #444444 #555555 #666666').length],
   ok: ok.ok, colour: ok.ok ? ok.order.colour : null,
   two: two.ok ? null : two.errors.colour, none: none.ok ? null : none.errors.colour, err: STUDIO_COLOURS_ERROR,
-  mailHas: mail.order.text.includes('#1a73e8, #800000, #228b22'),
+  mailHas: mail.order.text.includes('Primary #1a73e8, Secondary #800000, Accent #228b22'),
+  oneOk: one.ok,
+  tints: studioTints('#1a73e8'), tintsDark: studioTints('#1a73e8').every((h, i, a) => i === 0 || light(h) < light(a[i - 1])),
+  roundTrip: ['#1a73e8', '#800000', '#228b22', '#ffffff', '#000000', '#abcdef'].map((h) => studioHsvToHex(...studioHexToHsv(h))),
+  hsvRed: studioHsvToHex(0, 1, 1), hsvGrey: studioHsvToHex(200, 0, 0.5),
+  roles: pr('Primary #AABBCC, Accent #112233, Extra 1 #445566'), loose: pr('#111111, #222222'),
+  fmt: fr([{ role: 'Primary', hex: '#aabbcc' }, { role: 'Accent', hex: '#112233' }]),
+  qr: studioBankQrText({ account: '0000000000', amountZar: 2500, ref: 'CX-TEST-7' }),
+  qrNoAmount: studioBankQrText({ account: '0000000000', amountZar: null, ref: 'CX-TEST-7' }),
 }));
 """
 
@@ -100,11 +110,34 @@ class TestShadeRules(unittest.TestCase):
 
     def test_three_needed_and_hex_reaches_the_email(self):
         self.assertTrue(self.o["ok"])
-        self.assertEqual(self.o["colour"], "#1a73e8, #800000, #228b22")
-        self.assertEqual(self.o["two"], self.o["err"])
+        self.assertEqual(self.o["colour"], "Primary #1a73e8, Secondary #800000, Accent #228b22")
+        self.assertEqual(self.o["two"], self.o["err"])  # no Primary
         self.assertEqual(self.o["none"], self.o["err"])
-        self.assertIn("at least 3", self.o["err"])
+        self.assertTrue(self.o["oneOk"])  # 1.21.4: Primary alone is enough
+        self.assertIn("primary", self.o["err"])
         self.assertTrue(self.o["mailHas"])
+
+    def test_roles_parse_and_format(self):
+        self.assertEqual(self.o["roles"], [{"role": "Primary", "hex": "#aabbcc"}, {"role": "Accent", "hex": "#112233"},
+                                           {"role": "Extra 1", "hex": "#445566"}])
+        self.assertEqual([r["role"] for r in self.o["loose"]], ["Primary", "Secondary"])
+        self.assertEqual(self.o["fmt"], "Primary #aabbcc, Accent #112233")
+
+    def test_nine_tints_and_hsv(self):
+        self.assertEqual(len(self.o["tints"]), 9)
+        self.assertTrue(self.o["tintsDark"])
+        self.assertEqual(self.o["roundTrip"], ["#1a73e8", "#800000", "#228b22", "#ffffff", "#000000", "#abcdef"])
+        self.assertEqual(self.o["hsvRed"], "#ff0000")
+        self.assertEqual(self.o["hsvGrey"], "#808080")
+
+    def test_bank_qr_text_has_reference_and_amount(self):
+        qr = self.o["qr"]
+        self.assertIn("Reference: CX-TEST-7", qr)
+        self.assertIn("Amount: R2500", qr)
+        for line in ("Account name: ROKCT INTELLIGENCE (PTY) LTD", "Bank: Capitec Business", "Branch code: 470010",
+                     "Account number: 0000000000"):
+            self.assertIn(line, qr)
+        self.assertNotIn("Amount", self.o["qrNoAmount"])
 
 
 class TestPickerWiring(unittest.TestCase):
@@ -112,19 +145,25 @@ class TestPickerWiring(unittest.TestCase):
         form = read(FORM)
         self.assertIn("<StudioColourPicker error={errors.colour} />", form)
         self.assertNotIn('<Field name="colour"', form)
-        self.assertIn("studioParseColours(String(data.get(\"colour\")", form)
-        self.assertIn("const colourErr = check(2).colour;", form)
+        self.assertIn('studioParseColourRoles(String(data.get("colour")', form)
+        self.assertIn("const colourErr = isPlan ? undefined : check(2).colour;", form)
         order = read(os.path.join(STUDIO, "studio-order.ts"))
         self.assertIn('{ name: "colour", label: "Your brand colours", kind: "text", required: true, max: 200 }', order)
 
     def test_picker_behaviour(self):
         p = read(PICKER)
-        self.assertIn('<input type="hidden" name="colour" value={chosen.join(", ")} />', p)
-        self.assertIn("next.length < STUDIO_COLOURS_MAX) next.push(empty())", p)  # a new field after each pick
+        self.assertIn('<input type="hidden" name="colour" value={studioFormatColourRoles(chosen)} />', p)
         self.assertIn("onClick={() => set(i, { hex: h, open: false })}", p)  # a pick collapses to a chip
-        self.assertIn("onClick={() => set(i, { open: true })}", p)  # the chip reopens the shades
+        self.assertIn("onClick={() => set(i, { open: !s.open })}", p)  # 1.21.4: the chip opens the shade panel
+        self.assertIn("<StudioShadePanel", p)
+        self.assertIn('role="slider"', p)  # the square: arrow keys
+        self.assertIn('type="range"', p)  # the hue slider
+        self.assertIn("onPointerDown", p)  # touch and mouse
+        self.assertIn("+ Add another colour", p)
+        self.assertIn('STUDIO_COLOUR_ROLES.slice(0, 3)', p)  # Primary, Secondary, Accent
         self.assertGreaterEqual(p.count('type="button"'), 3)  # real buttons: keyboard works
         self.assertIn("aria-pressed", p)
+        self.assertIn("aria-expanded", p)
         self.assertIn("aria-label={`Shade ${k + 1} of 5", p)
 
     def test_right_to_left_and_phone_width(self):
@@ -137,6 +176,42 @@ class TestPickerWiring(unittest.TestCase):
         for f in ("studio-shades.ts", "studio-colour-picker.tsx"):
             self.assertIn((f"templates/components/custom/studio/{f}", f"components/custom/studio/{f}"), pairs)
 
+
+class TestPayStepV2(unittest.TestCase):
+    """1.21.4 (Ray): the Pay step as two cards, the card option a bank card, QR codes."""
+
+    def test_card_looks_like_a_card(self):
+        form = read(FORM)
+        for s in ('className="pay-cc"', "pay-cc-chip", ">CORTEX<", "•••• •••• •••• ••••", "{P.cardBrands}", "P.cardButton(", 'className="pay-refbox"'):
+            self.assertIn(s, form)
+        css = read(CSS)
+        self.assertIn("aspect-ratio:1.586", css)
+        self.assertIn("var(--acc-deep)", css)
+
+    def test_after_send_details_and_qr(self):
+        route = read(os.path.join(SDK_ROOT, "templates", "app", "api", "studio", "order", "route.ts"))
+        self.assertIn("const payInfo = await studioPayAfterSend(ref,", route)
+        self.assertIn("reply(200, { ok: true, ref, ack: sent.ack, pay: payInfo })", route)
+        qr = read(os.path.join(STUDIO, "studio-pay-qr.ts"))
+        self.assertIn('import QRCode from "qrcode";', qr)
+        self.assertIn("account ? svg(studioBankQrText(", qr)  # no account, no bank QR
+        self.assertIn("cardUrl ? svg(cardUrl) : null", qr)  # no PayFast, no card QR
+        self.assertIn("payshap: studioPayshapId(), capitecQr: studioCapitecQrUrl()", qr)
+        form = read(FORM)
+        self.assertIn("{info.qrBank ? <Qr", form)
+        self.assertIn("{info.qrCard ? <Qr", form)
+        self.assertIn("{info.payshap ? (", form)
+        self.assertIn("{info.capitecQr ? (", form)
+        self.assertNotIn('from "qrcode"', form)  # never in the client bundle
+        pay = read(os.path.join(STUDIO, "studio-pay.ts"))
+        for s in ('"Scan to copy bank details"', '"Capitec customers: scan with the Capitec app"',
+                  '"Pay instantly with PayShap from any bank app"', '"Scan to pay by card on your phone"'):
+            self.assertIn(s, pay)
+        self.assertNotIn("account: studioBankAccount()", read(os.path.join(SDK_ROOT, "templates", "app", "order", "page.tsx")))
+        m = json.loads(read(MANIFEST))["app_type"]["hosting"]
+        self.assertIn("qrcode", m["dependencies"])
+        self.assertIn(("templates/components/custom/studio/studio-pay-qr.ts", "components/custom/studio/studio-pay-qr.ts"),
+                      {(i["from"], i["to"]) for i in m["installs"]})
 
 if __name__ == "__main__":
     unittest.main()

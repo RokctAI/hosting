@@ -24,7 +24,10 @@
 // at fixed HSL lightness steps, lightest to darkest. The order needs 3 to 5
 // colours (a colour system), sent as hex. Pure: no DOM.
 
-export const STUDIO_COLOURS_MIN = 3;
+// 1.21.4 (Ray, "primary, secondary, etc"): colours are picked by role.
+// Only Primary is needed; Secondary and Accent are optional, plus up to two
+// more. MIN counts the required Primary.
+export const STUDIO_COLOURS_MIN = 1;
 export const STUDIO_COLOURS_MAX = 5;
 /** HSL lightness of the five shades, lightest first. */
 export const STUDIO_SHADE_LIGHTNESS = [0.85, 0.7, 0.55, 0.4, 0.25] as const;
@@ -123,4 +126,128 @@ export function studioParseColours(value: string): string[] {
     .slice(0, STUDIO_COLOURS_MAX);
 }
 
-export const STUDIO_COLOURS_ERROR = `Pick at least ${STUDIO_COLOURS_MIN} brand colours (up to ${STUDIO_COLOURS_MAX}) so we can build your colour system.`;
+export const STUDIO_COLOURS_ERROR = "Pick your primary brand colour. Secondary and accent are optional.";
+
+// ---- Colour-system preview (hosting_sdk 1.20.8) ----------------------------
+// Intake question 5 (offer-and-intake.md, 30 Oct): show the client a preview
+// of their colour system right after they pick. The picks keep their order
+// (the first is the main brand colour); a background tint and a text shade
+// are worked out from the first, and each role carries the text colour that
+// reads on it (black or white, by WCAG contrast).
+
+export interface StudioColourRole {
+  role: string;
+  hex: string;
+  /** "#ffffff" or "#111111", whichever contrasts more with `hex`. */
+  ink: string;
+}
+
+export const STUDIO_COLOUR_ROLES = ["Primary", "Secondary", "Accent", "Extra 1", "Extra 2"] as const;
+export type StudioColourRoleName = (typeof STUDIO_COLOUR_ROLES)[number];
+export interface StudioColourPick {
+  role: StudioColourRoleName;
+  hex: string;
+}
+
+/**
+ * 1.21.4: "Primary #aabbcc, Accent #112233" -> picks in role order. A hex
+ * without a (known) role takes the next free role, so a bare list still
+ * reads as Primary, Secondary, Accent... Each role once; up to five.
+ */
+export function studioParseColourRoles(value: string): StudioColourPick[] {
+  const out = new Map<StudioColourRoleName, string>();
+  const loose: string[] = [];
+  for (const part of (value || "").split(",")) {
+    const m = part.trim().toLowerCase().match(/^(.*?)\s*(#[0-9a-f]{6})$/);
+    if (!m) {
+      loose.push(...studioParseColours(part));
+      continue;
+    }
+    const role = STUDIO_COLOUR_ROLES.find((r) => r.toLowerCase() === m[1].trim());
+    if (role && !out.has(role)) out.set(role, m[2]);
+    else loose.push(m[2]);
+  }
+  for (const hex of loose) {
+    const free = STUDIO_COLOUR_ROLES.find((r) => !out.has(r));
+    if (free) out.set(free, hex);
+  }
+  return STUDIO_COLOUR_ROLES.filter((r) => out.has(r)).map((role) => ({ role, hex: out.get(role)! }));
+}
+
+/** Picks -> the `colour` field and email line: "Primary #aabbcc, Accent #112233". */
+export function studioFormatColourRoles(picks: StudioColourPick[]): string {
+  return picks.map((p) => `${p.role} ${p.hex}`).join(", ");
+}
+
+function luminance(hex: string): number {
+  const n = parseInt(hex.slice(1), 16);
+  const lin = (c: number) => {
+    const v = c / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+}
+
+/** The WCAG contrast ratio of two #rrggbb colours. */
+export function studioContrast(a: string, b: string): number {
+  const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+}
+
+/** Black-ish or white text, whichever reads better on `hex`. */
+export function studioInkOn(hex: string): string {
+  return studioContrast(hex, "#ffffff") >= studioContrast(hex, "#111111") ? "#ffffff" : "#111111";
+}
+
+/**
+ * The colour system the preview shows (1.21.4: by role), or null with no
+ * Primary. Each chosen role, then a background tint and a text shade worked
+ * out from the Primary.
+ */
+export function studioColourSystem(value: string | StudioColourPick[]): StudioColourRole[] | null {
+  const picks = typeof value === "string" ? studioParseColourRoles(value) : value;
+  const primary = picks.find((p) => p.role === "Primary");
+  if (!primary) return null;
+  const [h, s] = toHsl(primary.hex);
+  const roles: StudioColourRole[] = picks.map((p) => ({ role: p.role, hex: p.hex, ink: studioInkOn(p.hex) }));
+  const bg = fromHsl(h, Math.min(s, 0.35), 0.96);
+  const text = fromHsl(h, Math.min(s, 0.3), 0.12);
+  roles.push({ role: "Background", hex: bg, ink: studioInkOn(bg) }, { role: "Text", hex: text, ink: studioInkOn(text) });
+  return roles;
+}
+
+// ---- Shade panel (hosting_sdk 1.21.4; Ray, 2026-11-09) ---------------------
+// "Can't I click the shade I selected and get that colour spectrum, like in
+// design software?" Tapping a picked colour's chip opens a panel: nine tints
+// to shades of its hue (lightest to darkest), and a saturation/brightness
+// square with a hue slider and a hex box, so any exact colour can be picked.
+// The square and slider work in HSV (as design software does).
+
+export const STUDIO_TINT_LIGHTNESS = [0.93, 0.85, 0.75, 0.64, 0.53, 0.42, 0.32, 0.22, 0.13] as const;
+
+/** Nine tints to shades of `hex`'s hue and saturation, lightest to darkest. */
+export function studioTints(hex: string): string[] {
+  const [h, s] = toHsl(hex);
+  return STUDIO_TINT_LIGHTNESS.map((l) => fromHsl(h, s, l));
+}
+
+/** `#rrggbb` -> [hue 0-360, saturation 0-1, value 0-1]. */
+export function studioHexToHsv(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const max = Math.max(r, g, b), d = max - Math.min(r, g, b);
+  const h = d === 0 ? 0 : max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, max === 0 ? 0 : d / max, max];
+}
+
+/** [hue 0-360, saturation 0-1, value 0-1] -> `#rrggbb`. */
+export function studioHsvToHex(h: number, s: number, v: number): string {
+  const c = (x: number) => Math.min(1, Math.max(0, x));
+  s = c(s); v = c(v); h = ((h % 360) + 360) % 360;
+  const f = (k: number) => {
+    const t = (k + h / 60) % 6;
+    return v - v * s * Math.max(0, Math.min(t, 4 - t, 1));
+  };
+  const to = (x: number) => Math.round(x * 255).toString(16).padStart(2, "0");
+  return `#${to(f(5))}${to(f(3))}${to(f(1))}`;
+}

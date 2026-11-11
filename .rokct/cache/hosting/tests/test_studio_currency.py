@@ -147,13 +147,20 @@ class TestWiring(unittest.TestCase):
         form = read(FORM)
         self.assertIn("const { cur, usdPerZar } = useStudioCurrency();", form)
         self.assertNotRegex(form, r"studioMoney\([^()]*, cur\)")
-        # The charge is rand; dollars are marked approx.
-        self.assertIn('`R${total}${cur === "USD" ? ` (approx. ${studioMoney(total, cur, usdPerZar)})` : ""}`', form)
+        # 1.21.2 (Ray): rand only; the charge is the rand figure.
+        self.assertIn('form.set("total", total === null ? "Quoted" : `R${total}`);', form)
 
-    def test_footer_has_the_picker(self):
+    def test_no_toggle_one_plain_rate_line(self):
+        # 1.21.2 (Ray): no currency toggle anywhere; one plain rate line in the footer.
         home = read(HOME)
         footer = home.split('<footer className="ft">', 1)[1].split("</footer>", 1)[0]
-        self.assertIn("<StudioCurrencyBar />", footer)
+        self.assertEqual(footer.count("<StudioRateLine />"), 1)
+        self.assertNotIn("StudioCurrencyBar", home)
+        client = read(CLIENT)
+        self.assertNotIn("StudioCurrencyBar", client)
+        self.assertNotIn("setCur", client)
+        self.assertNotIn("Switch currency", client)
+        self.assertIn('cur: "ZAR"', client)
 
 
 if __name__ == "__main__":

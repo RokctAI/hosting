@@ -35,7 +35,7 @@ import { StudioCurrencyProvider, StudioHeader } from "./studio-client";
 import { STUDIO_WHATSAPP_URL } from "./studio-copy";
 import { StudioFooter, studioShowcaseBacks } from "./studio-home";
 import { StudioShowcaseCount, StudioShowcaseGrid, StudioShowcaseScope, StudioShowcaseSection } from "./studio-showcase-client";
-import { SHOWCASE_PAGE_HREF, STUDIO_SHOWCASE_COPY, type ShowcaseEntry } from "./studio-showcase";
+import { SHOWCASE_PAGE_HREF, SHOWCASE_SHELF_COPY, STUDIO_SHOWCASE_COPY, showcaseShelves, type ShowcaseEntry } from "./studio-showcase";
 
 export function StudioWork({
   fontClassName,
@@ -73,6 +73,33 @@ export function StudioWork({
                 <StudioShowcaseGrid sites={sites} rescue={rescue} backs={studioShowcaseBacks()} />
               </div>
             </StudioShowcaseSection>
+            {/* 1.20.8: every product we make; empty shelves say "Coming soon", never fake work. */}
+            <section className="wk-shelves" aria-labelledby="wk-shelves-h">
+              <div className="wrap">
+                <p className="kick">{SHOWCASE_SHELF_COPY.kicker}</p>
+                <h2 id="wk-shelves-h" className="disp">
+                  {SHOWCASE_SHELF_COPY.title}
+                </h2>
+                <ul className="wk-shelf-g">
+                  {showcaseShelves(sites).map((s) => (
+                    <li key={s.key} className="wk-shelf" data-shelf={s.key}>
+                      <h3>{s.label}</h3>
+                      <p className="sm">{s.what}</p>
+                      {s.count > 0 ? (
+                        <a className="btn btn-line btn-sm" href={`${SHOWCASE_PAGE_HREF}?service=${s.key}`}>
+                          {SHOWCASE_SHELF_COPY.see(s.count)}
+                        </a>
+                      ) : (
+                        <>
+                          <span className="soon">{SHOWCASE_SHELF_COPY.soon}</span>
+                          <small className="fine">{SHOWCASE_SHELF_COPY.soonText}</small>
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
             <div className="wk-end">
               <div className="wrap">
                 <div className="wk-foot">

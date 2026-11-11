@@ -22,7 +22,7 @@
 // PAYFAST_MERCHANT_ID / PAYFAST_MERCHANT_KEY): a 503 that says so.
 
 import { studioOrderZar } from "@/components/custom/studio/studio-copy";
-import { STUDIO_PAY_COPY } from "@/components/custom/studio/studio-pay";
+import { STUDIO_PAY_COPY, studioPayRef } from "@/components/custom/studio/studio-pay";
 import { studioPayfastConfig, studioPayfastSigned } from "@/components/custom/studio/studio-payfast";
 
 export const runtime = "nodejs";
@@ -32,27 +32,51 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+// 1.20.8: the payment step posts the form (ref, service, add-ons, name,
+// email) so the client's name and email never sit in a URL. GET still
+// answers the email's card link, which carries only ref, service and
+// add-ons.
 export async function GET(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  return payPage(url.origin, (k) => url.searchParams.get(k) ?? "", false);
+}
+
+export async function POST(request: Request): Promise<Response> {
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return Response.json({ ok: false, code: "invalid", message: "Bad request." }, { status: 400 });
+  }
+  const origin = new URL(request.url).origin;
+  return payPage(origin, (k) => String(form.get(k) ?? ""), true);
+}
+
+function payPage(origin: string, read: (k: string) => string, withContact: boolean): Response {
   const cfg = studioPayfastConfig();
   if (!cfg.enabled) {
     return Response.json({ ok: false, code: "card_unavailable", message: STUDIO_PAY_COPY.cardSoon }, { status: 503 });
   }
-  const url = new URL(request.url);
-  const q = (k: string, max: number) => (url.searchParams.get(k) ?? "").trim().slice(0, max);
-  const ref = q("ref", 40).replace(/[^A-Za-z0-9-]/g, "");
+  const q = (k: string, max: number) => read(k).trim().slice(0, max);
+  // 1.21.1: the cleaned, upper-case reference goes downstream (m_payment_id,
+  // the return URL), never the raw input.
+  const ref = studioPayRef(q("ref", 40));
   const service = q("service", 80);
   const addons = q("addons", 200).split(",").filter(Boolean);
   const total = studioOrderZar(service, addons);
-  if (!ref || total === null || total <= 0) {
+  // 1.20.8: the reference must be well formed (shape and check character).
+  // That catches typos; it does not prove we issued it (no order store yet).
+  if (ref === null || total === null || total <= 0) {
     return Response.json({ ok: false, code: "invalid", message: "This order can't be paid by card here. Please pay by bank transfer." }, { status: 400 });
   }
-  const origin = url.origin;
   const fields = studioPayfastSigned(cfg, {
     amountZar: total,
     itemName: `CORTEX ${service}`,
     ref,
-    name: q("name", 120),
-    email: q("email", 200),
+    name: withContact ? q("name", 120) : "",
+    email: withContact ? q("email", 200) : "",
+    service,
+    addons,
     returnUrl: `${origin}/order?paid=${encodeURIComponent(ref)}`,
     cancelUrl: `${origin}/order?cancelled=1`,
     notifyUrl: `${origin}/api/studio/payfast/notify`,

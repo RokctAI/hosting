@@ -661,6 +661,12 @@ export function StudioShowcaseRow({
     leaveT: 0 as ReturnType<typeof setTimeout> | 0,
     setLen: 1,
     shownLen: 0,
+    /** 1.21.11: the shown sites in order, so the automatic turn visits every one. */
+    order: [] as string[],
+    /** 1.21.11: a drag of the row (mouse, pen or a wide touch screen). */
+    drag: null as null | { id: number; x0: number; rx0: number; moved: boolean },
+    /** 1.21.11: swallow the click that ends a drag, so it never opens a card. */
+    dragClick: false,
   });
   r.current.paused = paused;
   r.current.reduce = reduce;
@@ -720,6 +726,7 @@ export function StudioShowcaseRow({
     const R = r.current;
     R.setLen = setLen;
     R.shownLen = shown.length;
+    R.order = shown.map((s) => s.repo);
     R.gen++;
     R.autoHold = false;
     R.autoCard = null;
@@ -806,23 +813,38 @@ export function StudioShowcaseRow({
   useEffect(() => {
     let alive = true;
     const R = r.current;
+    // 1.21.11 (Ray, 2026-11-11: "only expand some. others like sticks never
+    // expand"): the drift between two turns is about a card and a half, so
+    // "the card nearest the middle" kept skipping the same sites. The turn
+    // now goes to the NEXT site in the list after the last one it opened,
+    // the copy of it nearest the middle; only when no copy of that site is
+    // on screen does it fall back to the nearest card.
     const nearest = (): HTMLElement | null => {
       const s = stage.current;
       const ul = rail.current;
       if (!s || !ul) return null;
-      const mid = s.getBoundingClientRect().left + R.stageW / 2;
+      const sb = s.getBoundingClientRect();
+      const mid = sb.left + R.stageW / 2;
+      const at = R.lastAuto === null ? -1 : R.order.indexOf(R.lastAuto);
+      const next = R.order.length ? R.order[(at + 1) % R.order.length] : null;
       let best: HTMLElement | null = null;
       let d = Infinity;
+      let pick: HTMLElement | null = null;
+      let pd = Infinity;
       ul.querySelectorAll<HTMLElement>("li[data-site]").forEach((c) => {
-        if (c.dataset.site === R.lastAuto && R.shownLen > 1) return; // take turns
         const b = c.getBoundingClientRect();
         const dd = Math.abs(b.left + b.width / 2 - mid);
+        if (c.dataset.site === next && b.left >= sb.left && b.right <= sb.left + R.stageW && dd < pd) {
+          pd = dd;
+          pick = c;
+        }
+        if (c.dataset.site === R.lastAuto && R.shownLen > 1) return; // take turns
         if (dd < d) {
           d = dd;
           best = c;
         }
       });
-      return best;
+      return pick ?? best;
     };
     (async () => {
       while (alive) {
@@ -926,6 +948,55 @@ export function StudioShowcaseRow({
         if (R.big === g && !R.focusing) shrink();
       }, 260);
     }
+  };
+  // 1.21.11 (Ray, 2026-11-11: "i should also be able to drag so i can go
+  // click a card i want"): press and drag the row sideways to bring any
+  // card under the pointer. A press that moves under 5px stays a click.
+  const onDragDown = (e: PointerEvent) => {
+    if (e.button !== 0 || r.current.mobile || onExt(e.target)) return;
+    const R = r.current;
+    R.drag = { id: e.pointerId, x0: e.clientX, rx0: R.x, moved: false };
+  };
+  const onDragMove = (e: PointerEvent) => {
+    const R = r.current;
+    const D = R.drag;
+    if (!D || D.id !== e.pointerId) return;
+    const dx = e.clientX - D.x0;
+    if (!D.moved) {
+      if (Math.abs(dx) < 5) return;
+      D.moved = true;
+      cancelAuto();
+      if (R.big !== null) shrink();
+      stage.current?.setPointerCapture?.(e.pointerId);
+      stage.current?.classList.add("dragging");
+    }
+    R.xGoal = null;
+    R.v = 0;
+    R.x = D.rx0 - dx;
+    if (R.x >= 2 * R.setW) {
+      R.x -= R.setW;
+      D.rx0 -= R.setW;
+    } else if (R.x < R.setW * 0.5) {
+      R.x += R.setW;
+      D.rx0 += R.setW;
+    }
+  };
+  const onDragUp = (e: PointerEvent) => {
+    const R = r.current;
+    const D = R.drag;
+    if (!D || D.id !== e.pointerId) return;
+    R.drag = null;
+    if (!D.moved) return;
+    R.dragClick = true;
+    setTimeout(() => (R.dragClick = false), 0);
+    stage.current?.releasePointerCapture?.(e.pointerId);
+    stage.current?.classList.remove("dragging");
+  };
+  const onDragClick = (e: MouseEvent) => {
+    if (!r.current.dragClick) return;
+    r.current.dragClick = false;
+    e.preventDefault();
+    e.stopPropagation();
   };
   const onRailClick = (e: MouseEvent) => {
     const card = cardOf(e.target);
@@ -1045,6 +1116,12 @@ export function StudioShowcaseRow({
         className={`sr-stage${big !== null ? " has-big" : ""}`}
         aria-label={T.rowLabel}
         onPointerLeave={onStageLeave}
+        onPointerDown={onDragDown}
+        onPointerMove={onDragMove}
+        onPointerUp={onDragUp}
+        onPointerCancel={onDragUp}
+        onClickCapture={onDragClick}
+        onDragStart={(e) => e.preventDefault()}
       >
         <div ref={track} className="sr-track">
           <ul

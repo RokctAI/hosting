@@ -37,7 +37,7 @@ import { BackToTop } from "@/components/custom/back-to-top";
 
 import {
   StudioCopyNumber,
-  StudioCurrencyBar,
+  StudioRateLine,
   StudioCurrencyProvider,
   StudioDeal,
   StudioDesignTabs,
@@ -382,16 +382,14 @@ export function StudioFooter() {
         </div>
         <div className="r">
           <span className="motto">{STUDIO_FOOTER.motto}</span>
-          {/* 1.20.7 (Ray): the currency picker sits in the footer too, on
-              every page with this footer; it shares the one provider. */}
-          <StudioCurrencyBar />
+          {/* 1.21.2 (Ray): one plain line on the rate; no currency toggle. */}
+          <StudioRateLine />
           {/* 1.20.7 (Ray): the site's own footer is `© <year> CORTEX`, with
               no maker credit (that one stays on client sites). */}
           <span className="fine">
             <span>
               © {new Date().getFullYear()} {STUDIO_FOOTER.siteName}
-            </span>{" "}
-            · {STUDIO_FOOTER.prices}
+            </span>
           </span>
         </div>
       </div>
@@ -565,7 +563,6 @@ export function StudioHome({
           <section className="sec" id="prices">
             <div className="wrap">
               <SectionHead {...STUDIO_PRICES_HEAD} />
-              <StudioCurrencyBar />
               <div className="pt">
                 {STUDIO_PRICE_ROWS.map((r) => (
                   <div className={r.lead ? "pr lead" : "pr"} key={r.name}>
@@ -638,6 +635,9 @@ export function StudioHome({
                     <p className="kick">{P.refund.kicker}</p>
                     <p className="big">{P.refund.big}</p>
                     <small>{P.refund.small}</small>
+                    <p className="refund-limit">
+                      <strong>{P.refund.limit}</strong>
+                    </p>
                   </div>
                   <ul className="terms">
                     {P.terms.map((t) => (

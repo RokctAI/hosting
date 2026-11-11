@@ -1,5 +1,220 @@
 # Changelog
 
+## 1.21.11
+
+* Portfolio row (Ray, 2026-11-11: "only expand some. others like sticks
+  never expand"). The automatic turn now opens the sites in list order,
+  the next one after the last it opened, instead of whichever card was
+  nearest the middle (the drift between turns skipped the same sites).
+* The row can be dragged ("i should also be able to drag so i can go
+  click a card i want"): press and drag sideways with a mouse, pen or a
+  wide touch screen; a press that moves under 5px is still a click.
+
+## 1.21.10
+
+Ray on PayFast (PR #85): a confirmed card payment emails both sides.
+
+* When PayFast's ITN passes every check, the validate call returns VALID and
+  `payment_status` is COMPLETE, `/api/studio/payfast/notify` sends
+  "Card payment received: <ref>" to the orders inbox (reference, amount,
+  payer name and email, PayFast payment id) and "Payment received, work has
+  started" to the payer's `email_address` (thanks, amount, reference, the
+  24-hour turnaround has started, Reply-To the orders inbox), in the same
+  style as the order acknowledgement (`buildStudioPaidMails`,
+  `sendStudioPaidMails`).
+* A failed send never changes the 200 to PayFast; the warning carries the
+  reference only.
+* Repeat ITNs for the same `pf_payment_id` are skipped within one server
+  process. There is no order database yet, so after a restart or on another
+  instance a repeat ITN can send the emails again.
+
+## 1.21.9
+
+Ray on the PayFast return (PR #85): PayFast only sends the customer back to
+`/order?paid=<ref>` when the payment succeeded, so the page must not say
+"we'll confirm once your payment clears".
+
+* The paid return state now reads "Thanks, your payment went through." with
+  "We've started on your order. Your reference is <ref>." under it.
+* Work is still matched against PayFast's confirmation (ITN) by reference, so
+  a hand-typed `?paid=` link only misleads the person who typed it.
+
+## 1.21.8
+
+Ray on the Pay step (PR #85): the 1.21.7 note adds friction on the page; put
+it in the email the customer gets instead.
+
+* The note is gone from the Pay step (its paragraph, the `.pay-start` CSS,
+  the `pay.email` option and `popNoteEnd` are removed; the order page passes
+  `{ card }` again).
+* The customer's order confirmation email (the acknowledgement, Reply-To the
+  orders inbox) now reads under "How to pay", in text and HTML: "Your 24-hour
+  turnaround starts once we receive your payment. Paying from a bank other
+  than Capitec? Reply to this email with your proof of payment and your
+  reference so we can start right away." The studio's own order email is
+  unchanged.
+
+## 1.21.7
+
+Ray on the Pay step (PR #85): "note that 24 starts once we receive payment.
+if sending from other bank send POP so we start working".
+
+* Under the bank details a highlighted note now reads: "Your 24-hour
+  turnaround starts once we receive your payment. Paying from a bank other
+  than Capitec? Send your proof of payment, with your reference, to
+  <orders email> so we can start right away."
+* The email is the order flow's existing inbox (`studioOrdersEmail`, the
+  same address as the order page's contact line), passed to the form as
+  `pay.email`; the link opens a mail with "Proof of payment <reference>"
+  as its subject. The order flow stays email only (no WhatsApp).
+
+## 1.21.6
+
+Ray on the Pay step (PR #85): "lost the account I gave you", "add the SWIFT code".
+
+* The account number was never in code: it has always come only from the
+  `STUDIO_BANK_ACCOUNT` server env var (sent after the order is placed), so
+  no fallback was dropped. Set `STUDIO_BANK_ACCOUNT` on Vercel to show it.
+* New "SWIFT code" row with its own copy button: `CABLZAJJ` (Capitec), with an
+  optional `STUDIO_BANK_SWIFT` env override. It is also in the "Scan to copy
+  bank details" QR text.
+
+## 1.21.5
+
+Ray on the Pay step (PR #85): "let card use our theme. or make it a black card."
+
+* The "Pay by card" card is now a black card: a near-black surface with a
+  soft diagonal sheen and white type, drawn the same in light and dark.
+* Its colour comes from CORTEX's own theme: the chip and the amount use the
+  site accent (--cc-acc is the light --acc, --cc-hi the dark --acc-text),
+  with a faint accent glow in the top corner. The gold chip and the other
+  non-brand colours are gone.
+
+## 1.21.4
+
+Ray's feedback on the CORTEX order form (PR #85).
+
+* Brand colours by role ("primary, secondary, etc"): Primary (needed),
+  Secondary and Accent (optional), and "+ Add another colour" for up to
+  two more (Extra 1, Extra 2). Each role has its own field, five quick-start
+  shades and the shade panel. The `colour` field, payload and both emails
+  now read "Primary #aabbcc, Secondary #..., Accent #..."
+  (studioParseColourRoles / studioFormatColourRoles; a bare hex list still
+  parses, in role order). Only the Primary is required (was three colours).
+* Shade panel ("click the shade I selected and get that colour spectrum"):
+  tapping a picked colour's chip opens nine tints to shades of that hue,
+  a saturation/brightness square (drag, tap, or arrow keys; Shift for big
+  steps), a native hue slider and a hex box. Hand-written, no new library
+  (studioTints, studioHexToHsv, studioHsvToHex in studio-shades.ts).
+* The colour preview shows every chosen role together; a missing Secondary
+  or Accent falls back to the background tint or the Primary.
+* Pay step redesigned ("make it look nicer. that card payment be a card"):
+  amount due on top, two option cards side by side (stacked on a phone).
+  "Pay by card" is drawn as a bank card (chip, CORTEX wordmark, masked
+  number, Visa · Mastercard, amount) in the accent gradient with a
+  "Pay R… now" button below; "Bank transfer (EFT)" leads with the CX
+  reference and its copy button. Account number behaviour unchanged.
+* Pay step after sending. The account number, PayShap ID, Capitec QR and
+  both QR codes now come back from /api/studio/order only once the order
+  is sent (studioPayAfterSend in the new studio-pay-qr.ts); the /order page
+  no longer carries the account number. The bank card lists account name,
+  bank, branch code, account number, amount and the CX reference, each with
+  its own copy button. Without STUDIO_BANK_ACCOUNT it still says "Our team
+  emails you the account number" and shows no bank QR.
+* QR codes, SVG drawn on the server with the new dependency `qrcode`:
+  "Scan to copy bank details" (plain text: account name, bank, branch,
+  account number, amount, CX reference; studioBankQrText; only with
+  STUDIO_BANK_ACCOUNT) and "Scan to pay by card" (this order's PayFast
+  card link, studioPayHref; only when PayFast is set up). The bank QR is
+  not scan-to-pay: no bank QR every South African bank app reads exists
+  yet, and SnapScan/Zapper need a merchant sign-up.
+* New optional env vars (server only):
+  * `STUDIO_PAYSHAP_ID`: a PayShap ShapID such as `0820000000@capitecbank`.
+    When set, the bank card leads with "Pay instantly with PayShap from any
+    bank app", the ID with a copy button and "Use reference CX-…".
+  * `STUDIO_CAPITEC_QR_URL`: an https (or site-relative) image URL of
+    Capitec's Pay Me QR. When set, it shows labelled "Capitec customers:
+    scan with the Capitec app".
+
+## 1.21.3
+
+* Favicon: CORTEX gets its own mark instead of base_sdk's generated letter
+  tile (which drew an "R" from the domain). A "C" in the wordmark's face
+  (Big Shoulders Display 800, #F2F1ED on #17161B) with the wordmark's
+  square (#F2818F), registered as `icon` in hosting-site-metadata.ts:
+  public/studio/brand/c-mark.png (512px, also the Apple touch icon) and
+  its source c-mark.svg. No other brand's mark is touched.
+
+## 1.21.2
+
+Ray's review of the CORTEX order form (draft PR #85).
+
+* No "I'd like an online shop too" / "I'd like an app too" boxes or their
+  note: they did not change the price and read as a promise. Gone from the
+  form, the payload (wantShop, wantApp, the app questions) and both emails.
+* Domain: no registrar names. "Where your domain is registered" is now a
+  plain free-text "Who manages your domain (optional)" (domainManager).
+* Domain: one box, checked as the client types (debounced 600 ms) on the
+  server through the rdap.org RDAP bootstrap, with "Available", "Already
+  registered" or "Couldn't check" beside it. .co.za is not in the IANA RDAP
+  bootstrap, so a .co.za name is "Already registered" when it has
+  nameservers and otherwise "Couldn't check"; we never say "Available"
+  unless a registry did. A registered (or unchecked) name asks "I already
+  own this domain". A failed lookup never blocks sending.
+* Currency: no currency toggle (footer, prices section or header pill);
+  prices are in rand only, with one plain rate line in the footer.
+* The form is three stages: Details (package, add-ons, business, contact),
+  Review (summary, and "I accept the terms" linking /terms), and Pay (the
+  PayFast and bank-transfer step with the CX reference). Pay opens only once
+  the terms are accepted and the order email has gone. Works at 390 px.
+
+## 1.21.1
+
+CORTEX batch 2 (website-service/cortex-requirements-audit.md), and the
+gatekeeper notes on 1.20.7's PayFast code.
+
+* Logo add-on asks "new or redesign"; a redesign needs the current logo
+  uploaded (form and server).
+* No stock-photo add-on or wording: a client with no photos gets
+  royalty-free photos at no extra cost.
+* Photo quality warning at upload (long edge under 1200 px, or a file under
+  60 KB); never blocks. The order email repeats file-size warnings.
+* Colour-system preview (roles, a background tint, a text shade and a
+  sample page) as soon as three colours are picked.
+* Business plan tiers ask the ten plan-intake questions (Starter: 1-3 and
+  5-7) instead of the website ones; colours and domain are not asked.
+* App upsell: what the app should do; Android, iPhone or both; same brand.
+* Order reference CX-XXXX-XXXX from a look-alike-free alphabet with a
+  check character; the same reference is the bank reference, PayFast's
+  m_payment_id, the ?paid= return and the /status lookup. The check is
+  weighted mod 19 (a prime alphabet size), so every single-character
+  substitution and every adjacent swap fails it. The pay route rejects a
+  reference with a bad shape or check character and sends the cleaned,
+  upper-case reference downstream; with no order store yet, it cannot tell
+  whether we issued a well-formed one.
+* Source line: "You get the app shell repo we clone for you" (Terms "Your
+  code", and the hosting section).
+* /status: checks a reference and says honestly that live status pages are
+  not switched on yet (no order store), never made-up phases.
+* /terms page, titled "Terms · CORTEX".
+* Money-back guarantee highlighted in yellow-orange on the home page and
+  /order, with "first 1,000" emphasised.
+* /work: shelves for pitch decks, print, business plans, social packs,
+  starter kits and app case studies; real work only, else "Coming soon".
+* PayFast: the ITN signature uses values exactly as posted (no trim); the
+  ITN must come from PayFast's hosts (www, sandbox, w1w, w2w, resolved at
+  check time, x-forwarded-for honoured); amount_gross must equal the amount
+  recomputed from the package and add-ons carried in custom_str1/2; a
+  validate answer other than VALID gets a non-200 and a warning.
+* /order?paid= says "Thanks, we'll confirm once your payment clears", never
+  "Payment received".
+* The card button POSTs (name and email never in a URL); the email's card
+  link carries only ref, package and add-ons.
+* WhatsApp (Ray, 9 Nov): every form submits by email only. The order flow
+  has no WhatsApp at all (the "Rather talk?" line, the cancel text, the
+  Contact term and the phone field labels); the contact section keeps a
+  plain "Chat on WhatsApp" link that carries no form data.
+* New user-visible brand text is CORTEX in capitals.
 ## 1.21.0
 
 * Cortex login and register (Ray: every app shell gets its own design for

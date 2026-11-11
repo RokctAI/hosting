@@ -754,3 +754,40 @@ export const STUDIO_SHOWCASE_COPY = {
     cta: "Want yours here? Message us on WhatsApp",
   },
 };
+
+// ---- Shelves beyond websites (1.20.8) ----------------------------------------
+// Ray, 1 Nov: the portfolio lists every product we make, not only sites
+// (pitch decks, print, plans, social packs), and app case studies from the
+// hand-drawn sketch to the final screens. Only real work is ever counted:
+// a shelf's count is the cards whose own showcase file names that service.
+// A shelf with nothing real yet says "Coming soon" - never a made-up piece.
+// App case studies have no data field yet, so that shelf is always "Coming
+// soon" until one is added.
+export interface ShowcaseShelf {
+  key: ShowcaseService | "app-case-study";
+  label: string;
+  what: string;
+}
+export const SHOWCASE_SHELVES: readonly ShowcaseShelf[] = [
+  { key: "pitch-deck", label: "Pitch decks", what: "Slides written and designed in the client's brand." },
+  { key: "print", label: "Print", what: "Flyers, posters, banners, menus, labels and business cards." },
+  { key: "business-plan", label: "Business plans", what: "Plans a bank, funder or investor can read." },
+  { key: "social-posts", label: "Social packs", what: "A month of posts, captions and a calendar." },
+  { key: "starter-kit", label: "Starter kits", what: "Logo, letterhead, quote and invoice templates." },
+  { key: "app-case-study", label: "App case studies", what: "From the hand-drawn sketch to the final screens." },
+];
+export const SHOWCASE_SHELF_COPY = {
+  kicker: "More than websites",
+  title: "Everything else we make.",
+  soon: "Coming soon",
+  soonText: "No finished work to show here yet. We only show real client work.",
+  see: (n: number) => (n === 1 ? "See 1 project" : `See ${n} projects`),
+} as const;
+
+/** Each shelf with how many real cards name it (app case studies: always 0 for now). */
+export function showcaseShelves(entries: ShowcaseEntry[]): (ShowcaseShelf & { count: number })[] {
+  return SHOWCASE_SHELVES.map((s) => ({
+    ...s,
+    count: s.key === "app-case-study" ? 0 : entries.filter((e) => e.services.includes(s.key as ShowcaseService)).length,
+  }));
+}
