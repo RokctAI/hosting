@@ -95,10 +95,11 @@ export function studioDeal(key: StudioDealKey, cur: StudioCurrency, usdPerZar: n
   return dollars(n);
 }
 
-export const STUDIO_CURRENCY_NOTE: Record<StudioCurrency, string> = {
-  ZAR: "Showing rand. The approximate dollar figure is beside each price.",
-  USD: "Showing approximate US dollars at today's rate. You pay the rand figure beside each price.",
-};
+/** 1.21.2 (Ray): the footer's one plain rate line. Prices are charged in rand. */
+export function studioRateLine(usdPerZar: number): string {
+  const zarPerUsd = usdPerZar > 0 ? 1 / usdPerZar : STUDIO_ZAR_PER_USD;
+  return `Prices are in rand (ZAR). For reference, US$1 is about R${zarPerUsd.toFixed(2)}.`;
+}
 
 // ---- Page copy ----------------------------------------------------------
 export const STUDIO_NAV = [
@@ -118,7 +119,8 @@ export const STUDIO_HERO = {
   prices: { ZAR: "Rand prices", USD: "Dollar prices" } as Record<StudioCurrency, string>,
   title: ["Your brand,", "taken seriously."],
   lede: "Websites, logos, business plans, pitch decks, print and social posts for small businesses. One price agreed before we start, a render for you to approve after every phase, and our team a WhatsApp message away.",
-  primary: "Message us on WhatsApp",
+  // 1.20.8 (Ray): WhatsApp only as a plain contact link; every form submits by email.
+  primary: "Chat on WhatsApp",
   secondary: "See the prices",
   hours: "our team replies in office hours, SAST",
   facts: [
@@ -711,6 +713,12 @@ export const STUDIO_PRICES_HEAD = {
   foot: "A quoted service is priced on WhatsApp before any work starts, and the price does not move once agreed. Every job is paid in full before work begins; the refund rule is below.",
 };
 
+/**
+ * 1.20.8 (Ray, 2 Nov): clients get the source, "not as sdk but as app shell
+ * repo we clone for them". One line, used by the Terms and the order page.
+ */
+export const STUDIO_SOURCE_LINE = "You get the app shell repo we clone for you: your site's own code, yours to keep.";
+
 export interface StudioPriceRow {
   name: string;
   tag?: string;
@@ -761,7 +769,7 @@ export const STUDIO_PRICE_ROWS: StudioPriceRow[] = [
 // the PayFast amount all follow.
 export interface StudioAddon {
   /** The form field (a yes/no flag in studio-order.ts) the add-on posts as. */
-  name: "designLogo" | "extraPages" | "stockPhotos";
+  name: "designLogo" | "extraPages";
   label: string;
   what: string;
   usd: number;
@@ -775,7 +783,8 @@ export const STUDIO_ADDONS: readonly StudioAddon[] = [
   // discounted R350, normally R650 (shown struck through), on any package.
   { name: "designLogo", label: "Logo design", what: "A logo drawn for your business, with colour and mono versions. Not part of the special.", usd: 0, zar: 350, wasZar: 650 },
   { name: "extraPages", label: "Two extra pages", what: "Beyond the four: a menu, price list, gallery or FAQ.", usd: 50 },
-  { name: "stockPhotos", label: "Stock photo set", what: "Licensed photos chosen for your trade, if you have none.", usd: 20 },
+  // 1.20.8 (Ray, 2 Nov): no stock photo add-on. A client with no photos
+  // gets royalty-free photos at no extra cost (STUDIO_ORDER_COPY.photosNone).
 ];
 
 /** A package's price in whole rand: the deal's offer, a fixed row at the fixed rate, or null when quoted. */
@@ -850,7 +859,7 @@ export const STUDIO_HOSTING_COST = {
   big: "Hosting is free for the life of your site, for the first 1,000 small business owners.",
   lines: ["Fair use. No monthly hosting fee.", "The first year of your .co.za or .com domain is included. After that you pay its yearly renewal, or we don't renew it."],
   lasts:
-    "All of this lasts for as long as your site is hosted with us. If you ever move it elsewhere, it’s yours to take, and the weekly care stops.",
+    "All of this lasts for as long as your site is hosted with us. You get the app shell repo we clone for you, so if you ever move your site elsewhere, its code is yours to take, and the weekly care stops.",
 };
 
 const NOV_2026 = "November 2026";
@@ -945,6 +954,8 @@ export const STUDIO_PROCESS = {
     kicker: "The refund rule",
     big: "If we miss the due date of your first render, you get a full refund.",
     small: "The first render is the phase 2 colour system and logo. Its due date is on your status page from the day you pay.",
+    /** 1.20.8 (Ray): the limit, emphasised in the highlight. */
+    limit: "Free lifetime hosting: first 1,000 businesses only.",
   },
   terms: [
     { b: "Payment", t: "You pay the full price before work starts. No deposit split." },
@@ -969,7 +980,7 @@ export const STUDIO_PROCESS = {
       "Three websites you like",
       "Pages you want",
       "Phone, WhatsApp and email",
-      'Photos, or "need stock photos"',
+      "Photos, or we use royalty-free ones",
       "What customers always ask you",
     ],
   },
@@ -1077,7 +1088,8 @@ export const STUDIO_CONTACT = {
   title: "Start on WhatsApp.",
   lede: "Send your business name and what you need. Our team replies in office hours.",
   note: "WhatsApp, text or voice note. Save the number as CORTEX.",
-  primary: "Message us on WhatsApp",
+  // 1.20.8 (Ray): WhatsApp only as a plain contact link; every form submits by email.
+  primary: "Chat on WhatsApp",
   copy: "Copy the number",
   copied: "Copied",
   selected: "Selected: press copy",
@@ -1090,7 +1102,6 @@ export const STUDIO_FOOTER = {
   // The copyright and credit come from base_sdk's SiteCredit (1.5.1, Ray,
   // 2026-10-31: "all site will be copyright sitename then built with love
   // (as heart) by ROKCT"); this is the note the fine line carries after it.
-  prices: "Prices in rand; dollars are approximate, at today's rate",
   // The copyright names the brand as it is set, in capitals. The host's
   // PLATFORM_NAME is "Rokct", so the studio passes its own name (1.5.2).
   siteName: "CORTEX",

@@ -42,9 +42,9 @@ import { HeaderAuthSlot } from "@/components/custom/header-auth-slot";
 import {
   STUDIO_CONTACT,
   STUDIO_ADDONS,
-  STUDIO_CURRENCY_NOTE,
   STUDIO_HERO,
   STUDIO_USD_PER_ZAR_FIXED,
+  studioRateLine,
   STUDIO_INTAKE_FORM,
   STUDIO_NAV,
   STUDIO_WHATSAPP_DISPLAY,
@@ -60,22 +60,11 @@ import {
   type StudioPriceFormat,
 } from "./studio-copy";
 
-const KEY = "rokct-cur";
-
-function readSaved(): StudioCurrency | null {
-  try {
-    const v = window.localStorage.getItem(KEY);
-    return v === "USD" || v === "ZAR" ? v : null;
-  } catch {
-    return null;
-  }
-}
-
-// 1.20.7: one context carries the chosen currency AND the live rate, so
-// every price (hero, rows, deal, order stepper) reads the same figures.
-const CurrencyContext = createContext<{ cur: StudioCurrency; setCur: (c: StudioCurrency) => void; usdPerZar: number; live: boolean }>({
+// 1.21.2 (Ray): prices are shown in rand only; there is no currency toggle.
+// The context still carries the live rate, for the one plain rate line in
+// the footer (StudioRateLine).
+const CurrencyContext = createContext<{ cur: StudioCurrency; usdPerZar: number; live: boolean }>({
   cur: "ZAR",
-  setCur: () => {},
   usdPerZar: STUDIO_USD_PER_ZAR_FIXED,
   live: false,
 });
@@ -86,37 +75,25 @@ export function useStudioCurrency() {
 }
 
 export function StudioCurrencyProvider({ children }: { children: ReactNode }) {
-  const [cur, setState] = useState<StudioCurrency>("ZAR");
   const [rate, setRate] = useState({ usdPerZar: STUDIO_USD_PER_ZAR_FIXED, live: false });
   useEffect(() => {
-    const saved = readSaved();
-    if (saved) setState(saved);
-    // Our own route answers the IP default and the server-fetched rate;
-    // on any failure the fixed rate and rand stay.
+    // Our own route answers the server-fetched rate; on any failure the
+    // fixed rate stays. Prices stay in rand either way.
     let gone = false;
     fetch("/api/studio/currency")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d: { cur?: unknown; usdPerZar?: unknown; live?: unknown } | null) => {
+      .then((d: { usdPerZar?: unknown; live?: unknown } | null) => {
         if (gone || !d) return;
         if (typeof d.usdPerZar === "number" && Number.isFinite(d.usdPerZar) && d.usdPerZar > 0) {
           setRate({ usdPerZar: d.usdPerZar, live: d.live === true });
         }
-        if (!saved && (d.cur === "ZAR" || d.cur === "USD")) setState(d.cur);
       })
       .catch(() => {});
     return () => {
       gone = true;
     };
   }, []);
-  const setCur = (c: StudioCurrency) => {
-    setState(c);
-    try {
-      window.localStorage.setItem(KEY, c);
-    } catch {
-      /* private window: the choice lasts this visit only */
-    }
-  };
-  return <CurrencyContext.Provider value={{ cur, setCur, ...rate }}>{children}</CurrencyContext.Provider>;
+  return <CurrencyContext.Provider value={{ cur: "ZAR", ...rate }}>{children}</CurrencyContext.Provider>;
 }
 
 /** One price, in the visitor's currency (`main`, `from`) or the other one (`alt`, `about`). */
@@ -161,21 +138,10 @@ export function StudioHeroCurrency() {
   return <>{STUDIO_HERO.prices[cur]}</>;
 }
 
-export function StudioCurrencyBar() {
-  const { cur, setCur } = useContext(CurrencyContext);
-  return (
-    <div className="curbar">
-      <div className="seg" role="group" aria-label="Currency">
-        <button type="button" aria-pressed={cur === "ZAR"} onClick={() => setCur("ZAR")}>
-          Rand · R
-        </button>
-        <button type="button" aria-pressed={cur === "USD"} onClick={() => setCur("USD")}>
-          Dollars · $
-        </button>
-      </div>
-      <span className="fine">{STUDIO_CURRENCY_NOTE[cur]}</span>
-    </div>
-  );
+/** 1.21.2 (Ray): the footer's one plain line on the conversion rate; no toggle. */
+export function StudioRateLine() {
+  const { usdPerZar } = useContext(CurrencyContext);
+  return <span className="fine">{studioRateLine(usdPerZar)}</span>;
 }
 
 function SunMoon() {
@@ -212,7 +178,6 @@ const STUDIO_AUTH_BAR = { login: "hd-login", signup: "btn btn-line btn-sm hd-sig
 const STUDIO_AUTH_MENU = { login: "mnav-auth", signup: "mnav-auth" };
 
 export function StudioHeader({ base = "", current }: { base?: string; current?: string }) {
-  const { cur, setCur } = useContext(CurrencyContext);
   const { resolvedTheme, setTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -239,14 +204,6 @@ export function StudioHeader({ base = "", current }: { base?: string; current?: 
           ))}
         </nav>
         <div className="hd-r">
-          <button
-            className="pill"
-            type="button"
-            aria-label={`Switch currency, now showing ${cur === "ZAR" ? "rand" : "dollars"}`}
-            onClick={() => setCur(cur === "ZAR" ? "USD" : "ZAR")}
-          >
-            <b>{cur === "ZAR" ? "R" : "$"}</b> {cur}
-          </button>
           <button
             className="pill ic"
             type="button"

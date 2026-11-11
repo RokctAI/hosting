@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.21.0",
+  "version": "1.21.11",
   "installs": [],
   "dependencies": {},
   "devDependencies": {},
@@ -92,6 +92,10 @@
           "to": "components/custom/studio/studio-pay.ts"
         },
         {
+          "from": "templates/components/custom/studio/studio-pay-qr.ts",
+          "to": "components/custom/studio/studio-pay-qr.ts"
+        },
+        {
           "from": "templates/app/order/page.tsx",
           "to": "app/order/page.tsx"
         },
@@ -158,6 +162,10 @@
         {
           "from": "templates/public/studio/logo",
           "to": "public/studio/logo"
+        },
+        {
+          "from": "templates/public/studio/brand",
+          "to": "public/studio/brand"
         },
         {
           "from": "templates/public/studio/lift",
@@ -232,6 +240,22 @@
           "to": "components/ui/use-toast.ts"
         },
         {
+          "from": "templates/components/custom/studio/studio-terms.tsx",
+          "to": "components/custom/studio/studio-terms.tsx"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-status.tsx",
+          "to": "components/custom/studio/studio-status.tsx"
+        },
+        {
+          "from": "templates/app/terms/page.tsx",
+          "to": "app/terms/page.tsx"
+        },
+        {
+          "from": "templates/app/status/page.tsx",
+          "to": "app/status/page.tsx"
+        },
+        {
           "from": "templates/components/custom/site-shell.tsx",
           "to": "components/custom/site-shell.tsx"
         },
@@ -244,10 +268,12 @@
         "@remixicon/react": "^4.6.0",
         "@radix-ui/react-toast": "^1.2.15",
         "next-themes": "^0.4.6",
-        "nodemailer": "^10.3.1"
+        "nodemailer": "^10.3.1",
+        "qrcode": "^1.5.4"
       },
       "devDependencies": {
-        "@types/nodemailer": "^8.0.2"
+        "@types/nodemailer": "^8.0.2",
+        "@types/qrcode": "^1.5.5"
       },
       "integrations": [
         {

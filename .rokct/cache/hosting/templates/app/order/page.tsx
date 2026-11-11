@@ -26,7 +26,8 @@ import { headers } from "next/headers";
 import { studioFontClassName } from "@/components/custom/studio/studio-fonts";
 import { studioOrdersEmail, studioRequestHost } from "@/components/custom/studio/studio-order-config";
 import { StudioOrder } from "@/components/custom/studio/studio-order-page";
-import { studioBankAccount, studioPayfastConfig } from "@/components/custom/studio/studio-payfast";
+import { studioCleanRef, studioIsOrderRef } from "@/components/custom/studio/studio-pay";
+import { studioPayfastConfig } from "@/components/custom/studio/studio-payfast";
 
 export const metadata: Metadata = {
   title: { absolute: "Order · CORTEX" },
@@ -37,9 +38,14 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const ordersEmail = studioOrdersEmail(undefined, studioRequestHost(await headers()));
   // PayFast's return_url and cancel_url (studio-pay.ts) land back here.
   const q = await searchParams;
-  const paid = typeof q.paid === "string" ? q.paid.replace(/[^A-Za-z0-9-]/g, "").slice(0, 40) : null;
+  // 1.20.8: only a well-formed reference (shape and check character) is echoed back; the page
+  // never claims the payment arrived (the ITN and the bank decide that).
+  const rawPaid = typeof q.paid === "string" ? studioCleanRef(q.paid) : null;
+  const paid = rawPaid !== null ? (studioIsOrderRef(rawPaid) ? rawPaid : "") : null;
   const back = paid !== null ? { kind: "paid" as const, ref: paid } : q.cancelled ? { kind: "cancelled" as const } : null;
   // 1.20.7: the payment step's options, from server env (no secret leaves).
-  const pay = { card: studioPayfastConfig().enabled, account: studioBankAccount() };
+  // 1.21.4: the account number is no longer on the page; the order route
+  // returns it (with PayShap and the Capitec QR) only after an order is sent.
+  const pay = { card: studioPayfastConfig().enabled };
   return <StudioOrder fontClassName={studioFontClassName} ordersEmail={ordersEmail} back={back} pay={pay} />;
 }

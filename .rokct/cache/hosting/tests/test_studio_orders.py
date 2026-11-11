@@ -280,13 +280,15 @@ class TestEmails(unittest.TestCase):
         o = self.order
         self.assertEqual(o["to"], "orders@mystudio.co.za")
         self.assertEqual(o["replyTo"], "thandi@example.com")
-        for label in ("What you are ordering", "Your name", "Your email", "Your WhatsApp number", "Business name",
+        for label in ("What you are ordering", "Your name", "Your email", "Your phone number", "Business name",
                       "What you sell or do, in one sentence", "Town or area you serve", "Your brand colours",
-                      "Three websites you like", "Pages you want", "Phone, WhatsApp and email to show on your site",
+                      "Three websites you like", "Pages you want", "Contact details to show on your site",
                       "Anything customers always ask you", "Anything else we should know", "I don't have a logo",
-                      "I'd like an online shop too", "I'd like an app too", "Files"):
+                      "Files"):
             self.assertIn(label, o["text"], label)
-        for value in ("Thandi Bakes", "Cakes for weddings", "Polokwane", "#ffa500, #800000, #228b22", "Do you deliver?", "Home, Contact, Other: Menu"):
+        for gone in ("I'd like an online shop too", "I'd like an app too"):
+            self.assertNotIn(gone, o["text"])
+        for value in ("Thandi Bakes", "Cakes for weddings", "Polokwane", "Primary #ffa500, Secondary #800000, Accent #228b22", "Do you deliver?", "Home, Contact, Other: Menu"):
             self.assertIn(value, o["text"])
         self.assertEqual(len(o["attachments"]), 1)
         self.assertEqual(o["attachments"][0]["filename"], "My Logo.png")
@@ -313,7 +315,7 @@ class TestEmails(unittest.TestCase):
             self.assertIn("full refund", self.ack[part])
 
     def test_ack_shows_every_term(self):
-        self.assertEqual(len(self.out["terms"]), 10)
+        self.assertEqual(len(self.out["terms"]), 11)  # 1.20.8: + "Your code"
         for t in self.out["terms"]:
             self.assertIn(f"{t['b']}: {t['t']}", self.ack["text"])
             self.assertIn(t["b"], self.ack["html"])
@@ -455,8 +457,8 @@ import { buildStudioOrderMails } from './studio-order-mail.ts';
 const base = { service: 'Website and brand bundle', name: 'Thandi M', email: 'thandi@example.com',
   business: 'Thandi Bakes', sells: 'Cakes', colour: '#ffa500 #800000 #228b22', terms: 'yes' };
 const cfg = { from: 'CORTEX <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
-const yes = validateStudioOrder({ ...base, hasDomain: 'yes', domain: 'thandibakes.co.za', registrar: 'Afrihost' }, []);
-const no = validateStudioOrder({ ...base, hasDomain: 'no', domain: 'stray.com', registrar: 'x', wantedDomain: 'ThandiBakes.co.za', domainCheck: 'available' }, []);
+const yes = validateStudioOrder({ ...base, hasDomain: 'yes', domain: 'thandibakes.co.za', domainManager: 'My cousin Sipho' }, []);
+const no = validateStudioOrder({ ...base, hasDomain: 'no', domain: 'stray.com', domainManager: 'x', wantedDomain: 'ThandiBakes.co.za', domainCheck: 'available' }, []);
 const urls = [];
 const fake = (status) => async (url) => { urls.push(url); return { status }; };
 const boom = async () => { throw new Error('offline'); };
@@ -471,6 +473,8 @@ const checks = {
   cozaNoNs: await studioCheckDomain('zzqx.co.za', { fetch: boom, hasNameservers: async () => false }),
   cozaBare: await studioCheckDomain('zzqx.co.za', { fetch: boom }),
   net: await studioCheckDomain('x.net', { fetch: fake(404) }),
+  cozaRdapTaken: await studioCheckDomain('takealot.co.za', { fetch: fake(200) }),
+  cozaRdap404: await studioCheckDomain('zzqx2.co.za', { fetch: fake(404), hasNameservers: async () => false }),
 };
 const noCheck = validateStudioOrder({ ...base, hasDomain: 'no', wantedDomain: 'thandibakes.com', domainCheck: 'nonsense' }, []);
 const noOrder = { ...no.order, domainCheck: 'taken' };
@@ -502,20 +506,20 @@ class TestDomainStep(unittest.TestCase):
     def setUpClass(cls):
         cls.out = run_node(DOMAIN_PROBE)
 
-    def test_yes_keeps_domain_and_registrar_and_mails_them(self):
+    def test_yes_keeps_domain_and_manager_and_mails_them(self):
         self.assertEqual(self.out["yes"]["hasDomain"], "yes")
         self.assertEqual(self.out["yes"]["domain"], "thandibakes.co.za")
-        self.assertEqual(self.out["yes"]["registrar"], "Afrihost")
+        self.assertEqual(self.out["yes"]["domainManager"], "My cousin Sipho")
         for text in (self.out["yesMail"], self.out["yesAck"]):
             self.assertIn("Already has a domain", text)
             self.assertIn("thandibakes.co.za", text)
-            self.assertIn("Where your domain is registered", text)
-            self.assertIn("Afrihost", text)
+            self.assertIn("Who manages your domain (optional)", text)
+            self.assertIn("My cousin Sipho", text)
 
     def test_no_drops_stray_answers_and_mails_the_note(self):
         self.assertEqual(self.out["no"]["hasDomain"], "no")
         self.assertEqual(self.out["no"]["domain"], "")
-        self.assertEqual(self.out["no"]["registrar"], "")
+        self.assertEqual(self.out["no"]["domainManager"], "")
         mail = self.out["noMail"]
         self.assertIn("No, needs one", mail)
         self.assertIn("check if it is free to register", mail)
@@ -523,7 +527,7 @@ class TestDomainStep(unittest.TestCase):
         self.assertNotIn(".net", mail)
         self.assertIn("yearly renewal", mail)
         self.assertNotIn("stray.com", mail)
-        self.assertNotIn("Where your domain is registered", mail)
+        self.assertNotIn("Who manages your domain", mail)
 
     def test_yes_needs_a_real_domain(self):
         self.assertFalse(self.out["yesEmpty"]["ok"])
@@ -534,21 +538,35 @@ class TestDomainStep(unittest.TestCase):
         self.assertIn("hasDomain", self.out["bogus"]["errors"])
         self.assertTrue(self.out["unset"]["ok"])
 
-    def test_form_asks_the_question_with_both_options(self):
+    def test_form_one_box_live_check_then_asks_if_owned(self):
+        # 1.21.2 (Ray): one domain box, checked as the client types
+        # (debounced), with the result beside it; a registered (or unchecked)
+        # name asks "I already own this domain".
         order = read(ORDER)
-        self.assertIn('question: "Do you already have a domain name?"', order)
-        self.assertIn('{ value: "yes", label: "Yes" }', order)
-        self.assertIn('{ value: "no", label: "No, I need one" }', order)
+        self.assertIn('question: "I already own this domain"', order)
+        self.assertIn('{ value: "yes", label: "Yes, it\'s mine" }', order)
         form = read(FORM)
-        self.assertIn('type="radio"', form)
-        self.assertIn("name={STUDIO_ORDER_DOMAIN.name}", form)
-        self.assertIn('<Field name="domain" errors={errors} />', form)
-        self.assertIn('<Field name="registrar" errors={errors} />', form)
-        self.assertIn("STUDIO_ORDER_DOMAIN.needsOne", form)
-        self.assertIn('<Field name="wantedDomain" errors={errors} />', form)
+        self.assertIn('name="domain"', form)
+        self.assertIn("setTimeout(", form)
+        self.assertIn("DOMAIN_DEBOUNCE_MS", form)
+        self.assertIn('id="of-domain-status"', form)
+        self.assertIn('aria-live="polite"', form)
+        self.assertIn("domainName && !domainFree", form)
+        self.assertIn("options={STUDIO_ORDER_DOMAIN.options}", form)
+        self.assertIn('<Field name="domainManager" errors={errors} />', form)
+        self.assertIn('name="wantedDomain"', form)
         self.assertIn('name="domainCheck"', form)
         self.assertIn("STUDIO_DOMAIN_API", form)
         self.assertIn("STUDIO_ORDER_DOMAIN.hasOne", form)
+        self.assertIn("STUDIO_ORDER_DOMAIN.needsOne", form)
+
+    def test_no_registrar_names(self):
+        # 1.21.2 (Ray): we do not advertise other companies.
+        for path in (ORDER, FORM):
+            text = read(path).lower()
+            for name in ("afrihost", "xneelo", "godaddy", "hetzner", "namecheap", "registrar\""):
+                self.assertNotIn(name, text, path)
+        self.assertNotIn("Where your domain is registered", read(ORDER))
 
     def test_only_co_za_and_com(self):
         for key in ("yesNet", "yesOrg", "noNet"):
@@ -557,12 +575,12 @@ class TestDomainStep(unittest.TestCase):
         self.assertIn("Only a .co.za or .com", self.out["noNet"]["errors"]["wantedDomain"])
         self.assertTrue(self.out["yesCom"]["ok"])
         self.assertEqual(self.out["yesCom"]["order"]["domain"], "thandibakes.com")
-        self.assertIn("wantedDomain", self.out["noEmpty"]["errors"])
+        self.assertIn("wantedDomain", self.out["noEmpty"]["errors"])  # server still checks
         self.assertIn("wantedDomain", self.out["noSub"]["errors"])
         for path in (ORDER, COPY):
             text = code_only(read(path))
             self.assertNotIn(".net", text, path)
-            self.assertNotIn(".org", text.replace("gnu.org", ""), path)
+            self.assertNotIn(".org", text.replace("gnu.org", "").replace("https://rdap.org/", ""), path)
 
     def test_no_discount_and_first_year_in_the_terms(self):
         order = read(ORDER)
@@ -582,8 +600,13 @@ class TestDomainStep(unittest.TestCase):
         self.assertEqual(c["cozaNoNs"], "unknown")
         self.assertEqual(c["cozaBare"], "unknown")
         self.assertEqual(c["net"], "unknown")
+        self.assertEqual(c["cozaRdapTaken"], "taken")
+        self.assertEqual(c["cozaRdap404"], "unknown")  # a .co.za 404 never means free
+        # 1.21.2: .com asks Verisign's RDAP (what the IANA bootstrap names);
+        # .co.za asks the rdap.org bootstrap, where only a 200 counts.
         self.assertIn("https://rdap.verisign.com/com/v1/domain/thandibakes.com", self.out["urls"])
-        self.assertFalse(any("co.za" in u or ".net" in u for u in self.out["urls"]))
+        self.assertIn("https://rdap.org/domain/takealot.co.za", self.out["urls"])
+        self.assertFalse(any(".net" in u for u in self.out["urls"]))
 
     def test_wanted_name_and_result_in_both_emails(self):
         self.assertEqual(self.out["no"]["wantedDomain"], "thandibakes.co.za")
@@ -592,9 +615,9 @@ class TestDomainStep(unittest.TestCase):
             self.assertIn("The domain name you want", text)
             self.assertIn("thandibakes.co.za", text)
             self.assertIn("Free to register?", text)
-            self.assertIn("Looks free", text)
+            self.assertIn("Available", text)
             self.assertIn("The final check happens when we register it.", text)
-        self.assertIn("Already taken, try another", self.out["noTakenMail"])
+        self.assertIn("Already registered", self.out["noTakenMail"])
         self.assertNotIn("The domain name you want", self.out["yesMail"])
 
     def test_routes_check_and_never_block(self):
@@ -614,7 +637,7 @@ class TestWiring(unittest.TestCase):
 
     def test_manifest_installs_every_new_file(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.21.0")
+        self.assertEqual(m["version"], "1.21.11")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for path in NEW_FILES:
             rel = os.path.relpath(path, SDK_ROOT).replace(os.sep, "/")
@@ -633,7 +656,7 @@ class TestWiring(unittest.TestCase):
 
     def test_changelog_lists_env_vars_by_name(self):
         log = read(CHANGELOG)
-        self.assertTrue(log.startswith("# Changelog\n\n## 1.21.0\n"))
+        self.assertTrue(log.startswith("# Changelog\n\n## 1.21.11\n"))
         entry = log.split("## 1.18.0", 1)[1].split("\n## ", 1)[0]
         for name in ENV_VARS:
             self.assertIn(name, entry)
@@ -652,9 +675,13 @@ class TestStepperAndPay(unittest.TestCase):
         copy = read(os.path.join(STUDIO, "studio-copy.ts"))
         self.assertIn("export const STUDIO_ADDONS", copy)
 
-    def test_five_steps_with_back_and_next(self):
+    def test_details_review_pay_with_back_and_next(self):
         form = read(os.path.join(STUDIO, "studio-order-form.tsx"))
-        self.assertEqual(form.count("hidden={step !== "), 5)
+        # Four Details parts, Review, Pay.
+        self.assertEqual(form.count("hidden={step !== "), 6)
+        self.assertIn('{ title: "Details"', form)
+        self.assertIn('{ title: "Review"', form)
+        self.assertIn('{ title: "Pay"', form)
         self.assertIn("Back", form)
         self.assertIn("Next: ", form)
 

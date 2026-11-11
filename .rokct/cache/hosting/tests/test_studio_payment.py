@@ -40,7 +40,7 @@ from urllib.parse import quote_plus
 SDK_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 T = os.path.join(SDK_ROOT, "templates")
 STUDIO = os.path.join(T, "components", "custom", "studio")
-MODULES = ["studio-pay.ts", "studio-payfast.ts"]
+MODULES = ["studio-pay.ts", "studio-payfast.ts", "studio-copy.ts"]
 FORM = os.path.join(STUDIO, "studio-order-form.tsx")
 PAY_ROUTE = os.path.join(T, "app", "api", "studio", "pay", "route.ts")
 ITN_ROUTE = os.path.join(T, "app", "api", "studio", "payfast", "notify", "route.ts")
@@ -81,7 +81,7 @@ def read(p):
 
 
 PROBE = r"""
-import { studioPayfastSignature, studioPayfastConfig, studioPayfastSigned, studioPayfastItnValid, studioBankAccount } from './studio-payfast.ts';
+import { studioPayfastSignature, studioPayfastConfig, studioPayfastSigned, studioPayfastItnValid, studioBankAccount, studioBankSwift } from './studio-payfast.ts';
 import { studioPayfastParamString, studioPhpUrlencode } from './studio-pay.ts';
 const F = JSON.parse(process.argv[2]);
 const P = process.argv[3];
@@ -103,6 +103,7 @@ console.log(JSON.stringify({
   itnWrongPass: studioPayfastItnValid([...itn, ['signature', itnSig]], 'nope'),
   itnNoSig: studioPayfastItnValid(itn, P),
   bank: [studioBankAccount({}), studioBankAccount({ STUDIO_BANK_ACCOUNT: '12 3456 7890' }), studioBankAccount({ STUDIO_BANK_ACCOUNT: 'abc' })],
+  swift: [studioBankSwift({}), studioBankSwift({ STUDIO_BANK_SWIFT: 'abcdzajj xyz' }), studioBankSwift({ STUDIO_BANK_SWIFT: 'bad' })],
 }));
 """
 
@@ -165,6 +166,16 @@ class TestPayfastSigning(unittest.TestCase):
         self.assertEqual(self.o["bank"][2], None)
         self.assertRegex(self.o["bank"][1] or "", r"^\d+$")
 
+    def test_swift_default_and_override(self):
+        self.assertEqual(self.o["swift"], ["CABLZAJJ", "ABCDZAJJXYZ", "CABLZAJJ"])
+
+    def test_swift_row_and_qr(self):
+        pay = read(os.path.join(STUDIO, "studio-pay.ts"))
+        self.assertIn('swift: "CABLZAJJ"', pay)
+        self.assertIn("`SWIFT code: ${swift}`", pay)
+        form = read(os.path.join(STUDIO, "studio-order-form.tsx"))
+        self.assertIn("[P.swift, info.swift ?? STUDIO_BANK.swift, true]", form)
+
 
 class TestPaymentWiring(unittest.TestCase):
     def test_bank_details_and_no_account_number_in_code(self):
@@ -179,13 +190,13 @@ class TestPaymentWiring(unittest.TestCase):
 
     def test_payment_step_after_send(self):
         form = read(FORM)
-        self.assertIn("<StudioPayStep refCode={state.ref} total={state.total} href={state.href} pay={pay} />", form)
-        self.assertIn("<CopyRef value={refCode} />", form)
+        self.assertIn("<StudioPayStep refCode={state.ref} total={state.total} card={state.card} pay={pay} info={state.info} />", form)
+        self.assertIn('<Copy value={refCode} what="payment reference" />', form)
         self.assertIn("navigator.clipboard?.writeText(value)", form)
         self.assertIn("{P.cardSoon}", form)
         self.assertNotIn("studioPay(", form)
         page = read(ORDER_PAGE)
-        self.assertIn("const pay = { card: studioPayfastConfig().enabled, account: studioBankAccount() };", page)
+        self.assertIn("const pay = { card: studioPayfastConfig().enabled };", page)  # 1.21.4: no account number on the page
 
     def test_routes(self):
         pay = read(PAY_ROUTE)

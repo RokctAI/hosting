@@ -42,8 +42,9 @@ import { studioMailConfig, studioRequestHost } from "@/components/custom/studio/
 import { buildStudioOrderMails, type StudioMailAttachment } from "@/components/custom/studio/studio-order-mail";
 import { studioHasNameservers } from "@/components/custom/studio/studio-domain-dns";
 import { sendStudioOrderMails } from "@/components/custom/studio/studio-order-send";
-import { STUDIO_ADDONS } from "@/components/custom/studio/studio-copy";
-import { studioPayHref } from "@/components/custom/studio/studio-pay";
+import { STUDIO_ADDONS, studioOrderZar } from "@/components/custom/studio/studio-copy";
+import { studioPayAfterSend } from "@/components/custom/studio/studio-pay-qr";
+import { studioOrderRef, studioPayHref } from "@/components/custom/studio/studio-pay";
 import { studioBankAccount, studioPayfastConfig } from "@/components/custom/studio/studio-payfast";
 
 export const runtime = "nodejs";
@@ -66,12 +67,6 @@ function clientKey(request: Request): string {
   const fwd = request.headers.get("x-forwarded-for");
   const ip = (fwd ? fwd.split(",")[0] : request.headers.get("x-real-ip")) ?? "";
   return ip.trim() || "unknown";
-}
-
-function orderRef(): string {
-  const d = new Date();
-  const day = `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
-  return `RK-${day}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -136,17 +131,21 @@ export async function POST(request: Request): Promise<Response> {
       check.order.domainCheck = await studioCheckDomain(check.order.wantedDomain, { hasNameservers: studioHasNameservers, timeoutMs: 3000 });
     }
 
-    const ref = orderRef();
+    // 1.20.8: one reference ties the order to its payment (studio-pay.ts).
+    const ref = studioOrderRef();
     const o = check.order;
     const cardUrl = studioPayfastConfig().enabled
-      ? studioPayHref(ref, o.service, STUDIO_ADDONS.filter((a) => o.flags[a.name]).map((a) => a.name), o.name, o.email, new URL(request.url).origin)
+      ? studioPayHref(ref, o.service, STUDIO_ADDONS.filter((a) => o.flags[a.name]).map((a) => a.name), new URL(request.url).origin)
       : null;
     const mails = buildStudioOrderMails(o, attachments, { from: cfg.from, ordersEmail: cfg.ordersEmail }, ref, undefined, { account: studioBankAccount(), cardUrl });
     const sent = await sendStudioOrderMails(cfg, mails);
     if (!sent.ok) {
       return fail(502, "send_failed", STUDIO_ORDER_MESSAGES.sendFailed, {});
     }
-    return reply(200, { ok: true, ref, ack: sent.ack });
+    // 1.21.4: the Pay step's account number, PayShap, Capitec QR and QR
+    // codes, only now that the order is sent.
+    const payInfo = await studioPayAfterSend(ref, studioOrderZar(o.service, STUDIO_ADDONS.filter((a) => o.flags[a.name]).map((a) => a.name)), cardUrl);
+    return reply(200, { ok: true, ref, ack: sent.ack, pay: payInfo });
   } catch (err) {
     console.error("[studio-order] unexpected failure:", err instanceof Error ? err.name : "unknown");
     return fail(500, "error", STUDIO_ORDER_MESSAGES.sendFailed);

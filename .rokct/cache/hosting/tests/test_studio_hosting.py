@@ -78,7 +78,7 @@ class TestStudioHostingCopy(unittest.TestCase):
         self.assertIn("The first year of your .co.za or .com domain is included.", cost)
         self.assertNotIn("never hold", cost)
         self.assertIn(
-            "All of this lasts for as long as your site is hosted with us. If you ever move it elsewhere, it’s yours to take, and the weekly care stops.",
+            "All of this lasts for as long as your site is hosted with us. You get the app shell repo we clone for you, so if you ever move your site elsewhere, its code is yours to take, and the weekly care stops.",
             cost,
         )
 

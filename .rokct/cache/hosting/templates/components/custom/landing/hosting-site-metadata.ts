@@ -25,8 +25,12 @@
 // module that is not on disk is a compile error, and the registry checks the
 // default export structurally when it loads this module.
 //
-// No `icon`: the SDK ships no icon file, so base_sdk >= 1.17.0 draws the
-// fallback favicon (the domain's first letter) itself. No `still`, no `logo`,
+// `icon` (1.21.3): the CORTEX mark, a "C" in the wordmark's face (Big
+// Shoulders Display 800, paper on ink) with the wordmark's square, at
+// public/studio/brand/c-mark.png (512px, so it doubles as the Apple
+// touch icon; c-mark.svg beside it is the source). Before 1.21.3 there
+// was none and base_sdk drew the domain's first letter, an "R" (Ray: "cortex
+// is rebranded but it is still using R favicon"). No `still`, no `logo`,
 // no `ogImage`: there is no hosting artwork in the sources, and base's
 // generated card draws the tagline on its own. No `url`: the storefront's
 // host is not fixed in any source yet; base falls back to the shell's
@@ -46,6 +50,8 @@ export interface HostingSiteMetadata {
   ogImage?: string;
   /** Asset path drawn into the generated preview image; none here. */
   logo?: string;
+  /** The favicon (base_sdk >= 1.17.0): a public path. */
+  icon?: string;
   locale?: string;
 }
 
@@ -56,6 +62,7 @@ const HOSTING_SITE_METADATA: HostingSiteMetadata = {
   description:
     "Hosting plans from CORTEX: Basic, Pro and Enterprise, billed monthly or yearly in USD, with 1 to 100 website deployments, 5 to 200 managed databases, 10GB to 500GB of NVMe storage and a 14-day trial on every plan.",
   keywords: ["hosting", "website deployment", "managed databases", "NVMe storage", "CORTEX"],
+  icon: "/studio/brand/c-mark.png",
   locale: "en_ZA",
 };
 

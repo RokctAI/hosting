@@ -90,3 +90,41 @@ export async function sendStudioOrderMails(cfg: StudioMailConfig, mails: StudioO
   transport.close();
   return { ok: true, ack };
 }
+
+// 1.21.10: the two card-payment emails. Each is sent on its own (one failing
+// does not stop the other); the result says which went. Never throws.
+export async function sendStudioPaidMails(cfg: StudioMailConfig, mails: StudioOrderMails): Promise<{ order: boolean; ack: boolean; code?: string }> {
+  if (!cfg.configured) return { order: false, ack: false, code: "NOT_CONFIGURED" };
+  let transport: ReturnType<typeof nodemailer.createTransport>;
+  try {
+    transport = nodemailer.createTransport({
+      host: cfg.host,
+      port: cfg.port,
+      secure: cfg.secure,
+      requireTLS: !cfg.secure,
+      auth: { user: cfg.user, pass: cfg.pass },
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 20_000,
+      logger: false,
+      debug: false,
+    });
+  } catch (err) {
+    return { order: false, ack: false, code: errorCode(err) };
+  }
+  const out: { order: boolean; ack: boolean; code?: string } = { order: true, ack: true };
+  for (const k of ["order", "ack"] as const) {
+    if (!mails[k].to) {
+      out[k] = false;
+      continue;
+    }
+    try {
+      await transport.sendMail(toMessage(mails[k]));
+    } catch (err) {
+      out[k] = false;
+      out.code = errorCode(err);
+    }
+  }
+  transport.close();
+  return out;
+}

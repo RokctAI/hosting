@@ -162,10 +162,12 @@ next-env.d.ts
 /app/services/control/rpanel/logs/logs.ts
 /app/services/control/rpanel/websites/websites.ts
 /app/site-shots/\[file\]/route.ts
+/app/status/page.tsx
 /app/studio/shots/\[site\]/\[file\]/route.ts
 /app/styles/rokct-marquee.css
 /app/styles/rokct-scroll.css
 /app/team/page.tsx
+/app/terms/page.tsx
 /app/twitter-image.tsx
 /app/work/page.tsx
 /components/admin/GenericReport.tsx
@@ -269,6 +271,7 @@ next-env.d.ts
 /components/custom/studio/studio-order-page.tsx
 /components/custom/studio/studio-order-send.ts
 /components/custom/studio/studio-order.ts
+/components/custom/studio/studio-pay-qr.ts
 /components/custom/studio/studio-pay.ts
 /components/custom/studio/studio-payfast.ts
 /components/custom/studio/studio-rates.ts
@@ -279,6 +282,8 @@ next-env.d.ts
 /components/custom/studio/studio-showcase-load.ts
 /components/custom/studio/studio-showcase.ts
 /components/custom/studio/studio-sketch.tsx
+/components/custom/studio/studio-status.tsx
+/components/custom/studio/studio-terms.tsx
 /components/custom/studio/studio-work.tsx
 /components/custom/studio/studio.css
 /components/custom/submit-button.tsx
@@ -311,6 +316,8 @@ next-env.d.ts
 /public/brand/marks/chrome-web-store.svg
 /public/brand/marks/google-play.svg
 /public/brand/marks/windows.svg
+/public/studio/brand/c-mark.png
+/public/studio/brand/c-mark.svg
 /public/studio/lift/rokct-lift-sheet-a-dark.webp
 /public/studio/lift/rokct-lift-sheet-a-light.webp
 /public/studio/lift/rokct-lift-sheet-b-dark.webp

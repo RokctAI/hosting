@@ -38,6 +38,11 @@ import {
   STUDIO_ORDER_FLAGS,
   STUDIO_ORDER_PHASES,
   STUDIO_ORDER_PROMISE,
+  STUDIO_ORDER_LOGO,
+  STUDIO_PLAN_FIELDS,
+  STUDIO_PLAN_MISSING,
+  studioPhotoWarning,
+  studioPlanQuestions,
   studioOrderTerms,
   type StudioOrder,
 } from "./studio-order";
@@ -79,7 +84,10 @@ function groupZar(n: number): string {
 export function studioOrderRows(order: StudioOrder): [string, string][] {
   const rows: [string, string][] = [];
   const val = order as unknown as Record<string, unknown>;
+  // 1.20.8: a business plan order has no website, so its website answers are left out.
+  const WEBSITE_ONLY = new Set(["colour", "likes", "domain", "domainManager", "wantedDomain", "pagesOther", "siteContact"]);
   for (const f of STUDIO_ORDER_FIELDS) {
+    if (order.plan && WEBSITE_ONLY.has(f.name)) continue;
     if (f.name === "pagesOther") {
       const pages = [...order.pages];
       if (order.pagesOther) pages.push(`Other: ${order.pagesOther}`);
@@ -101,11 +109,20 @@ export function studioOrderRows(order: StudioOrder): [string, string][] {
       }
       continue;
     }
-    if ((f.name === "domain" || f.name === "registrar") && order.hasDomain !== "yes") continue;
+    if ((f.name === "domain" || f.name === "domainManager") && order.hasDomain !== "yes") continue;
     const v = typeof val[f.name] === "string" ? (val[f.name] as string) : "";
     rows.push([f.label, v || "Not given"]);
   }
+  if (order.plan) {
+    const label = Object.fromEntries(STUDIO_PLAN_FIELDS.map((f) => [f.name, f.label]));
+    for (const q of studioPlanQuestions(order.service)) {
+      for (const f of q.fields.filter((x) => x.startsWith("plan"))) {
+        rows.push([`Plan Q${q.n}: ${label[f]}`, order.plan[f] || STUDIO_PLAN_MISSING]);
+      }
+    }
+  }
   for (const fl of STUDIO_ORDER_FLAGS) rows.push([fl.label, order.flags[fl.name] ? "Yes" : "No"]);
+  if (order.logoKind) rows.push([STUDIO_ORDER_LOGO.rowLabel, STUDIO_ORDER_LOGO.rowText[order.logoKind]]);
   // 1.20.7: the price lines, worked out here from the order (never trusted
   // from the browser), in rand: the amount charged. The logo add-on shows
   // its normal price struck as "normally".
@@ -116,6 +133,8 @@ export function studioOrderRows(order: StudioOrder): [string, string][] {
   }
   const charged = studioOrderZar(order.service, picked.map((a) => a.name));
   rows.push(["Total charged (ZAR)", charged === null ? "Quoted" : groupZar(charged)]);
+  const warn = order.files.map((f) => studioPhotoWarning(f)).filter((w): w is string => !!w);
+  if (warn.length) rows.push(["Photo quality", warn.join("\n")]);
   rows.push(["Files", order.files.length ? order.files.map((f) => `${f.name} (${f.field})`).join(", ") : "None attached"]);
   return rows;
 }
@@ -214,6 +233,7 @@ export function buildStudioOrderMails(
     "",
     "HOW TO PAY",
     ...payLines,
+    `${P.startNote} ${P.popNote}`,
     "",
     "REPLIES AND EXTRA FILES",
     `Reply to this email, or send replies and extra files (logos, photos) to ${cfg.ordersEmail}, with your reference ${ref}.`,
@@ -238,6 +258,8 @@ export function buildStudioOrderMails(
       `<ol style="margin:0 0 12px;padding-left:20px">${terms.map((t) => `<li style="margin:0 0 8px"><b>${esc(t.b)}:</b> ${esc(t.t)}</li>`).join("")}</ol>` +
       h("How to pay") +
       payLines.map((l) => p(l)).join("") +
+      // 1.21.8 (Ray): the 24 hours start on payment; other banks reply with proof of payment.
+      `<p style="margin:0 0 12px;padding:14px 16px;border-left:3px solid ${ACC};background:#FAF9F6"><b>${esc(P.startNote)}</b> ${esc(P.popNote)}</p>` +
       h("Replies and extra files") +
       p(`Reply to this email, or send replies and extra files (logos, photos) to ${cfg.ordersEmail}, with your reference ${ref}.`),
   );
@@ -300,6 +322,82 @@ export function buildStudioBriefMails(brief: StudioBrief, cfg: { from: string; o
     subject: ackSubject,
     text: [`Hi ${who},`, "", `Thank you. We have your brief, reference ${ref}:`, "", brief.message, "", "Our team replies with the ten questions in office hours.", "", "CORTEX", "Your brand, taken seriously."].join("\n"),
     html: htmlShell(ackSubject, p(`Hi ${who},`) + p(`Thank you. We have your brief, reference ${ref}:`) + htmlTable([["Brief", brief.message]]) + p("Our team replies with the ten questions in office hours.")),
+    attachments: [],
+  };
+  return { order, ack };
+}
+
+// ---- Card payment received (1.21.10) ----------------------------------------
+// Ray: once PayFast's ITN is confirmed VALID and COMPLETE, the orders inbox is
+// told the card payment came in and the customer is told work has started
+// (Reply-To the orders inbox). The payer's details come from the ITN.
+export interface StudioPaid {
+  ref: string;
+  amount: string;
+  nameFirst: string;
+  nameLast: string;
+  email: string;
+  pfPaymentId: string;
+}
+
+function paidAmount(raw: string): string {
+  const n = Number.parseFloat(raw);
+  if (!Number.isFinite(n) || n < 0) return oneLine(raw) || "Not given";
+  return `R${n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} (ZAR)`;
+}
+
+export function buildStudioPaidMails(paid: StudioPaid, cfg: { from: string; ordersEmail: string }): StudioOrderMails {
+  const ref = oneLine(paid.ref);
+  const amount = paidAmount(paid.amount);
+  const payer = oneLine(`${paid.nameFirst} ${paid.nameLast}`) || "Not given";
+  const email = oneLine(paid.email);
+  const rows: [string, string][] = [
+    ["Reference", ref],
+    ["Amount", amount],
+    ["Payer", payer],
+    ["Payer email", email || "Not given"],
+    ["PayFast payment id", oneLine(paid.pfPaymentId) || "Not given"],
+  ];
+  const subject = `Card payment received: ${ref}`;
+  const order: StudioMail = {
+    from: cfg.from,
+    to: cfg.ordersEmail,
+    replyTo: email || cfg.ordersEmail,
+    subject,
+    text: [`Card payment received for ${ref} (PayFast, confirmed VALID and COMPLETE)`, "", ...rows.map(([k, v]) => `${k}:\n  ${v}`), "", "The 24-hour turnaround starts now."].join("\n"),
+    html: htmlShell(
+      subject,
+      `<p style="margin:0 0 6px;font:600 12px/1.3 Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:${ACC}">Card payment · ${esc(ref)}</p>` +
+        `<h1 style="margin:0 0 18px;font:700 26px/1.2 Arial,sans-serif">Card payment received</h1>` +
+        htmlTable(rows) +
+        `<p style="margin:18px 0 0;font:14px/1.5 Arial,sans-serif;color:${MUTED}">PayFast confirmed this payment VALID and COMPLETE. The 24-hour turnaround starts now.</p>`,
+    ),
+    attachments: [],
+  };
+  const first = oneLine(paid.nameFirst);
+  const hi = first ? `Hi ${first},` : "Hi,";
+  const thanks = `Thank you, we have received your payment of ${amount} for order ${ref}.`;
+  const started = "Work on your order has started, and your 24-hour turnaround starts now.";
+  const replies = `Reply to this email, or write to ${cfg.ordersEmail}, with your reference ${ref}.`;
+  const ackSubject = "Payment received, work has started";
+  const ack: StudioMail = {
+    from: cfg.from,
+    to: email,
+    replyTo: cfg.ordersEmail,
+    subject: ackSubject,
+    text: [hi, "", thanks, "", "WHAT HAPPENS NEXT", started, "", "YOUR PAYMENT", `Amount: ${amount}`, `Reference: ${ref}`, "", "REPLIES", replies, "", "CORTEX", "Your brand, taken seriously."].join("\n"),
+    html: htmlShell(
+      ackSubject,
+      `<p style="margin:0 0 6px;font:600 12px/1.3 Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:${ACC}">Payment received · ${esc(ref)}</p>` +
+        `<h1 style="margin:0 0 18px;font:700 28px/1.15 Arial,sans-serif">${first ? `Thank you, ${esc(first)}.` : "Thank you."}</h1>` +
+        p(thanks) +
+        h("What happens next") +
+        `<p style="margin:0 0 12px;padding:14px 16px;border-left:3px solid ${ACC};background:#FAF9F6;font-weight:700">${esc(started)}</p>` +
+        h("Your payment") +
+        htmlTable([["Amount", amount], ["Reference", ref]]) +
+        h("Replies") +
+        p(replies),
+    ),
     attachments: [],
   };
   return { order, ack };
