@@ -107,6 +107,8 @@ export const STUDIO_NAV = [
   // 1.14.0 (Ray): "Portfolio" opens /work, the whole list with its filters.
   // A "/" href is a page, used as is; a "#" href is a home-page section.
   { href: "/work", label: "Portfolio" },
+  // 1.22.0 (Ray): the startups and SMMEs deal has its own page, /startups.
+  { href: "/startups", label: "Startups" },
   { href: "#prices", label: "Prices" },
   { href: "#hosting", label: "Hosting" },
   { href: "#process", label: "How it works" },
@@ -1099,6 +1101,13 @@ export const STUDIO_FOOTER = {
   about:
     "CORTEX, design and hosting for small businesses: websites, logos and brands, business plans, pitch decks, print and social posts, made by our team and approved by you at every phase.",
   motto: "Your brand, taken seriously.",
+  /** The footer's page links (1.22.0). Each one is a page, not a home-page section. */
+  pages: [
+    { href: "/startups", label: "Startups" },
+    { href: "/work", label: "Portfolio" },
+    { href: "/order", label: "Order" },
+    { href: "/terms", label: "Terms" },
+  ] as const,
   // The copyright and credit come from base_sdk's SiteCredit (1.5.1, Ray,
   // 2026-10-31: "all site will be copyright sitename then built with love
   // (as heart) by ROKCT"); this is the note the fine line carries after it.

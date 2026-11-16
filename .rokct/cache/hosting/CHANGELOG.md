@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.22.0
+
+* /startups: the website and brand deal for startups and SMMEs has its own
+  page. It renders the same order form as /order (one form, one price
+  source); only the hero copy (STUDIO_STARTUPS_COPY) and the place PayFast
+  returns to differ. No price is written in the startup copy.
+* Menus: "Startups" is in the header (after Portfolio) and in the footer.
+  The footer also links Portfolio, Order and Terms (STUDIO_FOOTER.pages).
+* Each order carries `source` (order or startups). The studio email says
+  "Placed on: /startups" or "Placed on: /order".
+* PayFast return and cancel URLs go back to the page the order was placed
+  on. Only /order and /startups are accepted (STUDIO_PAY_RETURN_PATHS);
+  anything else falls back to /order. The /order card link is unchanged.
+* Footer: checked for a currency toggle. There is none; the footer shows
+  only the one-line rate note (StudioRateLine), so nothing was removed.
+* app/startups/page.tsx is listed in manifest.json so it installs.
+
 ## 1.21.11
 
 * Portfolio row (Ray, 2026-11-11: "only expand some. others like sticks

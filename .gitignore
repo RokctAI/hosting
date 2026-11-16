@@ -162,6 +162,7 @@ next-env.d.ts
 /app/services/control/rpanel/logs/logs.ts
 /app/services/control/rpanel/websites/websites.ts
 /app/site-shots/\[file\]/route.ts
+/app/startups/page.tsx
 /app/status/page.tsx
 /app/studio/shots/\[site\]/\[file\]/route.ts
 /app/styles/rokct-marquee.css

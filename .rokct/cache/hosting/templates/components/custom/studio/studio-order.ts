@@ -30,7 +30,20 @@ import { STUDIO_PRICE_ROWS, STUDIO_SOURCE_LINE } from "./studio-copy";
 
 // ---- Words ----------------------------------------------------------------
 export const STUDIO_ORDER_HREF = "/order";
+/** The /startups page: the same order form for startups and SMMEs, with the website and brand deal. */
+export const STUDIO_STARTUPS_HREF = "/startups";
 export const STUDIO_ORDER_API = "/api/studio/order";
+
+/**
+ * The /startups hero. The form under it is the same StudioOrderForm as
+ * /order, so prices and checks stay in one place; only the words differ.
+ * No price is written here: the live price comes from studio-copy.ts.
+ */
+export const STUDIO_STARTUPS_COPY = {
+  kicker: "For startups and SMMEs",
+  title: "A website and brand for your startup, hosted free for life.",
+  lede: "Brand colours and type, a four-page website and copy written for you, for one once-off price. Hosting is free for life for the first 1,000 small business owners. Order below; we send your brief back to confirm before any work starts.",
+};
 /** GET ?name=<domain>: is a wanted domain free to register? (1.20.3) */
 export const STUDIO_DOMAIN_API = "/api/studio/domain";
 

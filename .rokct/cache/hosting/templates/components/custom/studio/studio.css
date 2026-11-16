@@ -424,6 +424,10 @@ html.dark:has(.st)::-webkit-scrollbar-thumb{background:#F2818F;border-color:#131
 .st .ft .r{text-align:right}
 }
 .st .ft .motto{font:italic 400 18px/1.3 var(--serif);color:var(--ink-2)}
+/* 1.22.0: the footer's page links (/startups, /work, /order, /terms). */
+.st .ft-nav{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:16px}
+.st .ft-nav a{font:500 14px/1.4 var(--sans);color:var(--ink-2);text-decoration:none}
+.st .ft-nav a:hover,.st .ft-nav a[aria-current="page"]{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){
 .st *,.st *::before,.st *::after{animation:none!important;transition:none!important}
 html:has(.st){scroll-behavior:auto}

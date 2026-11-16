@@ -22,7 +22,7 @@
 // PAYFAST_MERCHANT_ID / PAYFAST_MERCHANT_KEY): a 503 that says so.
 
 import { studioOrderZar } from "@/components/custom/studio/studio-copy";
-import { STUDIO_PAY_COPY, studioPayRef } from "@/components/custom/studio/studio-pay";
+import { STUDIO_PAY_COPY, studioPayRef, studioPayReturnPath } from "@/components/custom/studio/studio-pay";
 import { studioPayfastConfig, studioPayfastSigned } from "@/components/custom/studio/studio-payfast";
 
 export const runtime = "nodejs";
@@ -63,6 +63,8 @@ function payPage(origin: string, read: (k: string) => string, withContact: boole
   const ref = studioPayRef(q("ref", 40));
   const service = q("service", 80);
   const addons = q("addons", 200).split(",").filter(Boolean);
+  // The page the order was placed on (/order or /startups); anything else is /order.
+  const from = studioPayReturnPath(q("from", 20));
   const total = studioOrderZar(service, addons);
   // 1.20.8: the reference must be well formed (shape and check character).
   // That catches typos; it does not prove we issued it (no order store yet).
@@ -77,8 +79,8 @@ function payPage(origin: string, read: (k: string) => string, withContact: boole
     email: withContact ? q("email", 200) : "",
     service,
     addons,
-    returnUrl: `${origin}/order?paid=${encodeURIComponent(ref)}`,
-    cancelUrl: `${origin}/order?cancelled=1`,
+    returnUrl: `${origin}${from}?paid=${encodeURIComponent(ref)}`,
+    cancelUrl: `${origin}${from}?cancelled=1`,
     notifyUrl: `${origin}/api/studio/payfast/notify`,
   });
   if (!fields) return Response.json({ ok: false, code: "card_unavailable", message: STUDIO_PAY_COPY.cardSoon }, { status: 503 });

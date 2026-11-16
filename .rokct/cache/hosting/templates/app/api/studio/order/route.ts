@@ -134,10 +134,12 @@ export async function POST(request: Request): Promise<Response> {
     // 1.20.8: one reference ties the order to its payment (studio-pay.ts).
     const ref = studioOrderRef();
     const o = check.order;
+    // The page the form was sent from (/order or /startups); anything else is /order.
+    const source = fields.source === "startups" ? "startups" : "order";
     const cardUrl = studioPayfastConfig().enabled
-      ? studioPayHref(ref, o.service, STUDIO_ADDONS.filter((a) => o.flags[a.name]).map((a) => a.name), new URL(request.url).origin)
+      ? studioPayHref(ref, o.service, STUDIO_ADDONS.filter((a) => o.flags[a.name]).map((a) => a.name), new URL(request.url).origin, source === "startups" ? "/startups" : "/order")
       : null;
-    const mails = buildStudioOrderMails(o, attachments, { from: cfg.from, ordersEmail: cfg.ordersEmail }, ref, undefined, { account: studioBankAccount(), cardUrl });
+    const mails = buildStudioOrderMails(o, attachments, { from: cfg.from, ordersEmail: cfg.ordersEmail }, ref, undefined, { account: studioBankAccount(), cardUrl }, source);
     const sent = await sendStudioOrderMails(cfg, mails);
     if (!sent.ok) {
       return fail(502, "send_failed", STUDIO_ORDER_MESSAGES.sendFailed, {});

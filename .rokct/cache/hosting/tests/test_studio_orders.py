@@ -637,7 +637,7 @@ class TestWiring(unittest.TestCase):
 
     def test_manifest_installs_every_new_file(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.21.11")
+        self.assertEqual(m["version"], "1.22.0")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for path in NEW_FILES:
             rel = os.path.relpath(path, SDK_ROOT).replace(os.sep, "/")
@@ -652,11 +652,11 @@ class TestWiring(unittest.TestCase):
         body = read(PAGE_BODY)
         self.assertIn("studioOrderTerms(ordersEmail)", body)
         self.assertIn("STUDIO_ORDER_PROMISE", body)
-        self.assertIn("<StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} pay={pay} />", body)
+        self.assertIn("<StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} pay={pay} path={path} />", body)
 
     def test_changelog_lists_env_vars_by_name(self):
         log = read(CHANGELOG)
-        self.assertTrue(log.startswith("# Changelog\n\n## 1.21.11\n"))
+        self.assertTrue(log.startswith("# Changelog\n\n## 1.22.0\n"))
         entry = log.split("## 1.18.0", 1)[1].split("\n## ", 1)[0]
         for name in ENV_VARS:
             self.assertIn(name, entry)

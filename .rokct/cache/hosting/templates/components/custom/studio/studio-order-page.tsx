@@ -29,8 +29,9 @@ import { BackToTop } from "@/components/custom/back-to-top";
 
 import { StudioCurrencyProvider, StudioHeader } from "./studio-client";
 import { StudioFooter } from "./studio-home";
-import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF, STUDIO_ORDER_PROMISE, STUDIO_STATUS_HREF, studioOrderTerms } from "./studio-order";
+import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF, STUDIO_ORDER_PROMISE, STUDIO_STARTUPS_COPY, STUDIO_STARTUPS_HREF, STUDIO_STATUS_HREF, studioOrderTerms } from "./studio-order";
 import { StudioOrderForm, type StudioOrderPayOptions } from "./studio-order-form";
+import type { StudioPayReturnPath } from "./studio-pay";
 
 export type StudioOrderReturn = { kind: "paid"; ref: string } | { kind: "cancelled" } | null;
 
@@ -39,26 +40,30 @@ export function StudioOrder({
   ordersEmail,
   back = null,
   pay,
+  path = "/order",
 }: {
   fontClassName: string;
   ordersEmail: string;
   back?: StudioOrderReturn;
   /** 1.20.7: the payment step's options, from the server's env. */
   pay?: StudioOrderPayOptions;
+  /** The page this renders on. /startups shows the startup hero; the form and its checks are the same. */
+  path?: StudioPayReturnPath;
 }) {
   const C = STUDIO_ORDER_COPY;
+  const hero = path === STUDIO_STARTUPS_HREF ? STUDIO_STARTUPS_COPY : null;
   const terms = studioOrderTerms(ordersEmail);
   return (
     <StudioCurrencyProvider>
       <div id="top" className={`st ${fontClassName}`}>
-        <StudioHeader base="/" current={STUDIO_ORDER_HREF} />
+        <StudioHeader base="/" current={path} />
         <main className="od">
           <section className="od-hero">
             <div className="wrap od-hero-g">
               <div>
-                <p className="kick">{C.kicker}</p>
-                <h1 className="disp od-h1">{C.title}</h1>
-                <p className="lede">{C.lede}</p>
+                <p className="kick">{hero ? hero.kicker : C.kicker}</p>
+                <h1 className="disp od-h1">{hero ? hero.title : C.title}</h1>
+                <p className="lede">{hero ? hero.lede : C.lede}</p>
               </div>
               <div className="od-side-hl">
                 <div className="od-forever">
@@ -110,7 +115,7 @@ export function StudioOrder({
           ) : null}
           <section className="od-body" aria-label="Order form">
             <div className="wrap">
-              <StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} pay={pay} />
+              <StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} pay={pay} path={path} />
               <p className="sm od-wa">
                 {/* 1.20.8 (Ray, 13:31Z): the order flow is email only, no WhatsApp. */}
                 Files can also go to{" "}
@@ -119,7 +124,7 @@ export function StudioOrder({
             </div>
           </section>
         </main>
-        <StudioFooter />
+        <StudioFooter current={path} />
         <BackToTop />
       </div>
     </StudioCurrencyProvider>

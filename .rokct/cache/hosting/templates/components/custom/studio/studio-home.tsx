@@ -369,7 +369,7 @@ function HostingBenefits() {
 }
 
 /** The studio footer: the mark, the line, the motto and base_sdk's site credit (also on /work). */
-export function StudioFooter() {
+export function StudioFooter({ current }: { current?: string } = {}) {
   return (
     <footer className="ft">
       <div className="wrap ft-in">
@@ -379,6 +379,14 @@ export function StudioFooter() {
             <i aria-hidden="true" />
           </span>
           <p className="sm">{STUDIO_FOOTER.about}</p>
+          {/* 1.22.0: the footer's page links, /startups among them. */}
+          <nav className="ft-nav" aria-label="Footer">
+            {STUDIO_FOOTER.pages.map((p) => (
+              <a key={p.href} href={p.href} aria-current={p.href === current ? "page" : undefined}>
+                {p.label}
+              </a>
+            ))}
+          </nav>
         </div>
         <div className="r">
           <span className="motto">{STUDIO_FOOTER.motto}</span>

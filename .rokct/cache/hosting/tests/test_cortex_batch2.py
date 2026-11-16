@@ -356,7 +356,7 @@ class TestTermsPage(unittest.TestCase):
 
     def test_installed(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.21.11")
+        self.assertEqual(m["version"], "1.22.0")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for f in ("app/terms/page.tsx", "app/status/page.tsx", "components/custom/studio/studio-terms.tsx", "components/custom/studio/studio-status.tsx"):
             self.assertIn(("templates/" + f, f), pairs)

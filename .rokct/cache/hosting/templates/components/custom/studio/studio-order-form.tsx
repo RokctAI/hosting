@@ -85,7 +85,7 @@ import {
   type StudioOrderField,
   type StudioOrderTerm,
 } from "./studio-order";
-import { STUDIO_BANK, STUDIO_PAY_API, STUDIO_PAY_COPY } from "./studio-pay";
+import { STUDIO_BANK, STUDIO_PAY_API, STUDIO_PAY_COPY, type StudioPayReturnPath } from "./studio-pay";
 
 type State =
   | { kind: "idle" }
@@ -103,6 +103,8 @@ export interface StudioCardPost {
   addons: string;
   name: string;
   email: string;
+  /** The page the order was placed on: PayFast returns the client there. */
+  from: StudioPayReturnPath;
 }
 
 /** A picture's size in pixels, or null when the browser cannot read it. */
@@ -440,7 +442,18 @@ export function StudioPayStep({ refCode, total, card, pay, info = NO_PAY_INFO }:
   );
 }
 
-export function StudioOrderForm({ terms, promise, pay = { card: false } }: { terms: StudioOrderTerm[]; promise: string; pay?: StudioOrderPayOptions }) {
+export function StudioOrderForm({
+  terms,
+  promise,
+  pay = { card: false },
+  path = "/order",
+}: {
+  terms: StudioOrderTerm[];
+  promise: string;
+  pay?: StudioOrderPayOptions;
+  /** The page the form is on (/order or /startups); sent with the order so the email and the card return agree. */
+  path?: StudioPayReturnPath;
+}) {
   const { cur, usdPerZar } = useStudioCurrency();
   const [state, setState] = useState<State>({ kind: "idle" });
   const [step, setStep] = useState(0);
@@ -611,6 +624,7 @@ export function StudioOrderForm({ terms, promise, pay = { card: false } }: { ter
     }
     const form = new FormData(e.currentTarget);
     form.set("total", total === null ? "Quoted" : `R${total}`);
+    form.set("source", path === "/startups" ? "startups" : "order");
     const files = [...form.getAll("logo"), ...form.getAll("photos")].filter((v): v is File => v instanceof File && v.size > 0);
     const size = files.reduce((n, f) => n + f.size, 0);
     if (files.length > STUDIO_ORDER_MAX_FILES || size > STUDIO_ORDER_MAX_BYTES) {
@@ -633,7 +647,7 @@ export function StudioOrderForm({ terms, promise, pay = { card: false } }: { ter
       if (res.ok && body.ok) {
         const ref = body.ref ?? "";
         // 1.20.7: the client pays before leaving: the payment step follows.
-        const card: StudioCardPost = { ref, service, addons: addons.join(","), name: String(form.get("name") ?? ""), email: String(form.get("email") ?? "") };
+        const card: StudioCardPost = { ref, service, addons: addons.join(","), name: String(form.get("name") ?? ""), email: String(form.get("email") ?? ""), from: path };
         setState({ kind: "ok", ref, ack: body.ack !== false, total, card, info: { ...NO_PAY_INFO, ...(body.pay ?? {}) } });
         // 1.21.2: the order is in; Pay opens (the answers are locked now).
         go(PAY);
