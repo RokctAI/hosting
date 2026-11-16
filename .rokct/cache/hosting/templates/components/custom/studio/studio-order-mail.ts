@@ -175,8 +175,11 @@ export function buildStudioOrderMails(
   stepValues: readonly (number | null)[] | undefined = undefined,
   /** 1.20.7: how to pay, both options: the bank account number (or null) and the card link (or null when off). */
   pay: { account: string | null; cardUrl: string | null } = { account: null, cardUrl: null },
+  /** The page the order was placed on, so the studio can see which deal page converts. */
+  source: "order" | "startups" = "order",
 ): StudioOrderMails {
   const rows = studioOrderRows(order);
+  const sourceLine = source === "startups" ? "Placed on: /startups (startups and SMMEs page)" : "Placed on: /order";
   const who = oneLine(order.name);
   const biz = oneLine(order.business);
   const service = oneLine(order.service);
@@ -191,13 +194,15 @@ export function buildStudioOrderMails(
     ...rows.map(([k, v]) => `${k}:\n  ${v.replace(/\n/g, "\n  ")}`),
     "",
     `Reply to this email to reach ${who} at ${order.email}.`,
+    sourceLine,
   ].join("\n");
   const orderHtml = htmlShell(
     orderSubject,
     `<p style="margin:0 0 6px;font:600 12px/1.3 Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:${ACC}">New order · ${esc(ref)}</p>` +
       `<h1 style="margin:0 0 18px;font:700 26px/1.2 Arial,sans-serif">${esc(service)} for ${esc(biz)}</h1>` +
       htmlTable(rows) +
-      `<p style="margin:18px 0 0;font:14px/1.5 Arial,sans-serif;color:${MUTED}">Reply to this email to reach ${esc(who)} at ${esc(order.email)}. ${attachments.length} file(s) attached.</p>`,
+      `<p style="margin:18px 0 0;font:14px/1.5 Arial,sans-serif;color:${MUTED}">Reply to this email to reach ${esc(who)} at ${esc(order.email)}. ${attachments.length} file(s) attached.</p>` +
+        `<p style="margin:6px 0 0;font:14px/1.5 Arial,sans-serif;color:${MUTED}">${esc(sourceLine)}</p>`,
   );
 
   // 1.20.7: both payment options, with the order reference as the payment

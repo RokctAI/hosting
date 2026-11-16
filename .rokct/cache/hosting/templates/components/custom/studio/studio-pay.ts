@@ -205,8 +205,23 @@ export function studioPayFields(merchantId: string, merchantKey: string, p: Stud
  * payment step's form (StudioPayStep), never in a URL.
  */
 export const STUDIO_PAY_API = "/api/studio/pay";
-export function studioPayHref(ref: string, service: string, addons: readonly string[], origin = ""): string {
+
+/**
+ * The pages a PayFast return or cancel may land on. Only these are allowed,
+ * so the `from` value can never send a visitor to another site.
+ */
+export const STUDIO_PAY_RETURN_PATHS = ["/order", "/startups"] as const;
+export type StudioPayReturnPath = (typeof STUDIO_PAY_RETURN_PATHS)[number];
+
+/** The allowlisted return path for a raw `from` value; anything else is /order. */
+export function studioPayReturnPath(raw: string): StudioPayReturnPath {
+  return (STUDIO_PAY_RETURN_PATHS as readonly string[]).includes(raw) ? (raw as StudioPayReturnPath) : "/order";
+}
+
+export function studioPayHref(ref: string, service: string, addons: readonly string[], origin = "", from: StudioPayReturnPath = "/order"): string {
   const q = new URLSearchParams({ ref, service, addons: addons.join(",") });
+  // The default page is left out of the link, so the /order link is unchanged.
+  if (from !== "/order") q.set("from", from);
   return `${origin}${STUDIO_PAY_API}?${q.toString()}`;
 }
 
