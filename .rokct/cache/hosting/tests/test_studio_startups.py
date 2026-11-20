@@ -107,7 +107,7 @@ class TestMenus(unittest.TestCase):
         manifest = json.loads(read(os.path.join(SDK_ROOT, "manifest.json")))
         pairs = {(i["from"], i["to"]) for i in manifest["app_type"]["hosting"]["installs"]}
         self.assertIn(("templates/app/startups/page.tsx", "app/startups/page.tsx"), pairs)
-        self.assertEqual(manifest["version"], "1.25.0")
+        self.assertEqual(manifest["version"], "1.25.1")
 
 
 class TestSharedPageHero(unittest.TestCase):

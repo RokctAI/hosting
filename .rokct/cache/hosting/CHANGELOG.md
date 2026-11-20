@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.25.1
+
+* style: landing sections rise and fade in as they scroll into view (CSS
+  scroll-driven, no JS, off under reduced motion).
+
 ## 1.25.0
 
 * feat(i18n): 102 hardcoded screen labels, headings, buttons,
