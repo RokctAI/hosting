@@ -85,10 +85,10 @@ import { studioPayfastSignature, studioPayfastConfig, studioPayfastSigned, studi
 import { studioPayfastParamString, studioPhpUrlencode } from './studio-pay.ts';
 const F = JSON.parse(process.argv[2]);
 const P = process.argv[3];
-const pay = { amountZar: 2850, itemName: 'CORTEX Website and brand bundle', ref: 'RK-20261109-ABC123', name: 'Thandi M', email: 't@example.com',
+const pay = { amountZar: 2850, itemName: 'CORTEX MEDIA Website and brand bundle', ref: 'RK-20261109-ABC123', name: 'Thandi M', email: 't@example.com',
   returnUrl: 'https://x.co.za/order?paid=RK-20261109-ABC123', cancelUrl: 'https://x.co.za/order?cancelled=1', notifyUrl: 'https://x.co.za/api/studio/payfast/notify' };
 const on = studioPayfastConfig({ PAYFAST_MERCHANT_ID: '10000100', PAYFAST_MERCHANT_KEY: '46f0cd694581a', PAYFAST_PASSPHRASE: P, PAYFAST_SANDBOX: 'true' });
-const itn = [['m_payment_id', 'RK-1'], ['pf_payment_id', '1089250'], ['payment_status', 'COMPLETE'], ['item_name', 'CORTEX x'], ['item_description', ''], ['amount_gross', '2850.00'], ['merchant_id', '10000100']];
+const itn = [['m_payment_id', 'RK-1'], ['pf_payment_id', '1089250'], ['payment_status', 'COMPLETE'], ['item_name', 'CORTEX MEDIA x'], ['item_description', ''], ['amount_gross', '2850.00'], ['merchant_id', '10000100']];
 const itnSig = studioPayfastSignature(itn, P, true);
 console.log(JSON.stringify({
   docSig: studioPayfastSignature(F, P),

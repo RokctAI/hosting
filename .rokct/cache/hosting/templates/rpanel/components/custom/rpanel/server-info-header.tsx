@@ -28,6 +28,7 @@ import {
 } from "@remixicon/react";
 import { getClientUsage } from "@/app/actions/handson/control/rpanel/dashboard/get-client-usage";
 
+import t from "@/app/lib/i18n";
 interface ServerInfo {
   ip: string;
   os: string;
@@ -101,14 +102,14 @@ export function ServerInfoHeader({
         <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-blue-900/20 to-transparent pointer-events-none"></div>
 
         <div className="relative z-10">
-          <h1 className="text-2xl font-bold mb-4">Resource Usage</h1>
+          <h1 className="text-2xl font-bold mb-4">{t("hosting.resource_usage")}</h1>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white/10 p-4 rounded-lg flex items-center gap-4">
               <div className="p-3 bg-blue-500/20 rounded-full">
                 <RiGlobalLine className="h-6 w-6 text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Websites</p>
+                <p className="text-sm text-gray-400">{t("hosting.websites")}</p>
                 <p className="text-xl font-semibold">
                   {clientUsage.websites.used}{" "}
                   <span className="text-sm text-gray-500">
@@ -123,7 +124,7 @@ export function ServerInfoHeader({
                 <RiDatabase2Line className="h-6 w-6 text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Databases</p>
+                <p className="text-sm text-gray-400">{t("hosting.databases")}</p>
                 <p className="text-xl font-semibold">
                   {clientUsage.databases.used}{" "}
                   <span className="text-sm text-gray-500">
@@ -138,7 +139,7 @@ export function ServerInfoHeader({
                 <RiHardDrive2Line className="h-6 w-6 text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Storage (GB)</p>
+                <p className="text-sm text-gray-400">{t("hosting.storage_gb")}</p>
                 <p className="text-xl font-semibold">
                   {clientUsage.storage_gb.used}{" "}
                   <span className="text-sm text-gray-500">

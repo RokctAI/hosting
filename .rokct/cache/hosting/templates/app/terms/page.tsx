@@ -26,8 +26,8 @@ import { studioOrdersEmail, studioRequestHost } from "@/components/custom/studio
 import { StudioTerms } from "@/components/custom/studio/studio-terms";
 
 export const metadata: Metadata = {
-  title: { absolute: "Terms · CORTEX" },
-  description: "The CORTEX terms in plain language: payment, phases, due dates, the 24-hour first render or a full refund, domains, hosting and your code.",
+  title: { absolute: "Terms · CORTEX MEDIA" },
+  description: "The CORTEX MEDIA terms in plain language: payment, phases, due dates, the 24-hour first render or a full refund, domains, hosting and your code.",
 };
 
 export default async function Page() {

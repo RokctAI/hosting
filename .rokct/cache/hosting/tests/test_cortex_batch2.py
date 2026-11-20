@@ -350,13 +350,13 @@ class TestStatusPage(unittest.TestCase):
 class TestTermsPage(unittest.TestCase):
     def test_page(self):
         p = read(TERMS_PAGE)
-        self.assertIn('title: { absolute: "Terms · CORTEX" }', p)
+        self.assertIn('title: { absolute: "Terms · CORTEX MEDIA" }', p)
         self.assertIn("<StudioTerms", p)
         self.assertIn("studioOrderTerms(ordersEmail)", read(os.path.join(STUDIO, "studio-terms.tsx")))
 
     def test_installed(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.22.0")
+        self.assertEqual(m["version"], "1.25.1")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for f in ("app/terms/page.tsx", "app/status/page.tsx", "components/custom/studio/studio-terms.tsx", "components/custom/studio/studio-status.tsx"):
             self.assertIn(("templates/" + f, f), pairs)

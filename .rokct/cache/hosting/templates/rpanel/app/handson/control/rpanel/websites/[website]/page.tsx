@@ -46,6 +46,7 @@ import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import t from "@/app/lib/i18n";
 export default function SiteDashboardPage({
   params,
 }: {
@@ -86,7 +87,7 @@ export default function SiteDashboardPage({
       <div className="flex min-h-screen bg-[#0f1219] text-gray-200 font-sans">
         {/* <RPanelNav /> */}
         <main className="flex-1 p-8 flex items-center justify-center">
-          <div className="text-gray-400">Loading site details...</div>
+          <div className="text-gray-400">{t("hosting.loading_site_details")}</div>
         </main>
       </div>
     );
@@ -98,11 +99,11 @@ export default function SiteDashboardPage({
         <main className="flex-1 p-8">
           <div className="mb-4">
             <Button variant="ghost" onClick={() => router.back()}>
-              <RiArrowLeftSLine className="mr-2 h-4 w-4" /> Back to Websites
+              <RiArrowLeftSLine className="mr-2 h-4 w-4" /> {t("hosting.back_to_websites")}
             </Button>
           </div>
           <div className="text-center text-gray-400 mt-20">
-            <h2 className="text-xl font-semibold mb-2">Website Not Found</h2>
+            <h2 className="text-xl font-semibold mb-2">{t("hosting.website_not_found")}</h2>
             <p>
               The website you are looking for does not exist or you do not have
               permission to view it.
@@ -202,7 +203,7 @@ export default function SiteDashboardPage({
             onClick={() => router.push("/rpanel/websites")}
             className="mb-4 pl-0 hover:bg-transparent hover:text-white text-gray-400"
           >
-            <RiArrowLeftSLine className="mr-2 h-4 w-4" /> Back to Websites
+            <RiArrowLeftSLine className="mr-2 h-4 w-4" /> {t("hosting.back_to_websites")}
           </Button>
           <div className="flex justify-between items-start">
             <div>
@@ -223,7 +224,7 @@ export default function SiteDashboardPage({
               variant="outline"
               onClick={() => window.open(`http://${website.domain}`, "_blank")}
             >
-              Visit Site <RiArrowRightUpLine className="ml-2 h-4 w-4" />
+              {t("hosting.visit_site")} <RiArrowRightUpLine className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>

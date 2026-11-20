@@ -249,15 +249,15 @@ function CronJobsContent() {
   }
 
   if (isLoading)
-    return <div className="p-8 text-center">Loading cron jobs...</div>;
+    return <div className="p-8 text-center">{t("hosting.loading_cron_jobs")}</div>;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Cron Jobs</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("hosting.cron_jobs")}</h1>
           <p className="text-muted-foreground">
-            Schedule automated tasks for your websites.
+            {t("hosting.schedule_automated_tasks_for_your_websites")}
           </p>
         </div>
         <Dialog
@@ -270,7 +270,7 @@ function CronJobsContent() {
           <DialogTrigger asChild>
             <Button onClick={() => setEditingJob(null)}>
               <RiAddLine className="mr-2 h-4 w-4" />
-              Add Cron Job
+              {t("hosting.add_cron_job")}
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -279,12 +279,12 @@ function CronJobsContent() {
                 {editingJob ? "Edit Cron Job" : "Add New Cron Job"}
               </DialogTitle>
               <DialogDescription>
-                Configure a scheduled task to run on your server.
+                {t("hosting.configure_a_scheduled_task_to_run_on_your_server")}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Website</Label>
+                <Label>{t("hosting.website")}</Label>
                 <Select
                   value={selectedWebsite}
                   onValueChange={setSelectedWebsite}
@@ -305,7 +305,7 @@ function CronJobsContent() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Command</Label>
+                <Label>{t("hosting.command")}</Label>
                 <Input
                   value={command}
                   onChange={(e) => setCommand(e.target.value)}
@@ -313,18 +313,18 @@ function CronJobsContent() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Schedule (Cron Format)</Label>
+                <Label>{t("hosting.schedule_cron_format")}</Label>
                 <Input
                   value={schedule}
                   onChange={(e) => setSchedule(e.target.value)}
                   placeholder={t("app.control.rpanel.cron.ph_cron")}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Minute Hour Day Month Weekday
+                  {t("hosting.minute_hour_day_month_weekday")}
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>Description (Optional)</Label>
+                <Label>{t("hosting.description_optional")}</Label>
                 <Input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -334,7 +334,7 @@ function CronJobsContent() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
+                {t("hosting.cancel")}
               </Button>
               <Button onClick={handleSave} disabled={isSaving}>
                 {isSaving ? "Saving..." : "Save Cron Job"}
@@ -346,17 +346,17 @@ function CronJobsContent() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Scheduled Tasks</CardTitle>
+          <CardTitle>{t("hosting.scheduled_tasks")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Website</TableHead>
-                <TableHead>Command</TableHead>
-                <TableHead>Schedule</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("hosting.website")}</TableHead>
+                <TableHead>{t("hosting.command")}</TableHead>
+                <TableHead>{t("hosting.schedule")}</TableHead>
+                <TableHead>{t("hosting.status")}</TableHead>
+                <TableHead className="text-right">{t("hosting.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -366,7 +366,7 @@ function CronJobsContent() {
                     colSpan={5}
                     className="text-center py-8 text-muted-foreground"
                   >
-                    No cron jobs found
+                    {t("hosting.no_cron_jobs_found")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -401,7 +401,7 @@ function CronJobsContent() {
                           setEditingJob(job);
                           setDialogOpen(true);
                         }}
-                        title="Edit"
+                        title={t("hosting.edit")}
                       >
                         <RiPencilLine className="h-4 w-4" />
                       </Button>
@@ -410,7 +410,7 @@ function CronJobsContent() {
                         size="icon"
                         className="text-destructive"
                         onClick={() => handleDelete(job.name)}
-                        title="Delete"
+                        title={t("hosting.delete")}
                       >
                         <RiDeleteBinLine className="h-4 w-4" />
                       </Button>
@@ -428,7 +428,7 @@ function CronJobsContent() {
 
 export default function CronJobsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="p-8 text-center">{t("hosting.loading")}</div>}>
       <CronJobsContent />
     </Suspense>
   );

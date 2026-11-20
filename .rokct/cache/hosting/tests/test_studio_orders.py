@@ -179,7 +179,7 @@ class TestMailConfig(unittest.TestCase):
         self.assertEqual(d["host"], "mail.rokct.ai")
         self.assertEqual(d["port"], 587)
         self.assertFalse(d["secure"])
-        self.assertEqual(d["from"], "CORTEX <orders@mystudio.co.za>")
+        self.assertEqual(d["from"], "CORTEX MEDIA <orders@mystudio.co.za>")
         self.assertEqual(d["ordersEmail"], "orders@mystudio.co.za")
 
     def test_smtp_env_overrides(self):
@@ -246,7 +246,7 @@ const base = {
 const files = [{ field: 'logo', name: '../../etc/My Logo!.png', type: 'image/png', size: 1000 }];
 const ok = validateStudioOrder(base, files);
 const att = [{ filename: 'My Logo.png', contentType: 'image/png', content: new Uint8Array([1,2,3]) }];
-const cfg = { from: 'CORTEX <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
+const cfg = { from: 'CORTEX MEDIA <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
 const mails = buildStudioOrderMails(ok.order, att, cfg, 'RK-20261101-ABC123');
 const valued = buildStudioOrderMails(ok.order, att, cfg, 'RK-1', [850, 2125, 2125, 2125, 1275]);
 const partial = buildStudioOrderMails(ok.order, att, cfg, 'RK-2', [850, null, 2125, 2125, 1275]);
@@ -456,7 +456,7 @@ import { validateStudioOrder, studioCheckDomain } from './studio-order.ts';
 import { buildStudioOrderMails } from './studio-order-mail.ts';
 const base = { service: 'Website and brand bundle', name: 'Thandi M', email: 'thandi@example.com',
   business: 'Thandi Bakes', sells: 'Cakes', colour: '#ffa500 #800000 #228b22', terms: 'yes' };
-const cfg = { from: 'CORTEX <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
+const cfg = { from: 'CORTEX MEDIA <orders@mystudio.co.za>', ordersEmail: 'orders@mystudio.co.za' };
 const yes = validateStudioOrder({ ...base, hasDomain: 'yes', domain: 'thandibakes.co.za', domainManager: 'My cousin Sipho' }, []);
 const no = validateStudioOrder({ ...base, hasDomain: 'no', domain: 'stray.com', domainManager: 'x', wantedDomain: 'ThandiBakes.co.za', domainCheck: 'available' }, []);
 const urls = [];
@@ -637,7 +637,7 @@ class TestWiring(unittest.TestCase):
 
     def test_manifest_installs_every_new_file(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.22.0")
+        self.assertEqual(m["version"], "1.25.1")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for path in NEW_FILES:
             rel = os.path.relpath(path, SDK_ROOT).replace(os.sep, "/")
@@ -656,7 +656,7 @@ class TestWiring(unittest.TestCase):
 
     def test_changelog_lists_env_vars_by_name(self):
         log = read(CHANGELOG)
-        self.assertTrue(log.startswith("# Changelog\n\n## 1.22.0\n"))
+        self.assertTrue(log.startswith("# Changelog\n\n## 1.25.1\n"))
         entry = log.split("## 1.18.0", 1)[1].split("\n## ", 1)[0]
         for name in ENV_VARS:
             self.assertIn(name, entry)

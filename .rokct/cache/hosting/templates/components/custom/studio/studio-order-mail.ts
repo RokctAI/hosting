@@ -145,7 +145,7 @@ const ACC = "#8C1A2D";
 const RULE = "#D5D4CD";
 
 function htmlShell(title: string, body: string): string {
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title></head><body style="margin:0;background:#F2F1ED;color:${INK};font:16px/1.55 Georgia,'Times New Roman',serif"><div style="max-width:640px;margin:0 auto;padding:28px 20px">${body}<p style="margin:32px 0 0;font:13px/1.5 Arial,sans-serif;color:${MUTED}">CORTEX · Your brand, taken seriously.</p></div></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title></head><body style="margin:0;background:#F2F1ED;color:${INK};font:16px/1.55 Georgia,'Times New Roman',serif"><div style="max-width:640px;margin:0 auto;padding:28px 20px">${body}<p style="margin:32px 0 0;font:13px/1.5 Arial,sans-serif;color:${MUTED}">CORTEX MEDIA · Your brand, taken seriously.</p></div></body></html>`;
 }
 
 function htmlTable(rows: [string, string][]): string {
@@ -189,7 +189,7 @@ export function buildStudioOrderMails(
   // ---- The order, to the studio --------------------------------------------
   const orderSubject = `New order ${ref}: ${service} for ${biz}`;
   const orderText = [
-    `New CORTEX order ${ref}`,
+    `New CORTEX MEDIA order ${ref}`,
     "",
     ...rows.map(([k, v]) => `${k}:\n  ${v.replace(/\n/g, "\n  ")}`),
     "",
@@ -216,7 +216,7 @@ export function buildStudioOrderMails(
   ];
 
   // ---- The acknowledgement, to the client -----------------------------------
-  const ackSubject = `Thank you, we have your order (${ref}) · CORTEX`;
+  const ackSubject = `Thank you, we have your order (${ref}) · CORTEX MEDIA`;
   const mine = rows.filter(([k]) => k !== "Your email");
   const valueLines = values ? STUDIO_ORDER_PHASES.map((ph, i) => `${i + 1}. ${ph}: ${groupZar(values[i])}`) : [];
   const ackText = [
@@ -243,7 +243,7 @@ export function buildStudioOrderMails(
     "REPLIES AND EXTRA FILES",
     `Reply to this email, or send replies and extra files (logos, photos) to ${cfg.ordersEmail}, with your reference ${ref}.`,
     "",
-    "CORTEX",
+    "CORTEX MEDIA",
     "Your brand, taken seriously.",
   ].join("\n");
   const ackHtml = htmlShell(
@@ -315,17 +315,17 @@ export function buildStudioBriefMails(brief: StudioBrief, cfg: { from: string; o
     to: cfg.ordersEmail,
     replyTo: oneLine(brief.email),
     subject,
-    text: [`New CORTEX brief ${ref}`, "", ...rows.map(([k, v]) => `${k}:\n  ${v.replace(/\n/g, "\n  ")}`)].join("\n"),
+    text: [`New CORTEX MEDIA brief ${ref}`, "", ...rows.map(([k, v]) => `${k}:\n  ${v.replace(/\n/g, "\n  ")}`)].join("\n"),
     html: htmlShell(subject, h(`New brief · ${ref}`) + htmlTable(rows)),
     attachments: [],
   };
-  const ackSubject = `Thank you, we have your brief (${ref}) · CORTEX`;
+  const ackSubject = `Thank you, we have your brief (${ref}) · CORTEX MEDIA`;
   const ack: StudioMail = {
     from: cfg.from,
     to: oneLine(brief.email),
     replyTo: cfg.ordersEmail,
     subject: ackSubject,
-    text: [`Hi ${who},`, "", `Thank you. We have your brief, reference ${ref}:`, "", brief.message, "", "Our team replies with the ten questions in office hours.", "", "CORTEX", "Your brand, taken seriously."].join("\n"),
+    text: [`Hi ${who},`, "", `Thank you. We have your brief, reference ${ref}:`, "", brief.message, "", "Our team replies with the ten questions in office hours.", "", "CORTEX MEDIA", "Your brand, taken seriously."].join("\n"),
     html: htmlShell(ackSubject, p(`Hi ${who},`) + p(`Thank you. We have your brief, reference ${ref}:`) + htmlTable([["Brief", brief.message]]) + p("Our team replies with the ten questions in office hours.")),
     attachments: [],
   };
@@ -390,7 +390,7 @@ export function buildStudioPaidMails(paid: StudioPaid, cfg: { from: string; orde
     to: email,
     replyTo: cfg.ordersEmail,
     subject: ackSubject,
-    text: [hi, "", thanks, "", "WHAT HAPPENS NEXT", started, "", "YOUR PAYMENT", `Amount: ${amount}`, `Reference: ${ref}`, "", "REPLIES", replies, "", "CORTEX", "Your brand, taken seriously."].join("\n"),
+    text: [hi, "", thanks, "", "WHAT HAPPENS NEXT", started, "", "YOUR PAYMENT", `Amount: ${amount}`, `Reference: ${ref}`, "", "REPLIES", replies, "", "CORTEX MEDIA", "Your brand, taken seriously."].join("\n"),
     html: htmlShell(
       ackSubject,
       `<p style="margin:0 0 6px;font:600 12px/1.3 Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:${ACC}">Payment received · ${esc(ref)}</p>` +

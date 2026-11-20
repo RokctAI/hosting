@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-"""hosting_sdk 1.20.4: the brand is "CORTEX" (Ray, 2026-11-02). No
+"""hosting_sdk 1.20.4: the brand is "CORTEX MEDIA" (Ray, 2026-11-02). No
 customer-visible string literal in the copy, page or mail files says
 "studio" (people read it as a photo studio). Heuristic: every quoted string
 on a non-comment line, minus ids/paths/identifiers (studio-x, /studio/,
@@ -60,7 +60,7 @@ class CortexBrandTest(unittest.TestCase):
         self.assertEqual(hits, [])
 
     def test_no_rokct_hosting_or_greeting_in_visible_copy(self):
-        """1.20.7: the site's own name is CORTEX. Customer-facing strings never
+        """1.20.7: the site's own name is CORTEX MEDIA. Customer-facing strings never
         say "Rokct Hosting", greet "Hi ROKCT", or sign off as ROKCT. The legal
         name (ROKCT INTELLIGENCE (PTY) LTD), repo slugs and the ROKCT logo
         artwork's own descriptions are out of scope."""
@@ -80,23 +80,23 @@ class CortexBrandTest(unittest.TestCase):
 
     def test_site_name_and_marks_say_cortex(self):
         meta = (ROOT / "components/custom/landing/hosting-site-metadata.ts").read_text()
-        self.assertIn('siteName: "CORTEX",', meta)
+        self.assertIn('siteName: "CORTEX MEDIA",', meta)
         self.assertNotIn("Rokct", meta.split("const HOSTING_SITE_METADATA", 1)[1])
         client = (ROOT / "components/custom/studio/studio-client.tsx").read_text()
-        self.assertIn('aria-label="CORTEX, home"', client)
+        self.assertIn('aria-label="CORTEX MEDIA, home"', client)
         home = (ROOT / "components/custom/studio/studio-home.tsx").read_text()
         footer = home.split('<footer className="ft">', 1)[1].split("</footer>", 1)[0]
-        self.assertIn("CORTEX", footer)
+        self.assertIn("CORTEX MEDIA", footer)
         self.assertNotIn("ROKCT", re.sub(r"\{/\*.*?\*/\}", "", footer, flags=re.S))
         self.assertNotIn("SiteCredit", footer)
 
     def test_titles_say_cortex(self):
-        self.assertIn('absolute: "CORTEX"', (ROOT / "app/page.tsx").read_text())
-        self.assertIn('"Order · CORTEX"', (ROOT / "app/order/page.tsx").read_text())
+        self.assertIn('absolute: "CORTEX MEDIA"', (ROOT / "app/page.tsx").read_text())
+        self.assertIn('"Order · CORTEX MEDIA"', (ROOT / "app/order/page.tsx").read_text())
 
     def test_brand_is_capitals(self):
-        """1.21.0 (Ray, 2026-11-09: "CORTEX NOT Cortex"): every visible
-        brand string is CORTEX; any other casing in a string literal fails."""
+        """1.21.0 (Ray, 2026-11-09: "CORTEX MEDIA NOT Cortex"): every visible
+        brand string is CORTEX MEDIA; any other casing in a string literal fails."""
         files = FILES + [
             "components/custom/studio/studio-client.tsx",
             "components/custom/studio/studio-order-config.ts",
@@ -105,7 +105,7 @@ class CortexBrandTest(unittest.TestCase):
             "components/custom/site-shell.tsx",
             "components/custom/cortex-auth/cortex-auth-copy.ts",
         ]
-        bad = re.compile(r"\b(?!CORTEX\b)[Cc][Oo][Rr][Tt][Ee][Xx]\b")
+        bad = re.compile(r"\b(?!CORTEX MEDIA\b)[Cc][Oo][Rr][Tt][Ee][Xx]\b")
         hits = []
         for rel in files:
             for n, line in enumerate((ROOT / rel).read_text().splitlines(), 1):
@@ -117,7 +117,7 @@ class CortexBrandTest(unittest.TestCase):
                     if bad.search(text):
                         hits.append(f"{rel}:{n}: {text[:80]}")
         self.assertEqual(hits, [])
-        self.assertIn('siteName: "CORTEX"', (ROOT / "components/custom/studio/studio-copy.ts").read_text())
+        self.assertIn('siteName: "CORTEX MEDIA"', (ROOT / "components/custom/studio/studio-copy.ts").read_text())
         shell = (ROOT / "components/custom/site-shell.tsx").read_text()
         self.assertNotRegex(shell, r">\s*Cortex\s*<")
         # JSX text too: no non-comment line anywhere says "Cortex".

@@ -34,6 +34,7 @@ import Link from "next/link";
 
 import type { HeroFormProps } from "@/components/custom/landing/hero-form";
 
+import t from "@/app/lib/i18n";
 const PRICING_ANCHOR = "#pricing";
 
 export default function HostingHeroForm({ hero, signupUrl }: HeroFormProps) {
@@ -44,13 +45,13 @@ export default function HostingHeroForm({ hero, signupUrl }: HeroFormProps) {
           href={signupUrl}
           className="inline-flex w-full items-center justify-center rounded-full bg-primary px-8 py-3 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:w-auto"
         >
-          Start your 14-day trial
+          {t("hosting.start_your_14_day_trial")}
         </Link>
         <a
           href={PRICING_ANCHOR}
           className="inline-flex w-full items-center justify-center rounded-full border border-zinc-300 px-8 py-3 text-base font-semibold text-zinc-900 transition-colors hover:border-primary hover:text-primary dark:border-zinc-700 dark:text-white sm:w-auto"
         >
-          See pricing
+          {t("hosting.see_pricing")}
         </a>
       </div>
 

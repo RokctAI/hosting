@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-"""hosting_sdk 1.21.0: the CORTEX auth pages. The home SDK installs its own
+"""hosting_sdk 1.21.0: the CORTEX MEDIA auth pages. The home SDK installs its own
 components/custom/site-shell.tsx (auth_sdk >= 1.12.0's SiteShell seam) with
 the SiteShell / SiteShellLogo contract, client-safe, framed by the studio's
 header, faces and tokens; no visible copy says "studio"."""
@@ -60,8 +60,8 @@ class CortexAuthTest(unittest.TestCase):
 
     def test_ledes_promise_no_account_area(self):
         src = (T / "components/custom/cortex-auth/cortex-auth-copy.ts").read_text()
-        self.assertIn('"Sign in to your CORTEX account to carry on."', src)
-        self.assertIn('"Create a CORTEX account to get started."', src)
+        self.assertIn('"Sign in to your CORTEX MEDIA account to carry on."', src)
+        self.assertIn('"Create a CORTEX MEDIA account to get started."', src)
         for phrase in ("your orders", "renders to approve", "as it comes in"):
             self.assertNotIn(phrase, src)
 

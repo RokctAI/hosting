@@ -24,6 +24,7 @@ import { RPanelNav } from "@/components/custom/nav/rpanel-nav";
 import { HOSTING_ROLES } from "@/components/custom/rpanel/roles";
 import { RPanelToaster } from "@/components/custom/rpanel/rpanel-toaster";
 
+import t from "@/app/lib/i18n";
 /**
  * The hosting shell's frame for the rpanel control pages
  * (/handson/control/rpanel/**). The shell has no /handson layout of its own
@@ -49,12 +50,12 @@ export default async function RPanelLayout({
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center p-4">
         <div className="space-y-4 text-center">
-          <h1 className="text-2xl font-bold">Access Restricted</h1>
+          <h1 className="text-2xl font-bold">{t("hosting.access_restricted")}</h1>
           <p className="text-muted-foreground">
-            Your account does not have access to the hosting control panel.
+            {t("hosting.your_account_does_not_have_access_to_the_hosting")}
           </p>
           <Link href="/">
-            <Button>Return Home</Button>
+            <Button>{t("hosting.return_home")}</Button>
           </Link>
         </div>
       </div>
@@ -65,7 +66,7 @@ export default async function RPanelLayout({
     <div className="flex min-h-screen w-full flex-col bg-muted/40 md:flex-row">
       <aside className="hidden w-64 flex-col border-r bg-background md:flex">
         <div className="flex h-14 items-center border-b px-4 font-semibold lg:h-[60px] lg:px-6">
-          <Link href="/handson/control/rpanel">Hosting Control</Link>
+          <Link href="/handson/control/rpanel">{t("hosting.hosting_control")}</Link>
         </div>
         <div className="flex-1 overflow-auto py-2">
           <RPanelNav userRoles={userRoles} />
@@ -73,7 +74,7 @@ export default async function RPanelLayout({
       </aside>
       <div className="flex w-full flex-col">
         <header className="sticky top-0 z-30 border-b bg-background md:hidden">
-          <div className="px-4 pt-3 font-semibold">Hosting Control</div>
+          <div className="px-4 pt-3 font-semibold">{t("hosting.hosting_control")}</div>
           <RPanelNav userRoles={userRoles} mobile />
         </header>
         <main className="flex-1 p-4 sm:px-6 md:p-8">{children}</main>

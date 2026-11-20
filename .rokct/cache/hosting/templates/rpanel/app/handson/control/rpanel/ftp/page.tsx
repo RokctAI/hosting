@@ -170,7 +170,7 @@ function FtpContent() {
     <>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <RiFolderLine className="h-6 w-6 text-yellow-500" /> FTP Accounts
+          <RiFolderLine className="h-6 w-6 text-yellow-500" /> {t("hosting.ftp_accounts")}
         </h1>
       </div>
 
@@ -186,26 +186,26 @@ function FtpContent() {
         </div>
 
         <Button onClick={() => setShowCreate(true)}>
-          <RiAddLine className="mr-2 h-4 w-4" /> Create FTP Account
+          <RiAddLine className="mr-2 h-4 w-4" /> {t("hosting.create_ftp_account")}
         </Button>
       </div>
 
       <div className="rounded-lg border border-gray-700 bg-[#1a1f36] overflow-hidden shadow-sm">
         {loading ? (
           <div className="p-8 text-center text-gray-400">
-            Loading FTP accounts...
+            {t("hosting.loading_ftp_accounts")}
           </div>
         ) : filteredAccounts.length === 0 ? (
           <div className="p-8 text-center text-gray-400">
-            No FTP accounts found.
+            {t("hosting.no_ftp_accounts_found")}
           </div>
         ) : (
           <table className="w-full text-sm text-left">
             <thead className="text-gray-400 font-medium border-b border-gray-700 bg-[#1a1f36]">
               <tr>
-                <th className="px-6 py-4 font-normal">Username</th>
-                <th className="px-6 py-4 font-normal">Quota</th>
-                <th className="px-6 py-4 font-normal">Website</th>
+                <th className="px-6 py-4 font-normal">{t("hosting.username")}</th>
+                <th className="px-6 py-4 font-normal">{t("hosting.quota")}</th>
+                <th className="px-6 py-4 font-normal">{t("hosting.website")}</th>
                 <th className="px-6 py-4 text-right"></th>
               </tr>
             </thead>
@@ -225,7 +225,7 @@ function FtpContent() {
                         variant="ghost"
                         size="icon"
                         onClick={() => setEditingFtp(ftp)}
-                        title="Change Password" // placeholder
+                        title={t("hosting.change_password")} // placeholder
                       >
                         <RiKey2Line className="h-4 w-4" />
                       </Button>
@@ -233,7 +233,7 @@ function FtpContent() {
                         variant="destructive"
                         size="icon"
                         onClick={() => handleDelete(ftp)}
-                        title="Delete"
+                        title={t("hosting.delete")}
                       >
                         <RiDeleteBinLine className="h-4 w-4" />
                       </Button>
@@ -256,7 +256,7 @@ function FtpContent() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <label className="text-sm font-medium text-gray-400">
-              New Password
+              {t("hosting.new_password")}
             </label>
             <div className="relative">
               <Input
@@ -278,10 +278,10 @@ function FtpContent() {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEditingFtp(null)}>
-              Cancel
+              {t("hosting.cancel")}
             </Button>
             <Button onClick={handlePasswordUpdate} disabled={isSaving}>
-              Update Password
+              {t("hosting.update_password")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -290,12 +290,12 @@ function FtpContent() {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="bg-[#1a1f36] border-gray-700 text-gray-200">
           <DialogHeader>
-            <DialogTitle>Create FTP Account</DialogTitle>
+            <DialogTitle>{t("hosting.create_ftp_account")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-400">
-                Website
+                {t("hosting.website")}
               </label>
               <Select value={selectedSite} onValueChange={setSelectedSite}>
                 <SelectTrigger className="bg-[#0f1219] border-gray-600 text-white">
@@ -312,7 +312,7 @@ function FtpContent() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-400">
-                Username
+                {t("hosting.username")}
               </label>
               <Input
                 placeholder="ftp_user"
@@ -323,7 +323,7 @@ function FtpContent() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-400">
-                Password
+                {t("hosting.password")}
               </label>
               <Input
                 type="password"
@@ -335,10 +335,10 @@ function FtpContent() {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowCreate(false)}>
-              Cancel
+              {t("hosting.cancel")}
             </Button>
             <Button onClick={handleCreate} disabled={isSaving}>
-              Create Account
+              {t("hosting.create_account")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -354,7 +354,7 @@ export default function FtpPage() {
       <main className="flex-1 p-8">
         <Suspense
           fallback={
-            <div className="p-8 text-center text-gray-400">Loading...</div>
+            <div className="p-8 text-center text-gray-400">{t("hosting.loading")}</div>
           }
         >
           <FtpContent />

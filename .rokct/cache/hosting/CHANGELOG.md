@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.25.1
+
+* style: landing sections rise and fade in as they scroll into view (CSS
+  scroll-driven, no JS, off under reduced motion).
+
+## 1.25.0
+
+* feat(i18n): 102 hardcoded screen labels, headings, buttons,
+  placeholders and empty-state lines in 13 files now go through
+  `t("hosting.<key>")` from `@/app/lib/i18n`. The copy ships in
+  `app/lib/i18n/sdk/hosting.json` (English and Afrikaans), which the host's
+  compose step registers (RokctAI_frontend#229).
+
+## 1.24.0
+
+* Header mark folds like the Supacharge header (Ray, 2026-11-20): it reads
+  CORTEX MEDIA at the top, and 1.5s after load " MEDIA" slides into CORTEX
+  (500ms, as base_sdk's stem fold), then the oxblood dot shows.
+  Motion is off under prefers-reduced-motion.
+
+## 1.23.0
+
+* Branding moves from CORTEX to CORTEX MEDIA in the footer, page titles,
+  metadata, copy, order mails and WhatsApp texts. The header wordmark, the
+  auth mark and PLATFORM_NAME stay CORTEX until Ray picks the header style.
+* The footer credit now reads "Built with ♥ by Cortex Media" (base_sdk 1.61.0).
+
 ## 1.22.0
 
 * /startups: the website and brand deal for startups and SMMEs has its own
