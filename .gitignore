@@ -381,3 +381,6 @@ next-env.d.ts
 /public/studio/work/supacharge-phone.webp
 /types/next-auth.d.ts
 # @rokct-composed-end
+
+# Written by scripts/compose.sh on every compose (SDK copy registry).
+app/lib/i18n/sdk-registry.ts
