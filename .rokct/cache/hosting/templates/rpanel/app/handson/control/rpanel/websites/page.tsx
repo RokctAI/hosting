@@ -212,7 +212,7 @@ export default function WebsitesPage() {
           <div className="relative w-1/3">
             <RiSearchLine className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Search"
+              placeholder={t("hosting.search")}
               className="pl-9 bg-[#1a1f36] border-gray-700 text-gray-200"
               value={searchQuery}
               onChange={(e: any) => setSearchQuery(e.target.value)}
@@ -248,7 +248,7 @@ export default function WebsitesPage() {
             </div>
 
             <Button onClick={() => setShowCreate(true)}>
-              <RiAddLine className="mr-2 h-4 w-4" /> Create site
+              <RiAddLine className="mr-2 h-4 w-4" /> {t("hosting.create_site")}
             </Button>
           </div>
         </div>
@@ -256,11 +256,11 @@ export default function WebsitesPage() {
         {/* Sites List/Grid */}
         {isLoading ? (
           <div className="p-8 text-center text-gray-400">
-            Loading websites...
+            {t("hosting.loading_websites")}
           </div>
         ) : filteredWebsites.length === 0 ? (
           <div className="p-8 text-center text-gray-400">
-            No websites found.
+            {t("hosting.no_websites_found")}
           </div>
         ) : viewMode === "list" ? (
           /* ... Existing Table View ... */
@@ -269,10 +269,10 @@ export default function WebsitesPage() {
               <table className="w-full text-sm text-left">
                 <thead className="text-gray-400 font-medium border-b border-gray-700 bg-[#1a1f36]">
                   <tr>
-                    <th className="px-6 py-4 font-normal">Domain</th>
-                    <th className="px-6 py-4 font-normal">Status</th>
-                    <th className="px-6 py-4 font-normal">PHP</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-6 py-4 font-normal">{t("hosting.domain")}</th>
+                    <th className="px-6 py-4 font-normal">{t("hosting.status")}</th>
+                    <th className="px-6 py-4 font-normal">{t("hosting.php")}</th>
+                    <th className="px-6 py-4 text-right">{t("hosting.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">
@@ -300,7 +300,7 @@ export default function WebsitesPage() {
                           size="sm"
                           onClick={() => openEdit(site)}
                         >
-                          Edit
+                          {t("hosting.edit")}
                         </Button>
                       </td>
                     </tr>
@@ -342,7 +342,7 @@ export default function WebsitesPage() {
                 {/* Hover Overlay Actions */}
                 <div className="absolute inset-0 bg-[#1a1f36]/95 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center z-10 p-4">
                   <div className="border border-white/20 rounded-full px-6 py-2 mb-8 text-white font-medium tracking-wide">
-                    Site card
+                    {t("hosting.site_card")}
                   </div>
 
                   <div className="grid grid-cols-4 gap-4 w-full px-2">
@@ -353,7 +353,7 @@ export default function WebsitesPage() {
                       }
                     >
                       <RiMailLine className="h-6 w-6" />
-                      <span className="text-xs font-medium">Mail</span>
+                      <span className="text-xs font-medium">{t("hosting.mail")}</span>
                     </div>
                     <div
                       className="flex flex-col items-center gap-2 cursor-pointer hover:text-blue-400 transition-colors"
@@ -362,7 +362,7 @@ export default function WebsitesPage() {
                       }
                     >
                       <RiFileTextLine className="h-6 w-6" />
-                      <span className="text-xs font-medium">Logs</span>
+                      <span className="text-xs font-medium">{t("hosting.logs")}</span>
                     </div>
                     <div
                       className="flex flex-col items-center gap-2 cursor-pointer hover:text-blue-400 transition-colors"
@@ -371,7 +371,7 @@ export default function WebsitesPage() {
                       }
                     >
                       <RiFolderLine className="h-6 w-6" />
-                      <span className="text-xs font-medium">Files</span>
+                      <span className="text-xs font-medium">{t("hosting.files")}</span>
                     </div>
                     <div
                       className="flex flex-col items-center gap-2 cursor-pointer hover:text-blue-400 transition-colors"
@@ -380,7 +380,7 @@ export default function WebsitesPage() {
                       }
                     >
                       <RiSettings3Line className="h-6 w-6" />
-                      <span className="text-xs font-medium">Options</span>
+                      <span className="text-xs font-medium">{t("hosting.options")}</span>
                     </div>
                   </div>
                 </div>
@@ -403,7 +403,7 @@ export default function WebsitesPage() {
                   </div>
                   <div
                     className="p-1.5 bg-orange-500 rounded-full text-white cursor-pointer"
-                    title="Visit"
+                    title={t("hosting.visit")}
                   >
                     <RiExternalLinkLine className="h-4 w-4" />
                   </div>
@@ -413,7 +413,7 @@ export default function WebsitesPage() {
                 <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 text-gray-400">
                   <div
                     className="p-1 cursor-pointer hover:text-white"
-                    title="Move"
+                    title={t("hosting.move")}
                   >
                     <RiRefreshLine className="h-4 w-4" />
                   </div>
@@ -435,7 +435,7 @@ export default function WebsitesPage() {
             <div className="grid grid-cols-2 gap-4 py-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-400">
-                  PHP Version
+                  {t("hosting.php_version")}
                 </label>
                 <Select
                   value={editPhpVersion}
@@ -458,7 +458,7 @@ export default function WebsitesPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-400">
-                  PHP Mode
+                  {t("hosting.php_mode")}
                 </label>
                 <Select value={editPhpMode} onValueChange={setEditPhpMode}>
                   <SelectTrigger className="bg-[#0f1219] border-gray-600 text-white">
@@ -482,10 +482,10 @@ export default function WebsitesPage() {
             </div>
             <DialogFooter>
               <Button variant="ghost" onClick={() => setEditingSite(null)}>
-                Cancel
+                {t("hosting.cancel")}
               </Button>
               <Button onClick={handleUpdate} disabled={isSaving}>
-                Save Changes
+                {t("hosting.save_changes")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -495,12 +495,12 @@ export default function WebsitesPage() {
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogContent className="bg-[#1a1f36] border-gray-700 text-gray-200">
             <DialogHeader>
-              <DialogTitle>Create New Website</DialogTitle>
+              <DialogTitle>{t("hosting.create_new_website")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-400">
-                  Domain Name
+                  {t("hosting.domain_name")}
                 </label>
                 <Input
                   placeholder="example.com"
@@ -512,21 +512,21 @@ export default function WebsitesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-400">
-                    Site Type
+                    {t("hosting.site_type")}
                   </label>
                   <Select value={newType} onValueChange={setNewType}>
                     <SelectTrigger className="bg-[#0f1219] border-gray-600 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-[#1a1f36] border-gray-600 text-white">
-                      <SelectItem value="WordPress">WordPress</SelectItem>
-                      <SelectItem value="HTML">HTML</SelectItem>
+                      <SelectItem value="WordPress">{t("hosting.wordpress")}</SelectItem>
+                      <SelectItem value="HTML">{t("hosting.html")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-400">
-                    PHP Version
+                    {t("hosting.php_version")}
                   </label>
                   <Select value={newPhp} onValueChange={setNewPhp}>
                     <SelectTrigger className="bg-[#0f1219] border-gray-600 text-white">
@@ -543,10 +543,10 @@ export default function WebsitesPage() {
             </div>
             <DialogFooter>
               <Button variant="ghost" onClick={() => setShowCreate(false)}>
-                Cancel
+                {t("hosting.cancel")}
               </Button>
               <Button onClick={handleCreate} disabled={isSaving}>
-                Create Website
+                {t("hosting.create_website")}
               </Button>
             </DialogFooter>
           </DialogContent>

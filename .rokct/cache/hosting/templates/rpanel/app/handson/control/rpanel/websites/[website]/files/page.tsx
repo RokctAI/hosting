@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useToast } from "@/components/ui/use-toast";
 
+import t from "@/app/lib/i18n";
 export default function FileManagerPage({
   params,
 }: {
@@ -137,7 +138,7 @@ export default function FileManagerPage({
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight mb-2">
-              File Manager
+              {t("hosting.file_manager")}
             </h1>
             <p className="text-muted-foreground">
               Manage files for {params.website}
@@ -145,10 +146,10 @@ export default function FileManagerPage({
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => loadFiles(currentPath)}>
-              <RiRefreshLine className="mr-2 h-4 w-4" /> Refresh
+              <RiRefreshLine className="mr-2 h-4 w-4" /> {t("hosting.refresh")}
             </Button>
             <Button>
-              <RiUploadLine className="mr-2 h-4 w-4" /> Upload
+              <RiUploadLine className="mr-2 h-4 w-4" /> {t("hosting.upload")}
             </Button>
           </div>
         </div>
@@ -182,11 +183,11 @@ export default function FileManagerPage({
           <Table>
             <TableHeader>
               <TableRow className="border-gray-700 hover:bg-transparent">
-                <TableHead className="w-[50%]">Name</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Modified</TableHead>
-                <TableHead>Permissions</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[50%]">{t("hosting.name")}</TableHead>
+                <TableHead>{t("hosting.size")}</TableHead>
+                <TableHead>{t("hosting.modified")}</TableHead>
+                <TableHead>{t("hosting.permissions")}</TableHead>
+                <TableHead className="text-right">{t("hosting.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -196,7 +197,7 @@ export default function FileManagerPage({
                     colSpan={5}
                     className="text-center py-8 text-gray-400"
                   >
-                    Loading...
+                    {t("hosting.loading")}
                   </TableCell>
                 </TableRow>
               ) : files.length === 0 ? (
@@ -205,7 +206,7 @@ export default function FileManagerPage({
                     colSpan={5}
                     className="text-center py-8 text-gray-400"
                   >
-                    Empty directory
+                    {t("hosting.empty_directory")}
                   </TableCell>
                 </TableRow>
               ) : (

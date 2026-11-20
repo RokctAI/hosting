@@ -21,7 +21,7 @@
 export const STUDIO_WHATSAPP_DISPLAY = "+27 15 000 6069";
 export const STUDIO_WHATSAPP_NUMBER = "27150006069";
 const WA = `https://wa.me/${STUDIO_WHATSAPP_NUMBER}?text=`;
-export const studioWhatsApp = (text = "Hi CORTEX") => WA + encodeURIComponent(text);
+export const studioWhatsApp = (text = "Hi CORTEX MEDIA") => WA + encodeURIComponent(text);
 export const STUDIO_WHATSAPP_URL = studioWhatsApp();
 
 // ---- Currency -----------------------------------------------------------
@@ -177,7 +177,7 @@ export const STUDIO_SERVICES: StudioService[] = [
       "Copy written from your answers",
       "Hosting free for life, for the first 1,000",
     ],
-    ask: { label: "Ask about a website", text: "Hi CORTEX, I'm asking about a website and brand" },
+    ask: { label: "Ask about a website", text: "Hi CORTEX MEDIA, I'm asking about a website and brand" },
     price: { kind: "deal", unit: "once-off" },
   },
   {
@@ -188,14 +188,14 @@ export const STUDIO_SERVICES: StudioService[] = [
       { t: "Standard", usd: 250, d: "Full plan, financial tables, funding-ready layout." },
       { t: "Premium", usd: 500, d: "Full plan, a pitch deck and one round of revisions." },
     ],
-    ask: { label: "Ask about a plan", text: "Hi CORTEX, I'm asking about a business plan" },
+    ask: { label: "Ask about a plan", text: "Hi CORTEX MEDIA, I'm asking about a business plan" },
     price: { kind: "from", usd: 100, unit: "three tiers" },
   },
   {
     name: "Business starter kit",
     body: "Everything a new business needs on day one, built from the same colour and logo answers as the website bundle.",
     includes: ["Logo and letterhead", "Quote template", "Invoice template", "Priced per kit on WhatsApp"],
-    ask: { label: "Ask about the kit", text: "Hi CORTEX, I'm asking about the starter kit" },
+    ask: { label: "Ask about the kit", text: "Hi CORTEX MEDIA, I'm asking about the starter kit" },
     price: { kind: "quoted", unit: "per kit" },
   },
   {
@@ -207,7 +207,7 @@ export const STUDIO_SERVICES: StudioService[] = [
       "Delivered as slides and PDF",
       "Priced per deck on WhatsApp",
     ],
-    ask: { label: "Ask about a deck", text: "Hi CORTEX, I'm asking about a pitch deck" },
+    ask: { label: "Ask about a deck", text: "Hi CORTEX MEDIA, I'm asking about a pitch deck" },
     price: { kind: "quoted", unit: "per deck" },
   },
   {
@@ -219,7 +219,7 @@ export const STUDIO_SERVICES: StudioService[] = [
       "Sizes to the printer's spec",
       "Priced per job on WhatsApp",
     ],
-    ask: { label: "Ask about print", text: "Hi CORTEX, I'm asking about design and print" },
+    ask: { label: "Ask about print", text: "Hi CORTEX MEDIA, I'm asking about design and print" },
     price: { kind: "quoted", unit: "per job" },
   },
   {
@@ -231,7 +231,7 @@ export const STUDIO_SERVICES: StudioService[] = [
       "A posting calendar",
       "Priced per pack on WhatsApp",
     ],
-    ask: { label: "Ask about a pack", text: "Hi CORTEX, I'm asking about a social post pack" },
+    ask: { label: "Ask about a pack", text: "Hi CORTEX MEDIA, I'm asking about a social post pack" },
     price: { kind: "quoted", unit: "per pack" },
   },
 ];
@@ -393,16 +393,16 @@ export const STUDIO_WORK_HEAD = {
 export const STUDIO_CASES: StudioCase[] = [
   {
     site: "studio",
-    tab: "CORTEX",
+    tab: "CORTEX MEDIA",
     sector: "Our own work",
     desk: {
       src: STUDIO_IMAGES.studioDesk,
-      alt: "The CORTEX home page on a desktop: 'Your brand, taken seriously.' in tall condensed capitals, with the WhatsApp button and the prices link",
-      url: "CORTEX · home",
-      caption: "CORTEX · Home",
+      alt: "The CORTEX MEDIA home page on a desktop: 'Your brand, taken seriously.' in tall condensed capitals, with the WhatsApp button and the prices link",
+      url: "CORTEX MEDIA · home",
+      caption: "CORTEX MEDIA · Home",
     },
-    phone: { src: STUDIO_IMAGES.studioPhone, alt: "The CORTEX home page on a phone" },
-    kicker: "CORTEX · Our own work",
+    phone: { src: STUDIO_IMAGES.studioPhone, alt: "The CORTEX MEDIA home page on a phone" },
+    kicker: "CORTEX MEDIA · Our own work",
     title: "Our own site, made the way we make yours.",
     body: "Our own home page: the prices on the page in rand with the dollar beside it, the website deal, how a job runs phase by phase, and a WhatsApp button wherever a question comes up. Its three first-screen options are under How we design; turn the card for its logo.",
     made: "Public website, price table, phone and desktop layouts, light and dark themes",
@@ -689,18 +689,18 @@ export const STUDIO_DESIGN_CASES: StudioDesignCase[] = [
   },
   {
     id: "studio",
-    tab: "CORTEX",
+    tab: "CORTEX MEDIA",
     sector: "Our own work",
     brief: {
-      client: "CORTEX, our own design and hosting business",
+      client: "CORTEX MEDIA, our own design and hosting business",
       sells: "Websites, logos, business plans, pitch decks, print and social posts.",
       to: "Small business owners in South Africa, most of whom reach us on WhatsApp.",
       ask: "Look like a business worth paying, and put the prices on the page.",
     },
     options: [
-      { key: "a", name: "Offer first", alt: "Option A for CORTEX: 'Your brand, taken seriously.' in heavy black type with a yellow highlight, beside the website deal card" },
-      { key: "b", name: "Editorial", alt: "Option B for CORTEX: 'Your brand, taken seriously.' in a heavy grotesk on cream, with a serif lede" },
-      { key: "c", name: "Proof sheet", alt: "Option C for CORTEX: 'Your brand, taken seriously.' in tall condensed capitals, with an oxblood button" },
+      { key: "a", name: "Offer first", alt: "Option A for CORTEX MEDIA: 'Your brand, taken seriously.' in heavy black type with a yellow highlight, beside the website deal card" },
+      { key: "b", name: "Editorial", alt: "Option B for CORTEX MEDIA: 'Your brand, taken seriously.' in a heavy grotesk on cream, with a serif lede" },
+      { key: "c", name: "Proof sheet", alt: "Option C for CORTEX MEDIA: 'Your brand, taken seriously.' in tall condensed capitals, with an oxblood button" },
     ],
     chosen: "c",
     why: "The tall type carries the confidence the brief asked for, and the price table sits on the page in rand, with the dollar beside it.",
@@ -851,7 +851,7 @@ export interface StudioHostingGroup {
 
 export const STUDIO_HOSTING_HEAD = {
   kicker: "Hosting",
-  title: "What you get with CORTEX hosting.",
+  title: "What you get with CORTEX MEDIA hosting.",
   aside: "For as long as your site is with us. Our team looks after it, week in, week out, and you hear from us when it matters.",
   foot: "Lines marked “From November 2026” start this month. Everything else is how every site we host is looked after today.",
 };
@@ -1072,7 +1072,7 @@ export function studioIntakeNote(addons: StudioAddonId[]): string {
 /** The brief the form emails: the special, the logo add-on if ticked, then each quoted add-on. */
 export function studioIntakeMessage(addons: StudioAddonId[], logo = false): string {
   const [special, ...extra] = studioIntakeLines(addons);
-  let head = `Hi CORTEX, I'd like to start my brief for the ${special}.`;
+  let head = `Hi CORTEX MEDIA, I'd like to start my brief for the ${special}.`;
   if (logo) head += `\n\n${studioIntakeLogoLine()}`;
   if (extra.length === 0) return head;
   return `${head}\n\nAdd-ons, outside the special, for your team to quote separately:\n${extra.map((l) => `- ${l}`).join("\n")}`;
@@ -1089,7 +1089,7 @@ export const STUDIO_CONTACT = {
   kicker: "Contact",
   title: "Start on WhatsApp.",
   lede: "Send your business name and what you need. Our team replies in office hours.",
-  note: "WhatsApp, text or voice note. Save the number as CORTEX.",
+  note: "WhatsApp, text or voice note. Save the number as CORTEX MEDIA.",
   // 1.20.8 (Ray): WhatsApp only as a plain contact link; every form submits by email.
   primary: "Chat on WhatsApp",
   copy: "Copy the number",
@@ -1099,7 +1099,7 @@ export const STUDIO_CONTACT = {
 
 export const STUDIO_FOOTER = {
   about:
-    "CORTEX, design and hosting for small businesses: websites, logos and brands, business plans, pitch decks, print and social posts, made by our team and approved by you at every phase.",
+    "CORTEX MEDIA, design and hosting for small businesses: websites, logos and brands, business plans, pitch decks, print and social posts, made by our team and approved by you at every phase.",
   motto: "Your brand, taken seriously.",
   /** The footer's page links (1.22.0). Each one is a page, not a home-page section. */
   pages: [
@@ -1113,5 +1113,5 @@ export const STUDIO_FOOTER = {
   // (as heart) by ROKCT"); this is the note the fine line carries after it.
   // The copyright names the brand as it is set, in capitals. The host's
   // PLATFORM_NAME is "Rokct", so the studio passes its own name (1.5.2).
-  siteName: "CORTEX",
+  siteName: "CORTEX MEDIA",
 };

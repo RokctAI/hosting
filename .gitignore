@@ -136,6 +136,10 @@ next-env.d.ts
 /app/landing/page.tsx
 /app/legal/\[id\]/page.tsx
 /app/legal/page.tsx
+/app/lib/i18n/sdk/auth.json
+/app/lib/i18n/sdk/base.json
+/app/lib/i18n/sdk/hosting.json
+/app/lib/i18n/sdk/telemetry.json
 /app/lib/session.ts
 /app/lib/site-metadata.ts
 /app/manager/layout.tsx

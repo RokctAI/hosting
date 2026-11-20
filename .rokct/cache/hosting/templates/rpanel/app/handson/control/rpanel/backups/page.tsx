@@ -234,34 +234,34 @@ function BackupsContent() {
   }
 
   if (isLoading)
-    return <div className="p-8 text-center">Loading backups...</div>;
+    return <div className="p-8 text-center">{t("hosting.loading_backups")}</div>;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Backups</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("hosting.backups")}</h1>
           <p className="text-muted-foreground">
-            Manage your website backups and restoration points.
+            {t("hosting.manage_your_website_backups_and_restoration_poin")}
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <RiAddLine className="mr-2 h-4 w-4" />
-              Create Backup
+              {t("hosting.create_backup")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Backup</DialogTitle>
+              <DialogTitle>{t("hosting.create_new_backup")}</DialogTitle>
               <DialogDescription>
-                Select a website and backup type to create a new backup point.
+                {t("hosting.select_a_website_and_backup_type_to_create_a_new")}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Website</Label>
+                <Label>{t("hosting.website")}</Label>
                 <Select
                   value={selectedWebsite}
                   onValueChange={setSelectedWebsite}
@@ -281,7 +281,7 @@ function BackupsContent() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Backup Type</Label>
+                <Label>{t("hosting.backup_type")}</Label>
                 <Select value={selectedType} onValueChange={setSelectedType}>
                   <SelectTrigger>
                     <SelectValue
@@ -290,17 +290,17 @@ function BackupsContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Full">
-                      Full Backup (Files + DB)
+                      {t("hosting.full_backup_files_db")}
                     </SelectItem>
-                    <SelectItem value="Files">Files Only</SelectItem>
-                    <SelectItem value="Database">Database Only</SelectItem>
+                    <SelectItem value="Files">{t("hosting.files_only")}</SelectItem>
+                    <SelectItem value="Database">{t("hosting.database_only")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
+                {t("hosting.cancel")}
               </Button>
               <Button onClick={handleCreateBackup} disabled={isCreating}>
                 {isCreating ? "Creating..." : "Create Backup"}
@@ -312,18 +312,18 @@ function BackupsContent() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Backup History</CardTitle>
+          <CardTitle>{t("hosting.backup_history")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Website</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("hosting.website")}</TableHead>
+                <TableHead>{t("hosting.type")}</TableHead>
+                <TableHead>{t("hosting.size")}</TableHead>
+                <TableHead>{t("hosting.created")}</TableHead>
+                <TableHead>{t("hosting.status")}</TableHead>
+                <TableHead className="text-right">{t("hosting.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -333,7 +333,7 @@ function BackupsContent() {
                     colSpan={6}
                     className="text-center py-8 text-muted-foreground"
                   >
-                    No backups found
+                    {t("hosting.no_backups_found")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -368,7 +368,7 @@ function BackupsContent() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRestoreBackup(backup.name)}
-                          title="Restore"
+                          title={t("hosting.restore")}
                         >
                           <RiArrowGoBackLine className="h-4 w-4" />
                         </Button>
@@ -378,7 +378,7 @@ function BackupsContent() {
                         size="icon"
                         className="text-destructive"
                         onClick={() => handleDeleteBackup(backup.name)}
-                        title="Delete"
+                        title={t("hosting.delete")}
                       >
                         <RiDeleteBinLine className="h-4 w-4" />
                       </Button>
@@ -396,7 +396,7 @@ function BackupsContent() {
 
 export default function BackupsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="p-8 text-center">{t("hosting.loading")}</div>}>
       <BackupsContent />
     </Suspense>
   );

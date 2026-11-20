@@ -246,7 +246,7 @@ export interface StudioBankQrInput {
 /** The bank QR's plain text: account name, bank, branch, account, amount, reference. */
 export function studioBankQrText({ account, swift = STUDIO_BANK.swift, amountZar, ref }: StudioBankQrInput): string {
   return [
-    "CORTEX bank transfer (EFT)",
+    "CORTEX MEDIA bank transfer (EFT)",
     `Account name: ${STUDIO_BANK.holder}`,
     `Bank: ${STUDIO_BANK.bank}`,
     `Branch code: ${STUDIO_BANK.branch}`,

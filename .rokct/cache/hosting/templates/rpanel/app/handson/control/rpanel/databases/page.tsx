@@ -155,7 +155,7 @@ function DatabasesContent() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setEditingDb(db)}
-                      title="Change Password" // placeholder
+                      title={t("hosting.change_password")} // placeholder
                     >
                       <RiKey2Line className="h-4 w-4" />
                     </Button>
@@ -201,10 +201,10 @@ function DatabasesContent() {
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEditingDb(null)}>
-              Cancel
+              {t("hosting.cancel")}
             </Button>
             <Button onClick={handlePasswordUpdate} disabled={isSaving}>
-              Update Password
+              {t("hosting.update_password")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -220,7 +220,7 @@ export default function DatabasesPage() {
       <main className="flex-1 p-8">
         <Suspense
           fallback={
-            <div className="p-8 text-center text-gray-400">Loading...</div>
+            <div className="p-8 text-center text-gray-400">{t("hosting.loading")}</div>
           }
         >
           <DatabasesContent />

@@ -46,6 +46,7 @@ import {
   clearLog,
 } from "@/app/actions/handson/control/rpanel/logs/view-logs";
 
+import t from "@/app/lib/i18n";
 export default function LogsPage({ params }: { params: { website: string } }) {
   const [stats, setStats] = useState<any>(null);
   const [currentLog, setCurrentLog] = useState<string>("nginx_error");
@@ -133,7 +134,7 @@ export default function LogsPage({ params }: { params: { website: string } }) {
         <div className="flex justify-between items-center mb-6 shrink-0">
           <div>
             <h1 className="text-3xl font-bold tracking-tight mb-2">
-              Log Viewer
+              {t("hosting.log_viewer")}
             </h1>
             <p className="text-muted-foreground">
               Server logs for {params.website}
@@ -147,10 +148,10 @@ export default function LogsPage({ params }: { params: { website: string } }) {
                 loadLogContent(currentLog);
               }}
             >
-              <RiRefreshLine className="mr-2 h-4 w-4" /> Refresh
+              <RiRefreshLine className="mr-2 h-4 w-4" /> {t("hosting.refresh")}
             </Button>
             <Button variant="destructive" onClick={handleClearLog}>
-              <RiDeleteBinLine className="mr-2 h-4 w-4" /> Clear Log
+              <RiDeleteBinLine className="mr-2 h-4 w-4" /> {t("hosting.clear_log")}
             </Button>
           </div>
         </div>
@@ -193,7 +194,7 @@ export default function LogsPage({ params }: { params: { website: string } }) {
           <CardContent className="p-0 flex-1 relative bg-black/50 font-mono text-xs overflow-auto">
             {isLoadingContent ? (
               <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-                Loading logs...
+                {t("hosting.loading_logs")}
               </div>
             ) : (
               <div className="p-4 space-y-1">
@@ -210,7 +211,7 @@ export default function LogsPage({ params }: { params: { website: string } }) {
                 ))}
                 {logContent.length === 0 && (
                   <div className="text-gray-500 italic">
-                    No log entries found.
+                    {t("hosting.no_log_entries_found")}
                   </div>
                 )}
               </div>

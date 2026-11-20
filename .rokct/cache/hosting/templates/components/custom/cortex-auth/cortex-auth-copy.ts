@@ -15,7 +15,7 @@
  */
 
 // hosting_sdk 1.21.0: the words beside the auth card (../site-shell.tsx).
-// CORTEX's voice from studio-copy.ts; the card's own words stay auth_sdk's.
+// CORTEX MEDIA's voice from studio-copy.ts; the card's own words stay auth_sdk's.
 
 export interface CortexAuthPanel {
   kicker: string;
@@ -24,19 +24,19 @@ export interface CortexAuthPanel {
 }
 
 export const CORTEX_AUTH_COPY = {
-  sideLabel: "About CORTEX",
+  sideLabel: "About CORTEX MEDIA",
   login: {
-    kicker: "CORTEX · Sign in",
+    kicker: "CORTEX MEDIA · Sign in",
     title: ["Welcome", "back."],
-    lede: "Sign in to your CORTEX account to carry on.",
+    lede: "Sign in to your CORTEX MEDIA account to carry on.",
   },
   register: {
-    kicker: "CORTEX · New account",
+    kicker: "CORTEX MEDIA · New account",
     title: ["Your brand,", "taken seriously."],
-    lede: "Create a CORTEX account to get started.",
+    lede: "Create a CORTEX MEDIA account to get started.",
   },
   forgot: {
-    kicker: "CORTEX · Account help",
+    kicker: "CORTEX MEDIA · Account help",
     title: ["Lost your", "password?"],
     lede: "It happens. Our team is a WhatsApp message away if the steps here do not get you back in.",
   },

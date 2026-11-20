@@ -14,7 +14,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// hosting_sdk 1.21.0: the CORTEX frame for auth_sdk's pages (login,
+// hosting_sdk 1.21.0: the CORTEX MEDIA frame for auth_sdk's pages (login,
 // register, forgot-password). Ray: every app shell gets its own design for
 // register and login.
 //
@@ -22,7 +22,7 @@
 // installs a generic default here (base_sdk's Header above the card).
 // hosting_sdk is the home SDK, so the installer keeps this copy, the same
 // pattern delivery_sdk follows for Juvo: the auth card sits inside the
-// CORTEX header, footer, faces and tokens (studio.css, studio-fonts.ts),
+// CORTEX MEDIA header, footer, faces and tokens (studio.css, studio-fonts.ts),
 // with a brand panel beside it. Presentation only: the auth views, their
 // actions and their form fields are auth_sdk's and are not touched. The
 // header's Log in / Sign up come from its HeaderAuthSlot, so the page's
@@ -43,9 +43,9 @@ import { studioFontClassName } from "@/components/custom/studio/studio-fonts";
 
 export interface SiteShellProps {
   children: ReactNode;
-  /** Header "Log in" handler from the auth page; the CORTEX header ignores it. */
+  /** Header "Log in" handler from the auth page; the CORTEX MEDIA header ignores it. */
   openLoginPopup?: () => void;
-  /** Header "Sign up" handler from the auth page; the CORTEX header ignores it. */
+  /** Header "Sign up" handler from the auth page; the CORTEX MEDIA header ignores it. */
   openSignupPopup?: () => void;
 }
 
@@ -78,14 +78,14 @@ export function SiteShell({ children }: SiteShellProps) {
           <div className="wrap ft-in">
             <div>
               <span className="mark">
-                CORTEX
+                CORTEX MEDIA
                 <i aria-hidden="true" />
               </span>
               <p className="sm">{STUDIO_FOOTER.about}</p>
             </div>
             <div className="r">
               <span className="motto">{STUDIO_FOOTER.motto}</span>
-              {/* hosting_sdk 1.20.7's footer: `© <year> CORTEX`, no maker credit. */}
+              {/* hosting_sdk 1.20.7's footer: `© <year> CORTEX MEDIA`, no maker credit. */}
               <span className="fine">
                 © {new Date().getFullYear()} {STUDIO_FOOTER.siteName}
               </span>

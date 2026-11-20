@@ -16,7 +16,7 @@
 """hosting_sdk 1.5.1: the studio footer's credit line (Ray, 2026-10-31:
 "all site will be copyright sitename then built with love (as heart) by
 ROKCT"). The footer draws base_sdk 1.54.0's SiteCredit - `© <year> <site
-name> · Built with ♥ by ROKCT` - then the prices note, and names no legal
+name> · Built with ♥ by Cortex Media` - then the prices note, and names no legal
 entity.
 
 Run:  python3 -m unittest discover -s hosting/nextjs/tests
@@ -50,7 +50,7 @@ def code_of(path):
 class TestStudioFooterCredit(unittest.TestCase):
     def test_footer_draws_the_site_credit_then_the_prices_note(self):
         home = read(HOME)
-        # 1.20.7: the site's own footer is `© <year> CORTEX`, no credit.
+        # 1.20.7: the site's own footer is `© <year> CORTEX MEDIA`, no credit.
         self.assertNotIn("SiteCredit", home)
         footer = home.split('<footer className="ft">', 1)[1].split("</footer>", 1)[0]
         self.assertIn('<span className="fine">', footer)
@@ -64,7 +64,7 @@ class TestStudioFooterCredit(unittest.TestCase):
         code = code_of(COPY)
         block = code.split("export const STUDIO_FOOTER = {", 1)[1].split("};", 1)[0]
         self.assertNotIn("prices:", block)
-        self.assertIn('siteName: "CORTEX",', block)
+        self.assertIn('siteName: "CORTEX MEDIA",', block)
         for word in ("©", "PTY", "LTD", "Copyright", "legal:"):
             self.assertNotIn(word, block, word)
 
@@ -93,7 +93,7 @@ class TestStudioFooterCredit(unittest.TestCase):
             run = subprocess.run([node, "--experimental-strip-types", "--no-warnings", probe],
                                  capture_output=True, text=True, timeout=60, cwd=tmp)
         self.assertEqual(run.returncode, 0, run.stderr)
-        self.assertEqual(run.stdout.strip(), "© 2026 ROKCT · Built with ♥ by ROKCT")
+        self.assertEqual(run.stdout.strip(), "© 2026 ROKCT · Built with ♥ by Cortex Media")
 
 
 if __name__ == "__main__":

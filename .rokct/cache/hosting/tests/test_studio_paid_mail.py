@@ -31,7 +31,7 @@ def code(p):
 
 PROBE = r"""
 import { buildStudioPaidMails } from './studio-order-mail.ts';
-const cfg = { from: 'CORTEX <orders@x.co.za>', ordersEmail: 'orders@x.co.za' };
+const cfg = { from: 'CORTEX MEDIA <orders@x.co.za>', ordersEmail: 'orders@x.co.za' };
 const m = buildStudioPaidMails({ ref: 'CX-AB12-CD34', amount: '10500.00', nameFirst: 'Thandi', nameLast: '<b>M</b>', email: 'thandi@example.com', pfPaymentId: '1234567' }, cfg);
 const blank = buildStudioPaidMails({ ref: 'CX-AB12-CD34', amount: '2500', nameFirst: '', nameLast: '', email: '', pfPaymentId: '' }, cfg);
 console.log(JSON.stringify({ m, blank }));

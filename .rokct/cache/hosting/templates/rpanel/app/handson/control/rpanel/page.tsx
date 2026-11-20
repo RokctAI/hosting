@@ -29,6 +29,7 @@ import { getServerInfo } from "@/app/actions/handson/control/rpanel/dashboard/ge
 import { ServerInfoHeader } from "@/components/custom/rpanel/server-info-header";
 import { StatCard } from "@/components/custom/rpanel/stat-card";
 
+import t from "@/app/lib/i18n";
 export default function OverviewPage() {
   const [usage, setUsage] = useState<any>(null);
   const [serverInfo, setServerInfo] = useState<any>(null);
@@ -65,32 +66,32 @@ export default function OverviewPage() {
       <main className="flex-1 p-8">
         <ServerInfoHeader info={serverInfo} loading={isLoading} />
 
-        <h2 className="text-2xl font-bold mb-6">Overview</h2>
+        <h2 className="text-2xl font-bold mb-6">{t("hosting.overview")}</h2>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Websites"
+            title={t("hosting.websites")}
             value={usage?.websites?.used || 0}
             limit={usage?.websites?.limit}
             icon={<RiGlobalLine className="h-4 w-4 text-blue-400" />}
             loading={isLoading}
           />
           <StatCard
-            title="Databases"
+            title={t("hosting.databases")}
             value={usage?.databases?.used || 0}
             limit={usage?.databases?.limit}
             icon={<RiDatabase2Line className="h-4 w-4 text-green-400" />}
             loading={isLoading}
           />
           <StatCard
-            title="Emails"
+            title={t("hosting.emails")}
             value={usage?.emails?.used || 0}
             limit={usage?.emails?.limit} // Assuming api returns this
             icon={<RiMailLine className="h-4 w-4 text-purple-400" />}
             loading={isLoading}
           />
           <StatCard
-            title="Disk Usage"
+            title={t("hosting.disk_usage")}
             value={
               usage?.storage_gb?.used ? `${usage.storage_gb.used} GB` : "0 GB"
             }

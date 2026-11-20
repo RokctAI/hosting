@@ -1,7 +1,12 @@
 {
   "name": "hosting_sdk",
-  "version": "1.22.0",
-  "installs": [],
+  "version": "1.25.0",
+  "installs": [
+    {
+      "from": "templates/app/lib/i18n/sdk/hosting.json",
+      "to": "app/lib/i18n/sdk/hosting.json"
+    }
+  ],
   "dependencies": {},
   "devDependencies": {},
   "app_type": {

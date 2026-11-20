@@ -28,7 +28,7 @@ import { studioCleanRef, studioIsOrderRef } from "@/components/custom/studio/stu
 import { studioPayfastConfig } from "@/components/custom/studio/studio-payfast";
 
 export const metadata: Metadata = {
-  title: { absolute: "Startups and SMMEs · CORTEX" },
+  title: { absolute: "Startups and SMMEs · CORTEX MEDIA" },
   description: "A website and brand for your startup or small business, hosted free for life for the first 1,000 owners. Order online in a few short steps.",
 };
 
