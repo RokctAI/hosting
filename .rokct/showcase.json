@@ -10,5 +10,12 @@
     "desktop": "latest/desktop-dark.webp",
     "phone": "latest/phone-dark.webp"
   },
-  "logo_back": "rokct"
+  "logo_back": "rokct",
+  "features": [
+    "Six services: website, plans, kit, decks, print, posts",
+    "You see three designs and choose one",
+    "Prices set in rand, shown in your currency",
+    "Five phases; you approve every render",
+    "Brief taken on WhatsApp in ten questions"
+  ]
 }
