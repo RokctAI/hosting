@@ -38,6 +38,13 @@ const nextConfig = {
     // server log line. There is now no connection to fail.
     ROKCT_TENANT_LINK: "single-tenant",
   },
+  // The portfolio reads showcase/ with fs at process.cwd() (hosting_sdk
+  // studio-showcase-load.ts). /work and the home render per request, so on
+  // Vercel that read runs inside the server function, where only traced
+  // files exist: without this the folder is missing there and the site
+  // falls back to the three built-in cards. Ray: the portfolio filter
+  // "does filter right things" (11 Nov).
+  outputFileTracingIncludes: { "/*": ["./showcase/**/*"] },
 };
 
 export default nextConfig;
