@@ -109,6 +109,7 @@ import {
 } from "./studio-showcase";
 import { liftImageUrls } from "./studio-showcase-lift";
 
+import { tx } from "@/app/lib/i18n/phrases";
 /** The backs a card can turn to, rendered on the server (studio-home.tsx). */
 export type ShowcaseBacks = Partial<Record<ShowcaseLogoBack, ReactNode>>;
 
@@ -345,7 +346,7 @@ function Front({ site, onError, flips }: { site: ShowcaseSite; onError: () => vo
       {flips && (
         <span className="sr-turn" aria-hidden="true">
           <RiRepeat2Line size={14} />
-          {T.turn}
+          {tx(T.turn)}
         </span>
       )}
     </div>
@@ -361,14 +362,14 @@ function Back({ site, body }: { site: ShowcaseSite; body: ReactNode }) {
     <div className="sr-back">
       <div className="sr-back-h">
         <p>
-          {T.logoKicker}
-          <b>{site.name}</b>
+          {tx(T.logoKicker)}
+          <b>{tx(site.name)}</b>
         </p>
       </div>
-      <div className="sr-back-b">{body}</div>
+      <div className="sr-back-b">{tx(body)}</div>
       <span className="sr-turn" aria-hidden="true">
         <RiRepeat2Line size={14} />
-        {T.back}
+        {tx(T.back)}
       </span>
     </div>
   );
@@ -500,7 +501,7 @@ function CardBody({ item, g, interactive, big, flipped, lifted, dim, backs, tota
     return (
       <li ref={liRef} className="sr-card sr-more" data-g={g} data-more="true" aria-hidden={interactive ? undefined : true}>
         <a className="sr-more-in" href={moreHref} tabIndex={interactive ? undefined : -1}>
-          <span className="sr-more-k">{T.more}</span>
+          <span className="sr-more-k">{tx(T.more)}</span>
           <span className="sr-more-n">{T.moreSub(total)}</span>
           <span className="sr-more-go" aria-hidden="true">
             <RiArrowRightLine size={20} />
@@ -547,14 +548,14 @@ function CardBody({ item, g, interactive, big, flipped, lifted, dim, backs, tota
       )}
       <ShowcaseExtLink site={site} interactive={interactive} />
       <p className="sr-cap">
-        <b>{site.name}</b> · <span>{site.kind}</span>
-        <em>{site.tagline}</em>
+        <b>{tx(site.name)}</b> · <span>{tx(site.kind)}</span>
+        <em>{tx(site.tagline)}</em>
       </p>
       {site.award && (
         <p className="sr-award" data-award="">
           <RiAwardLine size={13} aria-hidden="true" />
-          <b>{site.award.label}</b>
-          {site.award.detail && <span className="sr-award-d"> · {site.award.detail}</span>}
+          <b>{tx(site.award.label)}</b>
+          {site.award.detail && <span className="sr-award-d"> · {tx(site.award.detail)}</span>}
         </p>
       )}
     </li>
@@ -1162,7 +1163,7 @@ export function StudioShowcaseRow({
           <span>{paused ? T.play : T.pause}</span>
         </button>
         <a className="sr-chip" href={moreHref}>
-          <span>{T.allWork}</span>
+          <span>{tx(T.allWork)}</span>
           <RiArrowRightLine size={13} aria-hidden="true" />
         </a>
       </div>
@@ -1201,8 +1202,8 @@ function LogoFace({ site, backs, solo }: { site: ShowcaseEntry; backs: ShowcaseB
       <div className="sr-back wk-logo-card">
         <div className="sr-back-h">
           <p>
-            {T.logoKicker}
-            <b>{site.name}</b>
+            {tx(T.logoKicker)}
+            <b>{tx(site.name)}</b>
           </p>
         </div>
         <div className="sr-back-b">
@@ -1224,7 +1225,7 @@ function LogoFace({ site, backs, solo }: { site: ShowcaseEntry; backs: ShowcaseB
       {!solo && (
         <span className="sr-turn wk-turn" aria-hidden="true">
           <RiRepeat2Line size={14} />
-          {T.back}
+          {tx(T.back)}
         </span>
       )}
     </div>
@@ -1254,7 +1255,7 @@ function SiteFace({ site, flips, onError }: { site: ShowcaseSite; flips: boolean
       {flips && (
         <span className="sr-turn wk-turn" aria-hidden="true">
           <RiRepeat2Line size={14} />
-          {T.turn}
+          {tx(T.turn)}
         </span>
       )}
     </div>
@@ -1336,10 +1337,10 @@ function WorkItem({
       <div className="wk-meta">
         <span className="wk-n num">{String(n).padStart(2, "0")}</span>
         <div>
-          <h2 className="wk-name">{site.name}</h2>
-          <p className="wk-kind">{site.kind}</p>
+          <h2 className="wk-name">{tx(site.name)}</h2>
+          <p className="wk-kind">{tx(site.kind)}</p>
         </div>
-        <p className="wk-tag">{site.tagline}</p>
+        <p className="wk-tag">{tx(site.tagline)}</p>
         {site.award && (
           <p className="wk-award" data-award="">
             <RiAwardLine size={15} aria-hidden="true" />
@@ -1354,10 +1355,10 @@ function WorkItem({
                 <img src={a.phone} alt={`${a.name} app screen`} width={90} height={195} loading="lazy" decoding="async" />
                 {a.store ? (
                   <a href={a.store} target="_blank" rel="noopener noreferrer">
-                    {a.name}
+                    {tx(a.name)}
                   </a>
                 ) : (
-                  <span>{a.name}</span>
+                  <span>{tx(a.name)}</span>
                 )}
               </li>
             ))}
@@ -1365,7 +1366,7 @@ function WorkItem({
         )}
         <ul className="wk-svc" aria-label={`${site.name}: what we made`}>
           {labels.map((l) => (
-            <li key={l}>{l}</li>
+            <li key={l}>{tx(l)}</li>
           ))}
         </ul>
       </div>
@@ -1511,9 +1512,9 @@ export function StudioShowcaseGrid({
               data-filter={c.key}
               onClick={() => choose(c.key)}
             >
-              <span>{c.label}</span>
+              <span>{tx(c.label)}</span>
               <span className="wk-chip-n num" aria-hidden="true">
-                {c.count}
+                {tx(c.count)}
               </span>
             </button>
           ))}

@@ -60,6 +60,7 @@ import {
   type StudioPriceFormat,
 } from "./studio-copy";
 
+import { tx } from "@/app/lib/i18n/phrases";
 // 1.21.2 (Ray): prices are shown in rand only; there is no currency toggle.
 // The context still carries the live rate, for the one plain rate line in
 // the footer (StudioRateLine).
@@ -135,7 +136,7 @@ export function StudioDealAlt({ k }: { k: StudioDealKey }) {
 /** The hero kicker's currency item: "Rand prices" or "Dollar prices", following the picker. */
 export function StudioHeroCurrency() {
   const { cur } = useContext(CurrencyContext);
-  return <>{STUDIO_HERO.prices[cur]}</>;
+  return <>{tx(STUDIO_HERO.prices[cur])}</>;
 }
 
 /** 1.21.2 (Ray): the footer's one plain line on the conversion rate; no toggle. */
@@ -201,21 +202,21 @@ export function StudioHeader({ base = "", current }: { base?: string; current?: 
   return (
     <header className={`${scrolled ? "hd on" : "hd"}${folded ? " folded" : ""}`}>
       <div className="wrap hd-in">
-        <a className="mark" href="/" aria-label="CORTEX MEDIA, home">
+        <a className="mark" href="/" aria-label={tx("CORTEX MEDIA, home")}>
           {/* 1.24.0 (Ray, 2026-11-20): the Supacharge fold (base_sdk's
               BrandStemWordmark). CORTEX MEDIA at load; 1500ms after mount
               " MEDIA" slides into CORTEX (500ms ease-in-out, grid 1fr to 0fr),
               then the oxblood dot shows. */}
-          CORTEX
+          {tx("CORTEX")}
           <span className="mark-fold" aria-hidden={folded}>
-            <span> MEDIA</span>
+            <span> {tx("MEDIA")}</span>
           </span>
           <i aria-hidden="true" />
         </a>
-        <nav className="nav" aria-label="Sections">
+        <nav className="nav" aria-label={tx("Sections")}>
           {STUDIO_NAV.map((n) => (
             <a key={n.href} href={navHref(n.href, base)} aria-current={n.href === current ? "page" : undefined}>
-              {n.label}
+              {tx(n.label)}
             </a>
           ))}
         </nav>
@@ -223,19 +224,19 @@ export function StudioHeader({ base = "", current }: { base?: string; current?: 
           <button
             className="pill ic"
             type="button"
-            aria-label="Switch between light and dark"
+            aria-label={tx("Switch between light and dark")}
             onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
           >
             <SunMoon />
           </button>
           <HeaderAuthSlot variant="bar" classes={STUDIO_AUTH_BAR} />
           <a className="btn btn-ink btn-sm" href={STUDIO_WHATSAPP_URL}>
-            WhatsApp us
+            {tx("WhatsApp us")}
           </a>
           <button
             className="pill ic burger"
             type="button"
-            aria-label="Menu"
+            aria-label={tx("Menu")}
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
           >
@@ -289,7 +290,7 @@ export function StudioCopyNumber() {
   };
   return (
     <button className="btn btn-line" type="button" onClick={copy}>
-      {label}
+      {tx(label)}
     </button>
   );
 }
@@ -331,7 +332,7 @@ export function StudioDesignTabs({
   };
   return (
     <div className="dz" data-case={tabs[active].id} style={schemes[active] as CSSProperties}>
-      <div className="dz-tabs" role="tablist" aria-label="Projects" onKeyDown={onKey}>
+      <div className="dz-tabs" role="tablist" aria-label={tx("Projects")} onKeyDown={onKey}>
         {tabs.map((t, i) => (
           <button
             key={t.id}
@@ -347,8 +348,8 @@ export function StudioDesignTabs({
             onClick={() => setActive(i)}
           >
             <span className="dz-ti">{String(i + 1).padStart(2, "0")}</span>
-            <span className="dz-tl">{t.label}</span>
-            <span className="dz-ts">{t.sub}</span>
+            <span className="dz-tl">{tx(t.label)}</span>
+            <span className="dz-ts">{tx(t.sub)}</span>
           </button>
         ))}
       </div>
@@ -364,7 +365,7 @@ export function StudioDesignTabs({
           data-case={tabs[i].id}
           style={schemes[i] as CSSProperties}
         >
-          {p}
+          {tx(p)}
         </div>
       ))}
     </div>
@@ -435,50 +436,50 @@ export function StudioIntakeForm() {
   if (state.kind === "ok") {
     return (
       <div className="ik ik-done" role="status" aria-live="polite">
-        <p className="kick">{F.done.kicker}</p>
-        <p className="ik-dt">{F.done.title}</p>
+        <p className="kick">{tx(F.done.kicker)}</p>
+        <p className="ik-dt">{tx(F.done.title)}</p>
         <ul className="ik-sum">
           {studioIntakeLines(state.addons).map((l) => (
-            <li key={l}>{l}</li>
+            <li key={l}>{tx(l)}</li>
           ))}
-          {state.logo && <li>{F.logo.line}</li>}
+          {state.logo && <li>{tx(F.logo.line)}</li>}
         </ul>
         {state.addons.length > 0 && <p className="ik-dn">{studioIntakeNote(state.addons)}</p>}
-        <p className="sm">{F.done.text}</p>
+        <p className="sm">{tx(F.done.text)}</p>
       </div>
     );
   }
 
   return (
-    <form className="ik" onSubmit={onSubmit} noValidate aria-label="Start your brief">
+    <form className="ik" onSubmit={onSubmit} noValidate aria-label={tx("Start your brief")}>
       <div className="ik-special">
-        <p className="kick">{F.special.kicker}</p>
+        <p className="kick">{tx(F.special.kicker)}</p>
         <p className="ik-sn">
-          <b>{F.special.name}</b>
+          <b>{tx(F.special.name)}</b>
           <span className="ik-sp">
-            <span className="vh">Special price </span>
+            <span className="vh">{tx("Special price")}{" "}</span>
             <StudioDeal k="offer" as="b" />
-            <span className="vh">, normally </span>
+            <span className="vh">{tx(", normally")}{" "}</span>
             <StudioDeal k="normal" as="s" />
           </span>
         </p>
-        <p className="sm">{F.special.covers}</p>
+        <p className="sm">{tx(F.special.covers)}</p>
       </div>
 
       <fieldset className="ik-add">
         <legend>
-          {F.addons.legend}
-          <span>{F.addons.hint}</span>
+          {tx(F.addons.legend)}
+          <span>{tx(F.addons.hint)}</span>
         </legend>
         <label className="ik-opt">
           <input type="checkbox" checked={logo} onChange={(e) => setLogo(e.target.checked)} />
           <span className="ik-t">
             <b>
-              {F.logo.name}{" "}
+              {tx(F.logo.name)}{" "}
               {logoAddon?.wasZar ? <s>{studioMoney(logoAddon.wasZar, cur, usdPerZar)}</s> : null}{" "}
               {logoAddon?.zar ? <>{studioMoney(logoAddon.zar, cur, usdPerZar)}</> : null}
             </b>
-            <span>{F.logo.benefit}</span>
+            <span>{tx(F.logo.benefit)}</span>
           </span>
         </label>
         {F.addons.items.map((a) => (
@@ -490,31 +491,31 @@ export function StudioIntakeForm() {
               aria-describedby="ik-quoted"
             />
             <span className="ik-t">
-              <b>{a.name}</b>
-              <span>{a.benefit}</span>
+              <b>{tx(a.name)}</b>
+              <span>{tx(a.benefit)}</span>
             </span>
           </label>
         ))}
         <p className="fine ik-q" id="ik-quoted">
-          {F.addons.quoted}
+          {tx(F.addons.quoted)}
         </p>
       </fieldset>
 
       <p className={note ? "ik-note on" : "ik-note"} role="status" aria-live="polite">
-        {note}
+        {tx(note)}
       </p>
 
       <div className="ik-who">
         <label>
-          {F.contact.name}
+          {tx(F.contact.name)}
           <input type="text" name="name" autoComplete="name" maxLength={120} />
         </label>
         <label>
-          {F.contact.email}
+          {tx(F.contact.email)}
           <input type="email" name="email" autoComplete="email" maxLength={200} />
         </label>
         <label>
-          {F.contact.phone}
+          {tx(F.contact.phone)}
           <input type="tel" name="phone" autoComplete="tel" maxLength={40} />
         </label>
         <div aria-hidden="true" style={{ position: "absolute", left: "-10000px" }}>
@@ -524,7 +525,7 @@ export function StudioIntakeForm() {
 
       {state.kind === "fail" && (
         <p className="ik-err" role="alert">
-          {state.message}
+          {tx(state.message)}
         </p>
       )}
 
@@ -532,7 +533,7 @@ export function StudioIntakeForm() {
         <button className="btn btn-acc" type="submit" aria-busy={state.kind === "sending"}>
           {state.kind === "sending" ? F.sending : F.submit}
         </button>
-        <span className="fine">{F.submitNote}</span>
+        <span className="fine">{tx(F.submitNote)}</span>
       </div>
     </form>
   );

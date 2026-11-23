@@ -42,6 +42,7 @@
 
 import { STUDIO_MARK_COPY, type StudioMarkSet } from "./studio-copy";
 
+import { tx } from "@/app/lib/i18n/phrases";
 /** Where the back's pictures live (installed at public/studio/lift/). */
 export const LIFT_DIR = "/studio/lift";
 
@@ -195,9 +196,9 @@ export function ShowcaseLiftBack({ m }: { m: StudioMarkSet }) {
             <span className="mk-mark" role="img" aria-label={m.final.alt} style={mark} />
           </span>
           <span className="sr-mk-k">
-            {letter} · {picked ? picked.name : STUDIO_MARK_COPY.final}
+            {tx(letter)} · {picked ? picked.name : STUDIO_MARK_COPY.final}
           </span>
-          <p>{STUDIO_MARK_COPY.picked}</p>
+          <p>{tx(STUDIO_MARK_COPY.picked)}</p>
         </div>
       </div>
     </div>

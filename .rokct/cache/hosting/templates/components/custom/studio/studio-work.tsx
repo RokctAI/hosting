@@ -37,6 +37,7 @@ import { StudioFooter, studioShowcaseBacks } from "./studio-home";
 import { StudioShowcaseCount, StudioShowcaseGrid, StudioShowcaseScope, StudioShowcaseSection } from "./studio-showcase-client";
 import { SHOWCASE_PAGE_HREF, SHOWCASE_SHELF_COPY, STUDIO_SHOWCASE_COPY, showcaseShelves, type ShowcaseEntry } from "./studio-showcase";
 
+import { tx } from "@/app/lib/i18n/phrases";
 export function StudioWork({
   fontClassName,
   sites,
@@ -56,11 +57,11 @@ export function StudioWork({
           <main className="wk">
             <section className="wk-head">
               <div className="wrap">
-                <p className="kick">{P.kicker}</p>
+                <p className="kick">{tx(P.kicker)}</p>
                 <div className="wk-head-g">
-                  <h1 className="disp wk-h1">{P.heading}</h1>
+                  <h1 className="disp wk-h1">{tx(P.heading)}</h1>
                   <div className="wk-head-r">
-                    <p className="lede">{P.lede}</p>
+                    <p className="lede">{tx(P.lede)}</p>
                     <StudioShowcaseCount className="fine num" initial={sites.length} />
                   </div>
                 </div>
@@ -76,23 +77,23 @@ export function StudioWork({
             {/* 1.20.8: every product we make; empty shelves say "Coming soon", never fake work. */}
             <section className="wk-shelves" aria-labelledby="wk-shelves-h">
               <div className="wrap">
-                <p className="kick">{SHOWCASE_SHELF_COPY.kicker}</p>
+                <p className="kick">{tx(SHOWCASE_SHELF_COPY.kicker)}</p>
                 <h2 id="wk-shelves-h" className="disp">
-                  {SHOWCASE_SHELF_COPY.title}
+                  {tx(SHOWCASE_SHELF_COPY.title)}
                 </h2>
                 <ul className="wk-shelf-g">
                   {showcaseShelves(sites).map((s) => (
                     <li key={s.key} className="wk-shelf" data-shelf={s.key}>
-                      <h3>{s.label}</h3>
-                      <p className="sm">{s.what}</p>
+                      <h3>{tx(s.label)}</h3>
+                      <p className="sm">{tx(s.what)}</p>
                       {s.count > 0 ? (
                         <a className="btn btn-line btn-sm" href={`${SHOWCASE_PAGE_HREF}?service=${s.key}`}>
                           {SHOWCASE_SHELF_COPY.see(s.count)}
                         </a>
                       ) : (
                         <>
-                          <span className="soon">{SHOWCASE_SHELF_COPY.soon}</span>
-                          <small className="fine">{SHOWCASE_SHELF_COPY.soonText}</small>
+                          <span className="soon">{tx(SHOWCASE_SHELF_COPY.soon)}</span>
+                          <small className="fine">{tx(SHOWCASE_SHELF_COPY.soonText)}</small>
                         </>
                       )}
                     </li>
@@ -104,10 +105,10 @@ export function StudioWork({
               <div className="wrap">
                 <div className="wk-foot">
                   <a className="btn btn-line btn-sm" href="/">
-                    {P.back}
+                    {tx(P.back)}
                   </a>
                   <a className="btn btn-acc btn-sm" href={STUDIO_WHATSAPP_URL}>
-                    {P.cta}
+                    {tx(P.cta)}
                   </a>
                 </div>
               </div>

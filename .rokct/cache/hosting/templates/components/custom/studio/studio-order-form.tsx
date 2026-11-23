@@ -87,6 +87,7 @@ import {
 } from "./studio-order";
 import { STUDIO_BANK, STUDIO_PAY_API, STUDIO_PAY_COPY, type StudioPayReturnPath } from "./studio-pay";
 
+import { tx } from "@/app/lib/i18n/phrases";
 type State =
   | { kind: "idle" }
   | { kind: "sending" }
@@ -130,7 +131,7 @@ function Choice({ name, options, value, onPick }: { name: string; options: reado
             value={o.value}
             {...(onPick ? { checked: value === o.value, onChange: () => onPick(o.value) } : {})}
           />
-          <span>{o.label}</span>
+          <span>{tx(o.label)}</span>
         </label>
       ))}
     </div>
@@ -142,16 +143,16 @@ function SelectField({ name, options, errors }: { name: string; options: readonl
   const id = `of-${name}`;
   return (
     <div className="of-f">
-      <label htmlFor={id}>{f.label}</label>
+      <label htmlFor={id}>{tx(f.label)}</label>
       <select id={id} name={name} defaultValue="">
-        <option value="">Not sure / skip</option>
+        <option value="">{tx("Not sure / skip")}</option>
         {options.map((o) => (
           <option key={o} value={o}>
-            {o}
+            {tx(o)}
           </option>
         ))}
       </select>
-      {errors[name] ? <small className="of-err">{errors[name]}</small> : null}
+      {errors[name] ? <small className="of-err">{tx(errors[name])}</small> : null}
     </div>
   );
 }
@@ -199,7 +200,7 @@ function Field({ name, errors }: { name: string; errors: Record<string, string> 
   return (
     <div className={f.kind === "textarea" ? "of-f of-wide" : "of-f"}>
       <label htmlFor={id}>
-        {f.label}
+        {tx(f.label)}
         {f.required ? <em aria-hidden="true"> *</em> : null}
       </label>
       {f.kind === "textarea" ? (
@@ -220,7 +221,7 @@ function Flag({ name }: { name: string }) {
   return (
     <label className="of-check">
       <input type="checkbox" name={name} value="yes" />
-      <span>{FLAG[name]}</span>
+      <span>{tx(FLAG[name])}</span>
     </label>
   );
 }
@@ -237,7 +238,7 @@ export function StudioOrderSummary({ service, addons, step }: { service: string;
   return (
     <>
       <div className="os-card" aria-live="polite">
-        <p className="kick">Your order</p>
+        <p className="kick">{tx("Your order")}</p>
         <ul className="os-lines">
           <li>
             <span>{service || "No package yet"}</span>
@@ -247,7 +248,7 @@ export function StudioOrderSummary({ service, addons, step }: { service: string;
             const z = studioAddonZar(a, row);
             return (
               <li key={a.name}>
-                <span>{a.label}</span>
+                <span>{tx(a.label)}</span>
                 {a.wasZar ? <s className="num">{studioMoney(a.wasZar, cur, usdPerZar)}</s> : null}
                 <b className="num">{z === 0 ? "Included" : `+ ${studioMoney(z, cur, usdPerZar)}`}</b>
               </li>
@@ -255,14 +256,14 @@ export function StudioOrderSummary({ service, addons, step }: { service: string;
           })}
           {row?.price.kind === "deal" ? (
             <li className="os-free">
-              <span>Forever hosting</span>
-              <b>Free</b>
+              <span>{tx("Forever hosting")}</span>
+              <b>{tx("Free")}</b>
             </li>
           ) : null}
         </ul>
         <div className="os-total">
-          <span>Total, once-off</span>
-          <b className="num disp">{totalText}</b>
+          <span>{tx("Total, once-off")}</span>
+          <b className="num disp">{tx(totalText)}</b>
         </div>
         <p className="fine">
           {total === null ? "We send you a quote before any payment." : "No monthly fee. Hosting lasts as long as your site is with us."}
@@ -271,11 +272,11 @@ export function StudioOrderSummary({ service, addons, step }: { service: string;
       <div className="os-bar" aria-hidden="true" data-rokct-floating="">
         <div>
           <small>
-            {stage} · {picked.length ? `${picked.length} add-on${picked.length > 1 ? "s" : ""}` : "Total"}
+            {tx(stage)} · {picked.length ? `${picked.length} add-on${picked.length > 1 ? "s" : ""}` : "Total"}
           </small>
-          <b className="num">{totalText}</b>
+          <b className="num">{tx(totalText)}</b>
         </div>
-        <span className="os-bar-tag">Forever hosting</span>
+        <span className="os-bar-tag">{tx("Forever hosting")}</span>
       </div>
     </>
   );
@@ -326,7 +327,7 @@ function Qr({ svg, label, caption }: { svg: string; label: string; caption: stri
   return (
     <figure className="pay-qr">
       <div className="pay-qr-img" role="img" aria-label={label} dangerouslySetInnerHTML={{ __html: svg }} />
-      <figcaption className="fine">{caption}</figcaption>
+      <figcaption className="fine">{tx(caption)}</figcaption>
     </figure>
   );
 }
@@ -357,28 +358,28 @@ export function StudioPayStep({ refCode, total, card, pay, info = NO_PAY_INFO }:
     <section className="pay" aria-labelledby="pay-h">
       <div className="pay-top">
         <div>
-          <h3 id="pay-h" className="disp">{P.title}</h3>
-          <p className="sm">{P.lede}</p>
+          <h3 id="pay-h" className="disp">{tx(P.title)}</h3>
+          <p className="sm">{tx(P.lede)}</p>
         </div>
         {amount ? (
           <p className="pay-amt">
-            <span>{P.amount}</span>
-            <b className="num">{amount}</b>
+            <span>{tx(P.amount)}</span>
+            <b className="num">{tx(amount)}</b>
           </p>
         ) : null}
       </div>
       <div className="pay-g">
         <div className="pay-opt pay-opt-card">
-          <h4>{P.cardTitle}</h4>
+          <h4>{tx(P.cardTitle)}</h4>
           <div className="pay-cc" aria-hidden="true">
             <div className="pay-cc-top">
               <span className="pay-cc-chip" />
-              <b className="pay-cc-mark">CORTEX MEDIA</b>
+              <b className="pay-cc-mark">{tx("CORTEX MEDIA")}</b>
             </div>
             <span className="pay-cc-num num">•••• •••• •••• ••••</span>
             <div className="pay-cc-foot">
-              <span>{P.cardBrands}</span>
-              {amount ? <b className="num">{amount}</b> : null}
+              <span>{tx(P.cardBrands)}</span>
+              {amount ? <b className="num">{tx(amount)}</b> : null}
             </div>
           </div>
           {cardOn ? (
@@ -390,40 +391,40 @@ export function StudioPayStep({ refCode, total, card, pay, info = NO_PAY_INFO }:
                 <RiLockLine size={18} aria-hidden="true" />
                 {P.cardButton(amount!)}
               </button>
-              <p className="fine">{P.cardNote}</p>
+              <p className="fine">{tx(P.cardNote)}</p>
               {info.qrCard ? <Qr svg={info.qrCard} label={P.cardQrLabel} caption={P.cardQr} /> : null}
             </form>
           ) : (
-            <p className="sm">{P.cardSoon}</p>
+            <p className="sm">{tx(P.cardSoon)}</p>
           )}
         </div>
         <div className="pay-opt pay-opt-bank">
-          <h4>{P.bankTitle}</h4>
+          <h4>{tx(P.bankTitle)}</h4>
           {info.payshap ? (
             <div className="pay-shap">
-              <b>{P.payshapTitle}</b>
+              <b>{tx(P.payshapTitle)}</b>
               <div className="pay-ref">
-                <span className="num">{info.payshap}</span> <Copy value={info.payshap} what="PayShap ID" />
+                <span className="num">{tx(info.payshap)}</span> <Copy value={info.payshap} what="PayShap ID" />
               </div>
               <small>{P.payshapRef(refCode)}</small>
             </div>
           ) : null}
           <div className="pay-refbox">
-            <span>{P.reference}</span>
+            <span>{tx(P.reference)}</span>
             <div className="pay-ref">
-              <b className="num">{refCode}</b> <Copy value={refCode} what="payment reference" />
+              <b className="num">{tx(refCode)}</b> <Copy value={refCode} what="payment reference" />
             </div>
           </div>
           <dl className="pay-dl">
             {rows.map(([k, v, num]) => (
               <div className="pay-row" key={k}>
-                <dt>{k}</dt>
+                <dt>{tx(k)}</dt>
                 <dd className={num ? "num" : undefined}>{v === null ? (k === P.account ? P.accountMissing : "") : k === P.amount ? amount : v}</dd>
                 <dd className="pay-row-c">{v !== null ? <Copy value={v} what={k.toLowerCase()} /> : null}</dd>
               </div>
             ))}
           </dl>
-          <p className="fine">{P.bankNote}</p>
+          <p className="fine">{tx(P.bankNote)}</p>
           {info.qrBank || info.capitecQr ? (
             <div className="pay-qrs">
               {info.qrBank ? <Qr svg={info.qrBank} label={P.bankQrLabel} caption={P.bankQr} /> : null}
@@ -431,7 +432,7 @@ export function StudioPayStep({ refCode, total, card, pay, info = NO_PAY_INFO }:
                 <figure className="pay-qr">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img className="pay-qr-img" src={info.capitecQr} alt={P.capitecQrAlt} width={112} height={112} />
-                  <figcaption className="fine">{P.capitecQr}</figcaption>
+                  <figcaption className="fine">{tx(P.capitecQr)}</figcaption>
                 </figure>
               ) : null}
             </div>
@@ -673,7 +674,7 @@ export function StudioOrderForm({
   return (
     <div className="od-g">
       <div className="od-main" ref={topRef}>
-        <ol className="op-rail" aria-label="Order progress">
+        <ol className="op-rail" aria-label={tx("Order progress")}>
           {STUDIO_ORDER_STAGES.map((st, i) => {
             // Details and Review can be revisited until the order is sent;
             // Pay opens only after the terms are accepted and the order sent.
@@ -683,7 +684,7 @@ export function StudioOrderForm({
               <li key={st.title} className={i === stage ? "on" : i < stage ? "done" : undefined} aria-current={i === stage ? "step" : undefined}>
                 <button type="button" disabled={!open} onClick={() => go(to)}>
                   <span className="op-dot num">{i < stage ? <RiCheckLine size={14} aria-hidden="true" /> : i + 1}</span>
-                  <span className="op-t">{st.title}</span>
+                  <span className="op-t">{tx(st.title)}</span>
                 </button>
               </li>
             );
@@ -699,35 +700,35 @@ export function StudioOrderForm({
               {stage === 0 ? `Details · part ${step + 1} of ${DETAILS}` : `Step ${stage + 1} of ${STUDIO_ORDER_STAGES.length}`}
             </p>
             <h2 className="disp op-h">{step === PAY ? C.okTitle : S.title}</h2>
-            {step === PAY ? <p className="sm">{state.kind === "ok" && !state.ack ? C.okNoAck : C.okText}</p> : <p className="sm">{S.lede}</p>}
+            {step === PAY ? <p className="sm">{state.kind === "ok" && !state.ack ? C.okNoAck : C.okText}</p> : <p className="sm">{tx(S.lede)}</p>}
           </div>
 
           {state.kind === "fail" ? (
             <div className="of-fail" role="alert">
-              <p>{state.message}</p>
+              <p>{tx(state.message)}</p>
             </div>
           ) : null}
 
           {/* Hidden from people; a bot that fills it is thanked and ignored. */}
           <div className="of-trap" aria-hidden="true">
             <label>
-              Company website
+              {tx("Company website")}
               <input type="text" name={STUDIO_ORDER_TRAP} tabIndex={-1} autoComplete="off" />
             </label>
           </div>
 
           <fieldset className="of-set op-step" hidden={step !== 0}>
-            <legend className="sr-only">Package</legend>
-            <div className="op-cards" role="radiogroup" aria-label="Package">
+            <legend className="sr-only">{tx("Package")}</legend>
+            <div className="op-cards" role="radiogroup" aria-label={tx("Package")}>
               {STUDIO_PRICE_ROWS.map((r) => {
                 const z = studioRowZar(r);
                 return (
                   <label key={r.name} className={`op-card${r.lead ? " lead" : ""}${service === r.name ? " on" : ""}`}>
                     <input type="radio" name="service" value={r.name} checked={service === r.name} onChange={() => setService(r.name)} />
                     <span className="op-card-t">
-                      <b>{r.name}</b>
-                      <span className="sm">{r.what}</span>
-                      {r.lead ? <span className="op-tag">Forever hosting included</span> : null}
+                      <b>{tx(r.name)}</b>
+                      <span className="sm">{tx(r.what)}</span>
+                      {r.lead ? <span className="op-tag">{tx("Forever hosting included")}</span> : null}
                     </span>
                     <span className="op-card-p num">
                       {r.price.kind === "deal" ? <s>{studioMoney(STUDIO_DEAL_ZAR.normal, cur, usdPerZar)}</s> : null}
@@ -737,11 +738,11 @@ export function StudioOrderForm({
                 );
               })}
             </div>
-            {errors.service ? <small className="of-err">{errors.service}</small> : null}
+            {errors.service ? <small className="of-err">{tx(errors.service)}</small> : null}
           </fieldset>
 
           <fieldset className="of-set op-step" hidden={step !== 1}>
-            <legend className="sr-only">Add-ons</legend>
+            <legend className="sr-only">{tx("Add-ons")}</legend>
             <div className="op-cards">
               {STUDIO_ADDONS.map((a) => {
                 const z = studioAddonZar(a, row);
@@ -751,11 +752,11 @@ export function StudioOrderForm({
                     <div key={a.name} className="op-card op-card-inc">
                       <svg className="op-tick" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       <span className="op-card-t">
-                        <b>{a.label}</b>
-                        <span className="sm">{a.what}</span>
+                        <b>{tx(a.label)}</b>
+                        <span className="sm">{tx(a.what)}</span>
                       </span>
                       <span className="op-card-p num">
-                        <b>Included</b>
+                        <b>{tx("Included")}</b>
                       </span>
                     </div>
                   );
@@ -763,8 +764,8 @@ export function StudioOrderForm({
                   <label key={a.name} className={`op-card${on ? " on" : ""}`}>
                     <input type="checkbox" name={a.name} value="yes" checked={on} onChange={() => toggleAddon(a.name)} />
                     <span className="op-card-t">
-                      <b>{a.label}</b>
-                      <span className="sm">{a.what}</span>
+                      <b>{tx(a.label)}</b>
+                      <span className="sm">{tx(a.what)}</span>
                     </span>
                     <span className="op-card-p num">
                       {a.wasZar ? <s>{studioMoney(a.wasZar, cur, usdPerZar)}</s> : null}{" "}
@@ -777,16 +778,16 @@ export function StudioOrderForm({
             <div className="of-grid">
               {addons.includes("designLogo") ? (
                 <div className="of-sub of-wide" role="radiogroup" aria-labelledby="of-logoKind-q">
-                  <p id="of-logoKind-q">{STUDIO_ORDER_LOGO.question}</p>
+                  <p id="of-logoKind-q">{tx(STUDIO_ORDER_LOGO.question)}</p>
                   <Choice name={STUDIO_ORDER_LOGO.name} options={STUDIO_ORDER_LOGO.options} value={logoKind} onPick={(v) => setLogoKind(v as "new" | "redesign")} />
-                  {errors[STUDIO_ORDER_LOGO.name] ? <small className="of-err">{errors[STUDIO_ORDER_LOGO.name]}</small> : null}
+                  {errors[STUDIO_ORDER_LOGO.name] ? <small className="of-err">{tx(errors[STUDIO_ORDER_LOGO.name])}</small> : null}
                 </div>
               ) : null}
               <div className="of-f">
                 <label htmlFor="of-logo">
                   {addons.includes("designLogo") && logoKind === "redesign" ? (
                     <>
-                      {STUDIO_ORDER_LOGO.upload}
+                      {tx(STUDIO_ORDER_LOGO.upload)}
                       <em aria-hidden="true"> *</em>
                     </>
                   ) : (
@@ -794,13 +795,13 @@ export function StudioOrderForm({
                   )}
                 </label>
                 <input id="of-logo" type="file" name="logo" accept={STUDIO_ORDER_ACCEPT} multiple onChange={(e) => void onFiles("logo", e.currentTarget.files)} aria-invalid={errors.logo ? true : undefined} />
-                {errors.logo ? <small className="of-err">{errors.logo}</small> : addons.includes("designLogo") && logoKind === "redesign" ? <small className="fine">{STUDIO_ORDER_LOGO.uploadHint}</small> : null}
+                {errors.logo ? <small className="of-err">{tx(errors.logo)}</small> : addons.includes("designLogo") && logoKind === "redesign" ? <small className="fine">{tx(STUDIO_ORDER_LOGO.uploadHint)}</small> : null}
                 <Flag name="noLogo" />
               </div>
               <div className="of-f">
-                <label htmlFor="of-photos">Photos you can supply</label>
+                <label htmlFor="of-photos">{tx("Photos you can supply")}</label>
                 <input id="of-photos" type="file" name="photos" accept={STUDIO_ORDER_ACCEPT} multiple onChange={(e) => void onFiles("photos", e.currentTarget.files)} />
-                <small className="fine">{C.photosNone}</small>
+                <small className="fine">{tx(C.photosNone)}</small>
               </div>
             </div>
             {Object.values(photoWarnings).flat().length ? (
@@ -808,7 +809,7 @@ export function StudioOrderForm({
                 {Object.values(photoWarnings)
                   .flat()
                   .map((w) => (
-                    <li key={w}>{w}</li>
+                    <li key={w}>{tx(w)}</li>
                   ))}
               </ul>
             ) : null}
@@ -816,7 +817,7 @@ export function StudioOrderForm({
           </fieldset>
 
           <fieldset className="of-set op-step" hidden={step !== 2}>
-            <legend className="sr-only">Your business</legend>
+            <legend className="sr-only">{tx("Your business")}</legend>
             <div className="of-grid">
               <Field name="business" errors={errors} />
               <Field name="sells" errors={errors} />
@@ -842,11 +843,11 @@ export function StudioOrderForm({
               </div>
             ) : null}
             <div hidden={isPlan}>
-            <div className="of-pages" role="group" aria-label="Pages you want">
+            <div className="of-pages" role="group" aria-label={tx("Pages you want")}>
               {STUDIO_ORDER_PAGES.map((p) => (
                 <label className="of-chip" key={p}>
                   <input type="checkbox" name="pages" value={p} />
-                  <span>{p}</span>
+                  <span>{tx(p)}</span>
                 </label>
               ))}
             </div>
@@ -856,7 +857,7 @@ export function StudioOrderForm({
             {/* 1.21.2 (Ray): one domain box, checked as the client types. */}
             <div className="of-grid">
               <div className="of-f of-wide of-domain">
-                <label htmlFor="of-domain">{FIELD.domain.label}</label>
+                <label htmlFor="of-domain">{tx(FIELD.domain.label)}</label>
                 <div className="of-dom-row">
                   <input
                     id="of-domain"
@@ -886,18 +887,18 @@ export function StudioOrderForm({
             {domainName && domainFree ? (
               <>
                 <input type="hidden" name={STUDIO_ORDER_DOMAIN.name} value="no" />
-                <p className="fine">{STUDIO_ORDER_DOMAIN.needsOne}</p>
+                <p className="fine">{tx(STUDIO_ORDER_DOMAIN.needsOne)}</p>
               </>
             ) : null}
             {domainName && !domainFree ? (
               <div className="of-sub of-wide" role="radiogroup" aria-labelledby="of-hasDomain-q">
-                <p id="of-hasDomain-q">{STUDIO_ORDER_DOMAIN.question}</p>
+                <p id="of-hasDomain-q">{tx(STUDIO_ORDER_DOMAIN.question)}</p>
                 <Choice name={STUDIO_ORDER_DOMAIN.name} options={STUDIO_ORDER_DOMAIN.options} value={hasDomain} onPick={(v) => setHasDomain(v as "yes" | "no")} />
-                {errors[STUDIO_ORDER_DOMAIN.name] ? <small className="of-err">{errors[STUDIO_ORDER_DOMAIN.name]}</small> : null}
+                {errors[STUDIO_ORDER_DOMAIN.name] ? <small className="of-err">{tx(errors[STUDIO_ORDER_DOMAIN.name])}</small> : null}
                 {hasDomain === "yes" ? (
                   <>
                     <Field name="domainManager" errors={errors} />
-                    <small className="fine">{STUDIO_ORDER_DOMAIN.hasOne}</small>
+                    <small className="fine">{tx(STUDIO_ORDER_DOMAIN.hasOne)}</small>
                   </>
                 ) : hasDomain === "no" ? (
                   <small className="fine">{domainResult === "taken" ? STUDIO_ORDER_DOMAIN.notTheirs : STUDIO_ORDER_DOMAIN.needsOne}</small>
@@ -912,7 +913,7 @@ export function StudioOrderForm({
           </fieldset>
 
           <fieldset className="of-set op-step" hidden={step !== 3}>
-            <legend className="sr-only">Contact</legend>
+            <legend className="sr-only">{tx("Contact")}</legend>
             <div className="of-grid">
               <Field name="name" errors={errors} />
               <Field name="email" errors={errors} />
@@ -923,64 +924,64 @@ export function StudioOrderForm({
           </fieldset>
 
           <fieldset className="of-set op-step" hidden={step !== REVIEW} disabled={sent}>
-            <legend className="sr-only">Review</legend>
+            <legend className="sr-only">{tx("Review")}</legend>
             <dl className="op-review">
               <div>
-                <dt>Package</dt>
-                <dd>{service}</dd>
+                <dt>{tx("Package")}</dt>
+                <dd>{tx(service)}</dd>
               </div>
               <div>
-                <dt>Add-ons</dt>
+                <dt>{tx("Add-ons")}</dt>
                 <dd>{STUDIO_ADDONS.filter((a) => addons.includes(a.name)).map((a) => a.label).join(", ") || "None"}</dd>
               </div>
               {review.map(([k, v]) => (
                 <div key={k}>
-                  <dt>{k}</dt>
-                  <dd>{v}</dd>
+                  <dt>{tx(k)}</dt>
+                  <dd>{tx(v)}</dd>
                 </div>
               ))}
               <div className="op-review-total">
-                <dt>Total, once-off</dt>
-                <dd className="num">{totalText}</dd>
+                <dt>{tx("Total, once-off")}</dt>
+                <dd className="num">{tx(totalText)}</dd>
               </div>
             </dl>
             <ul className="op-keys">
               <li>
                 <RiShieldCheckLine size={20} aria-hidden="true" />
-                <span>{promise}</span>
+                <span>{tx(promise)}</span>
               </li>
               {keyTerms.map((t) => (
                 <li key={t.b}>
                   <RiCheckLine size={20} aria-hidden="true" />
                   <span>
-                    <b>{t.b}.</b> {t.t}
+                    <b>{tx(t.b)}.</b> {tx(t.t)}
                   </span>
                 </li>
               ))}
             </ul>
             <details className="op-terms">
-              <summary>{C.termsTitle}</summary>
+              <summary>{tx(C.termsTitle)}</summary>
               <ol className="terms od-terms">
                 {terms.map((t) => (
                   <li key={t.b}>
-                    <b>{t.b}</b>
-                    <span>{t.t}</span>
+                    <b>{tx(t.b)}</b>
+                    <span>{tx(t.t)}</span>
                   </li>
                 ))}
               </ol>
-              <p className="fine">{C.termsNote}</p>
+              <p className="fine">{tx(C.termsNote)}</p>
             </details>
             <label className="of-check op-accept">
               <input type="checkbox" name="terms" value="yes" checked={accepted} onChange={(e) => setAccepted(e.currentTarget.checked)} aria-invalid={errors.terms ? true : undefined} />
               <span>
-                I accept the{" "}
+                {tx("I accept the")}{" "}
                 <a href={C.termsHref} target="_blank" rel="noopener">
                   terms
                 </a>
                 . <em aria-hidden="true">*</em>
               </span>
             </label>
-            {errors.terms ? <small className="of-err">{errors.terms}</small> : null}
+            {errors.terms ? <small className="of-err">{tx(errors.terms)}</small> : null}
             <p className="fine">
               {total === null
                   ? "We email your order to our team and send you a quote before any payment."
@@ -992,11 +993,11 @@ export function StudioOrderForm({
           <section className="op-step op-pay" hidden={step !== PAY}>
             {state.kind === "ok" ? (
               <>
-                <p className="kick">{C.okRef}</p>
-                <p className="of-ref num">{state.ref}</p>
+                <p className="kick">{tx(C.okRef)}</p>
+                <p className="of-ref num">{tx(state.ref)}</p>
                 <StudioPayStep refCode={state.ref} total={state.total} card={state.card} pay={pay} info={state.info} />
                 <p className="fine">
-                  <a href={`${STUDIO_STATUS_HREF}?ref=${encodeURIComponent(state.ref)}`}>Your order status</a>
+                  <a href={`${STUDIO_STATUS_HREF}?ref=${encodeURIComponent(state.ref)}`}>{tx("Your order status")}</a>
                 </p>
               </>
             ) : null}
@@ -1007,7 +1008,7 @@ export function StudioOrderForm({
               {step > 0 ? (
                 <button type="button" className="btn btn-line" onClick={() => go(step - 1)}>
                   <RiArrowLeftLine size={18} aria-hidden="true" />
-                  Back
+                  {tx("Back")}
                 </button>
               ) : (
                 <span />

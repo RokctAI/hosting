@@ -1,6 +1,6 @@
 {
   "name": "hosting_sdk",
-  "version": "1.25.1",
+  "version": "1.28.0",
   "_comment_version_1_25_1": "1.25.1: landing sections rise and fade in as they scroll into view (CSS scroll-driven, no JS, off under reduced motion; Ray 2026-11-20 motion pass). Nothing to install.",
   "installs": [
     {
@@ -366,6 +366,7 @@
         "app/actions/base/landing.ts",
         "app/landing/page.tsx",
         "app/lib/i18n/index.ts",
+        "app/lib/i18n/phrases.ts",
         "app/lib/session.ts",
         "app/services/base/platform-gateway.ts",
         "components/custom/back-to-top.tsx",

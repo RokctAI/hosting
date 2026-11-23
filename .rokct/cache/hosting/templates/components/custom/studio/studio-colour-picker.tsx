@@ -43,6 +43,7 @@ import {
 } from "./studio-shades";
 import type { StudioColourPick, StudioColourRoleName } from "./studio-shades";
 
+import { tx } from "@/app/lib/i18n/phrases";
 const HEX = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
 /**
@@ -102,7 +103,7 @@ export function StudioShadePanel({
   const pct = (x: number) => `${Math.round(x * 100)}%`;
   return (
     <div className="sp-panel" role="group" aria-label={`${label}: pick a shade`}>
-      <div className="sp-tints" role="group" aria-label="Tints and shades, lightest to darkest">
+      <div className="sp-tints" role="group" aria-label={tx("Tints and shades, lightest to darkest")}>
         {tints.map((t, k) => (
           <button
             type="button"
@@ -120,7 +121,7 @@ export function StudioShadePanel({
         className="sp-sv"
         role="slider"
         tabIndex={0}
-        aria-label="Saturation and brightness. Left and right for saturation, up and down for brightness"
+        aria-label={tx("Saturation and brightness. Left and right for saturation, up and down for brightness")}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(s * 100)}
@@ -145,13 +146,13 @@ export function StudioShadePanel({
         max={359}
         step={1}
         value={Math.round(h)}
-        aria-label="Hue"
+        aria-label={tx("Hue")}
         aria-valuetext={`Hue ${Math.round(h)} degrees`}
         onChange={(e) => pick([Number(e.target.value), s, v])}
       />
       <div className="sp-hexrow">
         <span className="sp-now" style={{ background: hex }} aria-hidden="true" />
-        <label htmlFor={`${id}-hex`} className="sp-hexl">Hex</label>
+        <label htmlFor={`${id}-hex`} className="sp-hexl">{tx("Hex")}</label>
         <input
           id={`${id}-hex`}
           className="sp-hex num"
@@ -183,11 +184,11 @@ export function StudioShadePanel({
           }}
         />
         <button type="button" className="sp-done" onClick={onDone}>
-          Done
+          {tx("Done")}
         </button>
       </div>
       <button type="button" className="sp-retype" onClick={onRetype}>
-        Type a different colour
+        {tx("Type a different colour")}
       </button>
     </div>
   );
@@ -207,29 +208,29 @@ export function StudioColourPreview({ colours }: { colours: StudioColourPick[] }
   const second = by("Secondary") ?? { hex: bg.hex, ink: bg.ink };
   const accent = by("Accent") ?? main;
   return (
-    <div className="cs" aria-label="Preview of your colour system">
-      <p className="kick">Your colour system, a first look</p>
+    <div className="cs" aria-label={tx("Preview of your colour system")}>
+      <p className="kick">{tx("Your colour system, a first look")}</p>
       <ul className="cs-sw">
         {sys.map((r) => (
           <li key={r.role} style={{ background: r.hex, color: r.ink }}>
-            <b>{r.role}</b>
-            <span className="num">{r.hex}</span>
+            <b>{tx(r.role)}</b>
+            <span className="num">{tx(r.hex)}</span>
           </li>
         ))}
       </ul>
       <div className="cs-page" style={{ background: bg.hex, color: text.hex }}>
         <div className="cs-bar" style={{ background: main.hex, color: main.ink }}>
-          <b>Your business</b>
-          <span>Home · About · Contact</span>
+          <b>{tx("Your business")}</b>
+          <span>{tx("Home · About · Contact")}</span>
         </div>
         <div className="cs-body">
-          <p className="cs-h" style={{ color: text.hex }}>A heading in your colours</p>
-          <p className="cs-p">Body text sits on the background tint.</p>
-          <span className="cs-btn" style={{ background: accent.hex, color: accent.ink }}>Call to action</span>
-          <span className="cs-card" style={{ background: second.hex, color: second.ink, border: "1px solid rgba(0,0,0,.08)" }}>A card in your secondary colour</span>
+          <p className="cs-h" style={{ color: text.hex }}>{tx("A heading in your colours")}</p>
+          <p className="cs-p">{tx("Body text sits on the background tint.")}</p>
+          <span className="cs-btn" style={{ background: accent.hex, color: accent.ink }}>{tx("Call to action")}</span>
+          <span className="cs-card" style={{ background: second.hex, color: second.ink, border: "1px solid rgba(0,0,0,.08)" }}>{tx("A card in your secondary colour")}</span>
         </div>
       </div>
-      <small className="fine">A rough preview. Your designer refines it into the full colour system in phase 2.</small>
+      <small className="fine">{tx("A rough preview. Your designer refines it into the full colour system in phase 2.")}</small>
     </div>
   );
 }
@@ -273,21 +274,21 @@ export function StudioColourPicker({ error }: { error?: string }) {
   return (
     <div className="of-f of-wide sp" role="group" aria-labelledby={`${id}-l`} aria-describedby={`${id}-n`}>
       <span className="sp-label" id={`${id}-l`}>
-        Your brand colours<em aria-hidden="true"> *</em>
+        {tx("Your brand colours")}<em aria-hidden="true"> *</em>
       </span>
       <input type="hidden" name="colour" value={studioFormatColourRoles(chosen)} />
       {slots.map((s, i) => {
         const roleId = `${id}-r${i}`;
         const head = (
           <span className="sp-role" id={roleId}>
-            {s.role}
+            {tx(s.role)}
             {s.role === "Primary" ? <em aria-hidden="true"> *</em> : <small> optional</small>}
           </span>
         );
         if (s.hex) {
           return (
             <div className="sp-pick" key={s.role}>
-              {head}
+              {tx(head)}
               <div className="sp-row">
                 <button
                   type="button"
@@ -297,7 +298,7 @@ export function StudioColourPicker({ error }: { error?: string }) {
                   aria-expanded={s.open}
                   aria-label={`${s.role}: ${s.hex}. ${s.open ? "Close shades" : "More shades"}`}
                 >
-                  <span>{s.hex}</span>
+                  <span>{tx(s.hex)}</span>
                   <em className="sp-more" aria-hidden="true">{s.open ? "Close" : "More shades"}</em>
                 </button>
                 <button type="button" className="sp-x" onClick={() => remove(i)} aria-label={`Remove ${s.role} colour`}>
@@ -319,7 +320,7 @@ export function StudioColourPicker({ error }: { error?: string }) {
         const shades = s.base ? studioShades(s.base) : [];
         return (
           <div className="sp-pick" key={s.role}>
-            {head}
+            {tx(head)}
             <div className="sp-row">
               <div className="sp-field">
                 <input
@@ -350,7 +351,7 @@ export function StudioColourPicker({ error }: { error?: string }) {
                     ))}
                   </div>
                 ) : s.text ? (
-                  <small className="fine">We don&apos;t know that colour yet. Try a plain name or a hex code.</small>
+                  <small className="fine">{tx("We don&apos;t know that colour yet. Try a plain name or a hex code.")}</small>
                 ) : null}
               </div>
               {i >= 3 ? (
@@ -364,12 +365,12 @@ export function StudioColourPicker({ error }: { error?: string }) {
       })}
       {slots.length < STUDIO_COLOURS_MAX ? (
         <button type="button" className="sp-add" onClick={() => setSlots((all) => [...all, slot(STUDIO_COLOUR_ROLES[all.length])])}>
-          + Add another colour
+          {tx("+ Add another colour")}
         </button>
       ) : null}
-      <small id={`${id}-h`} className="fine">Type a colour, pick a shade, then tap it for more shades or any exact colour.</small>
+      <small id={`${id}-h`} className="fine">{tx("Type a colour, pick a shade, then tap it for more shades or any exact colour.")}</small>
       <small id={`${id}-n`} className={error ? "of-err" : "fine"} aria-live="polite">
-        {note}
+        {tx(note)}
       </small>
       <StudioColourPreview colours={chosen} />
     </div>

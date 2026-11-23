@@ -133,15 +133,19 @@ next-env.d.ts
 /app/handson/control/rpanel/websites/\[website\]/logs/page.tsx
 /app/handson/control/rpanel/websites/\[website\]/page.tsx
 /app/handson/control/rpanel/websites/page.tsx
+/app/indexnow-key.txt/route.ts
 /app/landing/page.tsx
 /app/legal/\[id\]/page.tsx
 /app/legal/page.tsx
+/app/lib/ai-discovery.ts
+/app/lib/i18n/phrases.ts
 /app/lib/i18n/sdk/auth.json
 /app/lib/i18n/sdk/base.json
 /app/lib/i18n/sdk/hosting.json
 /app/lib/i18n/sdk/telemetry.json
 /app/lib/session.ts
 /app/lib/site-metadata.ts
+/app/llms.txt/route.ts
 /app/manager/layout.tsx
 /app/manager/page.tsx
 /app/manager/reports/page.tsx
@@ -170,6 +174,7 @@ next-env.d.ts
 /app/status/page.tsx
 /app/studio/shots/\[site\]/\[file\]/route.ts
 /app/styles/rokct-marquee.css
+/app/styles/rokct-rise.css
 /app/styles/rokct-scroll.css
 /app/team/page.tsx
 /app/terms/page.tsx

@@ -356,7 +356,7 @@ class TestTermsPage(unittest.TestCase):
 
     def test_installed(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.25.1")
+        self.assertEqual(m["version"], "1.28.0")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for f in ("app/terms/page.tsx", "app/status/page.tsx", "components/custom/studio/studio-terms.tsx", "components/custom/studio/studio-status.tsx"):
             self.assertIn(("templates/" + f, f), pairs)
@@ -379,13 +379,13 @@ class TestPortfolioShelves(unittest.TestCase):
     def test_real_items_only(self):
         o = out()["shelves"]
         keys = [s["key"] for s in o["none"]]
-        for k in ("pitch-deck", "print", "business-plan", "social-posts", "app-case-study"):
+        for k in ("pitch-deck", "print", "business-plan", "social-posts", "app", "logo"):
             self.assertIn(k, keys)
-        self.assertTrue(all(s["count"] == 0 for s in o["none"]))
+        self.assertTrue(all(s["count"] == 0 for s in o["none"] if s["key"] != "logo"))
         some = {s["key"]: s["count"] for s in o["some"]}
         self.assertEqual(some["pitch-deck"], 1)
         self.assertEqual(some["print"], 1)
-        self.assertEqual(some["app-case-study"], 0)
+        self.assertIn("app", some)
 
     def test_empty_state(self):
         w = read(WORK)

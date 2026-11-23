@@ -41,6 +41,7 @@ import type {
   PageSectionProps,
 } from "@/components/custom/landing/page-sections";
 
+import { tx } from "@/app/lib/i18n/phrases";
 const isYearly = (interval?: string) =>
   ["year", "yearly"].includes((interval ?? "").toLowerCase());
 
@@ -120,14 +121,14 @@ export function HostingPricingSection({ id, plans }: PageSectionProps) {
       <div className="container mx-auto flex max-w-6xl flex-col gap-12 px-4 xl:px-0">
         <div className="flex flex-col items-center gap-5 text-center">
           <h2 className="text-balance text-[32px] font-extrabold leading-[1.1] tracking-tight text-zinc-900 dark:text-white md:text-[48px]">
-            {config.heading}
+            {tx(config.heading)}
           </h2>
           <p className="max-w-2xl text-lg font-medium text-zinc-600 dark:text-zinc-400 md:text-xl">
-            {config.blurb}
+            {tx(config.blurb)}
           </p>
           {hasSwitch && (
             <label className="inline-flex cursor-pointer items-center gap-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              <span>{labels.monthly}</span>
+              <span>{tx(labels.monthly)}</span>
               <input
                 type="checkbox"
                 checked={isAnnual}
@@ -135,7 +136,7 @@ export function HostingPricingSection({ id, plans }: PageSectionProps) {
                 className="peer sr-only"
               />
               <span className="relative h-5 w-10 rounded-full bg-zinc-300 transition-colors after:absolute after:left-[2px] after:top-[2px] after:size-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-5 dark:bg-zinc-700" />
-              <span>{labels.yearly}</span>
+              <span>{tx(labels.yearly)}</span>
             </label>
           )}
         </div>
@@ -151,7 +152,7 @@ export function HostingPricingSection({ id, plans }: PageSectionProps) {
               >
                 <div className="flex flex-col gap-2">
                   <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
-                    {baseName}
+                    {tx(baseName)}
                   </h3>
                   <p className="flex items-baseline gap-1 text-zinc-900 dark:text-white">
                     <span className="text-4xl font-extrabold tracking-tight">
@@ -167,7 +168,7 @@ export function HostingPricingSection({ id, plans }: PageSectionProps) {
                     {features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2">
                         <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                        <span>{feature}</span>
+                        <span>{tx(feature)}</span>
                       </li>
                     ))}
                   </ul>
