@@ -30,5 +30,10 @@
       "branch": "main",
       "phone": "marketing/tour/store/05-driver_home.png"
     }
+  ],
+  "features": [
+    "Three branded apps from one codebase",
+    "Multi-store marketplace with driver payouts",
+    "Shop owners manage their store from a phone"
   ]
 }
