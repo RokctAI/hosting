@@ -10,5 +10,10 @@
     "desktop": "latest/desktop-light.webp",
     "phone": "latest/phone-light.webp"
   },
-  "logo_back": null
+  "logo_back": null,
+  "features": [
+    "Step-by-step ordering from logo to case",
+    "Price slider with bulk pricing",
+    "WhatsApp ordering built in"
+  ]
 }
