@@ -41,6 +41,7 @@ import { StudioCurrencyProvider, StudioHeader } from "@/components/custom/studio
 import { STUDIO_FOOTER } from "@/components/custom/studio/studio-copy";
 import { studioFontClassName } from "@/components/custom/studio/studio-fonts";
 
+import { tx } from "@/app/lib/i18n/phrases";
 export interface SiteShellProps {
   children: ReactNode;
   /** Header "Log in" handler from the auth page; the CORTEX MEDIA header ignores it. */
@@ -58,16 +59,16 @@ export function SiteShell({ children }: SiteShellProps) {
         <main className="ca">
           <div className="wrap ca-g">
             <aside className="ca-side" aria-label={CORTEX_AUTH_COPY.sideLabel}>
-              <p className="kick">{panel.kicker}</p>
+              <p className="kick">{tx(panel.kicker)}</p>
               <p className="disp ca-h">
                 {panel.title.map((line) => (
-                  <span key={line}>{line}</span>
+                  <span key={line}>{tx(line)}</span>
                 ))}
               </p>
-              <p className="lede ca-lede">{panel.lede}</p>
+              <p className="lede ca-lede">{tx(panel.lede)}</p>
               <ul className="ca-pts">
                 {CORTEX_AUTH_COPY.points.map((p) => (
-                  <li key={p}>{p}</li>
+                  <li key={p}>{tx(p)}</li>
                 ))}
               </ul>
             </aside>
@@ -78,16 +79,16 @@ export function SiteShell({ children }: SiteShellProps) {
           <div className="wrap ft-in">
             <div>
               <span className="mark">
-                CORTEX MEDIA
+                {tx("CORTEX MEDIA")}
                 <i aria-hidden="true" />
               </span>
-              <p className="sm">{STUDIO_FOOTER.about}</p>
+              <p className="sm">{tx(STUDIO_FOOTER.about)}</p>
             </div>
             <div className="r">
-              <span className="motto">{STUDIO_FOOTER.motto}</span>
+              <span className="motto">{tx(STUDIO_FOOTER.motto)}</span>
               {/* hosting_sdk 1.20.7's footer: `© <year> CORTEX MEDIA`, no maker credit. */}
               <span className="fine">
-                © {new Date().getFullYear()} {STUDIO_FOOTER.siteName}
+                © {new Date().getFullYear()} {tx(STUDIO_FOOTER.siteName)}
               </span>
             </div>
           </div>
@@ -101,7 +102,7 @@ export function SiteShell({ children }: SiteShellProps) {
 export function SiteShellLogo({ size = 56 }: { size?: number }) {
   return (
     <span className="mark ca-mark" style={{ fontSize: Math.round(size * 0.6) }} aria-hidden="true">
-      CORTEX
+      {tx("CORTEX")}
       <i />
     </span>
   );

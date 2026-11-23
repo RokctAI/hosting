@@ -82,6 +82,7 @@ import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF } from "./studio-order";
 import { ShowcaseLiftBack } from "./studio-showcase-lift";
 import { isStudioShotSite, studioShotSrc } from "./studio-shots";
 
+import { tx } from "@/app/lib/i18n/phrases";
 function WhatsAppGlyph() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -94,10 +95,10 @@ function SectionHead({ kicker, title, aside }: { kicker: string; title: string; 
   return (
     <div className="sh">
       <div>
-        <p className="kick">{kicker}</p>
-        <h2 className="disp">{title}</h2>
+        <p className="kick">{tx(kicker)}</p>
+        <h2 className="disp">{tx(title)}</h2>
       </div>
-      <p className="sm">{aside}</p>
+      <p className="sm">{tx(aside)}</p>
     </div>
   );
 }
@@ -107,15 +108,15 @@ function DealPrice({ unit, big }: { unit: string; big: boolean }) {
   return (
     <>
       <span className="was">
-        <span className="vh">Normal price </span>
+        <span className="vh">{tx("Normal price")}{" "}</span>
         <StudioDeal k="normal" as="s" />
       </span>
       <StudioDeal k="offer" as="b" className={big ? "pz" : undefined} />
       <small>
-        <StudioDealAlt k="offer" /> · {unit}
+        <StudioDealAlt k="offer" /> · {tx(unit)}
       </small>
       <span className="save">
-        Save <StudioDeal k="save" />
+        {tx("Save")}{" "}<StudioDeal k="save" />
       </span>
     </>
   );
@@ -132,8 +133,8 @@ function RowPrice({ price }: { price: StudioServicePrice }) {
   if (price.kind === "quoted") {
     return (
       <div className="row-price">
-        <b className="pz q">Quoted</b>
-        <small>{price.unit}</small>
+        <b className="pz q">{tx("Quoted")}</b>
+        <small>{tx(price.unit)}</small>
       </div>
     );
   }
@@ -141,7 +142,7 @@ function RowPrice({ price }: { price: StudioServicePrice }) {
     <div className="row-price">
       <StudioPrice as="b" className="pz" usd={price.usd} fmt={price.kind === "from" ? "from" : "main"} />
       <small>
-        <StudioPrice usd={price.usd} fmt={price.kind === "fixed" && price.about ? "about" : "alt"} /> · {price.unit}
+        <StudioPrice usd={price.usd} fmt={price.kind === "fixed" && price.about ? "about" : "alt"} /> · {tx(price.unit)}
       </small>
     </div>
   );
@@ -158,8 +159,8 @@ function TablePrice({ price }: { price: StudioServicePrice }) {
   if (price.kind === "quoted") {
     return (
       <div className="v">
-        <b className="q">Quoted</b>
-        <small>{price.unit}</small>
+        <b className="q">{tx("Quoted")}</b>
+        <small>{tx(price.unit)}</small>
       </div>
     );
   }
@@ -169,7 +170,7 @@ function TablePrice({ price }: { price: StudioServicePrice }) {
       <StudioPrice as="b" usd={price.usd} fmt="main" />
       {price.unit ? (
         <small>
-          <StudioPrice usd={price.usd} fmt={altFmt} /> · {price.unit}
+          <StudioPrice usd={price.usd} fmt={altFmt} /> · {tx(price.unit)}
         </small>
       ) : (
         <StudioPrice as="small" usd={price.usd} fmt={altFmt} />
@@ -185,12 +186,12 @@ function Swatches({ id }: { id: keyof typeof STUDIO_SCHEMES }) {
   const s = STUDIO_SCHEMES[id];
   return (
     <div className="sw">
-      <p className="sw-h">{STUDIO_SCHEME_LABEL}</p>
+      <p className="sw-h">{tx(STUDIO_SCHEME_LABEL)}</p>
       <ul className="sw-row">
         {s.swatches.map((w) => (
           <li key={w.hex}>
             <span className="sw-chip" style={{ background: w.hex }} aria-hidden="true" />
-            <span className="sw-n">{w.name}</span>
+            <span className="sw-n">{tx(w.name)}</span>
             <span className="sw-x">{w.hex.toUpperCase()}</span>
           </li>
         ))}
@@ -221,26 +222,26 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
       <div className="brief">
         <div className="brief-top">
           <span className="dz-step">
-            <i>01</i> The brief
+            <i>01</i> {tx("The brief")}
           </span>
-          <span className="stamp">Example brief</span>
+          <span className="stamp">{tx("Example brief")}</span>
         </div>
         <dl className="brief-dl">
           <div>
-            <dt>Client</dt>
-            <dd>{c.brief.client}</dd>
+            <dt>{tx("Client")}</dt>
+            <dd>{tx(c.brief.client)}</dd>
           </div>
           <div>
-            <dt>What they sell</dt>
-            <dd>{c.brief.sells}</dd>
+            <dt>{tx("What they sell")}</dt>
+            <dd>{tx(c.brief.sells)}</dd>
           </div>
           <div>
-            <dt>Who to</dt>
-            <dd>{c.brief.to}</dd>
+            <dt>{tx("Who to")}</dt>
+            <dd>{tx(c.brief.to)}</dd>
           </div>
           <div className="brief-ask">
-            <dt>The ask</dt>
-            <dd>&ldquo;{c.brief.ask}&rdquo;</dd>
+            <dt>{tx("The ask")}</dt>
+            <dd>{tx("&ldquo;")}{tx(c.brief.ask)}{tx("&rdquo;")}</dd>
           </div>
         </dl>
         <Swatches id={c.id} />
@@ -248,7 +249,7 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
 
       <div className="opts">
         <p className="dz-step">
-          <i>02</i> Three options, side by side
+          <i>02</i> {tx("Three options, side by side")}
         </p>
         <ol className="opt-row">
           {c.options.map((o) => {
@@ -269,13 +270,13 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
                   </div>
                   <figcaption>
                     <span className="opt-k">{o.key.toUpperCase()}</span>
-                    <span className="opt-n">{o.name}</span>
+                    <span className="opt-n">{tx(o.name)}</span>
                     {on && (
                       <span className="picked">
                         <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
                           <path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        Picked
+                        {tx("Picked")}
                       </span>
                     )}
                   </figcaption>
@@ -288,21 +289,21 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
 
       <div className="verdict">
         <p className="dz-step">
-          <i>03</i> Why {letter} won
+          <i>03</i> {tx("Why")}{" "}{tx(letter)} won
         </p>
-        <p className="why">{c.why}</p>
+        <p className="why">{tx(c.why)}</p>
         <p className="built">
           <span className="dz-step">
-            <i>04</i> Built
+            <i>04</i> {tx("Built")}
           </span>
           <span className="sm">
-            Option {letter} is the one our team built out, for desktop and phone, in light and dark.
+            {tx("Option")}{" "}{tx(letter)} {tx("is the one our team built out, for desktop and phone, in light and dark.")}
           </span>
         </p>
         <p className="dz-cta">
           <a className="btn btn-acc btn-sm" href={studioWhatsApp(`Hi CORTEX MEDIA, I'd like three options for my site, like the ${c.tab} brief.`)}>
             <WhatsAppGlyph />
-            Start a brief like this
+            {tx("Start a brief like this")}
           </a>
         </p>
       </div>
@@ -331,15 +332,15 @@ function HostingGroup({ g, n }: { g: StudioHostingGroup; n: number }) {
         </span>
         <span className="hb-n">{String(n).padStart(2, "0")}</span>
       </div>
-      <h3>{g.name}</h3>
+      <h3>{tx(g.name)}</h3>
       <ul className="hb-lines">
         {g.lines.map((l) => (
           <li key={l.text}>
             <span className="hb-when" data-when={l.when}>
-              {l.when}
+              {tx(l.when)}
             </span>
-            <p>{l.text}</p>
-            {l.from && <span className="hb-from">From {l.from}</span>}
+            <p>{tx(l.text)}</p>
+            {l.from && <span className="hb-from">{tx("From")}{" "}{tx(l.from)}</span>}
           </li>
         ))}
       </ul>
@@ -352,14 +353,14 @@ function HostingBenefits() {
   return (
     <div className="hb">
       <article className="hb-cost">
-        <p className="kick">{C.kicker}</p>
-        <p className="big">{C.big}</p>
+        <p className="kick">{tx(C.kicker)}</p>
+        <p className="big">{tx(C.big)}</p>
         <ul>
           {C.lines.map((l) => (
-            <li key={l}>{l}</li>
+            <li key={l}>{tx(l)}</li>
           ))}
         </ul>
-        <p className="hb-lasts">{C.lasts}</p>
+        <p className="hb-lasts">{tx(C.lasts)}</p>
       </article>
       {STUDIO_HOSTING_GROUPS.map((g, i) => (
         <HostingGroup key={g.name} g={g} n={i + 1} />
@@ -375,28 +376,28 @@ export function StudioFooter({ current }: { current?: string } = {}) {
       <div className="wrap ft-in">
         <div>
           <span className="mark">
-            CORTEX MEDIA
+            {tx("CORTEX MEDIA")}
             <i aria-hidden="true" />
           </span>
-          <p className="sm">{STUDIO_FOOTER.about}</p>
+          <p className="sm">{tx(STUDIO_FOOTER.about)}</p>
           {/* 1.22.0: the footer's page links, /startups among them. */}
-          <nav className="ft-nav" aria-label="Footer">
+          <nav className="ft-nav" aria-label={tx("Footer")}>
             {STUDIO_FOOTER.pages.map((p) => (
               <a key={p.href} href={p.href} aria-current={p.href === current ? "page" : undefined}>
-                {p.label}
+                {tx(p.label)}
               </a>
             ))}
           </nav>
         </div>
         <div className="r">
-          <span className="motto">{STUDIO_FOOTER.motto}</span>
+          <span className="motto">{tx(STUDIO_FOOTER.motto)}</span>
           {/* 1.21.2 (Ray): one plain line on the rate; no currency toggle. */}
           <StudioRateLine />
           {/* 1.20.7 (Ray): the site's own footer is `© <year> CORTEX MEDIA`, with
               no maker credit (that one stays on client sites). */}
           <span className="fine">
             <span>
-              © {new Date().getFullYear()} {STUDIO_FOOTER.siteName}
+              © {new Date().getFullYear()} {tx(STUDIO_FOOTER.siteName)}
             </span>
           </span>
         </div>
@@ -435,7 +436,7 @@ export function StudioHome({
               <p className="kick">
                 {H.kicker.map((k) => (
                   <Fragment key={k}>
-                    {k} &nbsp;·&nbsp;{" "}
+                    {tx(k)} {tx("&nbsp;·&nbsp;")}{" "}
                   </Fragment>
                 ))}
                 <StudioHeroCurrency />
@@ -443,32 +444,32 @@ export function StudioHome({
               <div className="h1-wrap">
                 <h1 className="disp rise">
                   {H.title.map((t) => (
-                    <span key={t}>{t}</span>
+                    <span key={t}>{tx(t)}</span>
                   ))}
                 </h1>
               </div>
               <div className="hero-g">
-                <p className="lede">{H.lede}</p>
+                <p className="lede">{tx(H.lede)}</p>
                 <div className="cta">
                   <div className="cta-row">
                     <a className="btn btn-acc" href={STUDIO_WHATSAPP_URL}>
                       <WhatsAppGlyph />
-                      {H.primary}
+                      {tx(H.primary)}
                     </a>
                     <a className="btn btn-line" href="#prices">
-                      {H.secondary}
+                      {tx(H.secondary)}
                     </a>
                   </div>
                   <p className="phone-line">
-                    <b className="num">{STUDIO_WHATSAPP_DISPLAY}</b> &nbsp;·&nbsp; {H.hours}
+                    <b className="num">{tx(STUDIO_WHATSAPP_DISPLAY)}</b> {tx("&nbsp;·&nbsp;")}{" "}{tx(H.hours)}
                   </p>
                 </div>
               </div>
               <ul className="facts">
                 {H.facts.map((f) => (
                   <li key={f.b}>
-                    <b>{f.b}</b>
-                    {f.t}
+                    <b>{tx(f.b)}</b>
+                    {tx(f.t)}
                   </li>
                 ))}
               </ul>
@@ -487,15 +488,15 @@ export function StudioHome({
                 {STUDIO_SERVICES.map((s) => (
                   <article className="row" key={s.name}>
                     <div className="row-name">
-                      <h3>{s.name}</h3>
-                      {s.flag && <span className="flag">{s.flag}</span>}
+                      <h3>{tx(s.name)}</h3>
+                      {s.flag && <span className="flag">{tx(s.flag)}</span>}
                     </div>
                     <div className="row-body">
-                      <p>{s.body}</p>
+                      <p>{tx(s.body)}</p>
                       {s.includes && (
                         <ul className="inc">
                           {s.includes.map((i) => (
-                            <li key={i}>{i}</li>
+                            <li key={i}>{tx(i)}</li>
                           ))}
                         </ul>
                       )}
@@ -503,23 +504,23 @@ export function StudioHome({
                         <div className="tiers">
                           {s.tiers.map((t) => (
                             <div className="tier" key={t.t}>
-                              <span className="t">{t.t}</span>
+                              <span className="t">{tx(t.t)}</span>
                               <StudioPrice className="p" usd={t.usd} fmt="main" />
                               <StudioPrice className="a" usd={t.usd} fmt="alt" />
-                              <span className="d">{t.d}</span>
+                              <span className="d">{tx(t.d)}</span>
                             </div>
                           ))}
                         </div>
                       )}
                       <a className="ask" href={studioWhatsApp(s.ask.text)}>
-                        {s.ask.label} →
+                        {tx(s.ask.label)} →
                       </a>
                     </div>
                     <RowPrice price={s.price} />
                   </article>
                 ))}
               </div>
-              <p className="fine ledger-foot">{STUDIO_SERVICES_HEAD.foot}</p>
+              <p className="fine ledger-foot">{tx(STUDIO_SERVICES_HEAD.foot)}</p>
             </div>
           </section>
 
@@ -551,8 +552,8 @@ export function StudioHome({
                 {STUDIO_DESIGN_STEPS.map((st, i) => (
                   <li key={st.h}>
                     <span className="n">{String(i + 1).padStart(2, "0")}</span>
-                    <b>{st.h}</b>
-                    <span>{st.p}</span>
+                    <b>{tx(st.h)}</b>
+                    <span>{tx(st.p)}</span>
                   </li>
                 ))}
               </ol>
@@ -563,7 +564,7 @@ export function StudioHome({
                   <DesignCase key={c.id} c={c} />
                 ))}
               />
-              <p className="fine ledger-foot">{STUDIO_DESIGN_HEAD.foot}</p>
+              <p className="fine ledger-foot">{tx(STUDIO_DESIGN_HEAD.foot)}</p>
             </div>
           </section>
 
@@ -575,15 +576,15 @@ export function StudioHome({
                 {STUDIO_PRICE_ROWS.map((r) => (
                   <div className={r.lead ? "pr lead" : "pr"} key={r.name}>
                     <div className="n">
-                      {r.name}
-                      {r.tag && <small>{r.tag}</small>}
+                      {tx(r.name)}
+                      {r.tag && <small>{tx(r.tag)}</small>}
                     </div>
-                    <div className="w">{r.what}</div>
+                    <div className="w">{tx(r.what)}</div>
                     <TablePrice price={r.price} />
                   </div>
                 ))}
               </div>
-              <p className="fine ledger-foot">{STUDIO_PRICES_HEAD.foot}</p>
+              <p className="fine ledger-foot">{tx(STUDIO_PRICES_HEAD.foot)}</p>
             </div>
           </section>
 
@@ -594,7 +595,7 @@ export function StudioHome({
             <div className="wrap">
               <SectionHead {...STUDIO_HOSTING_HEAD} />
               <HostingBenefits />
-              <p className="fine ledger-foot">{STUDIO_HOSTING_HEAD.foot}</p>
+              <p className="fine ledger-foot">{tx(STUDIO_HOSTING_HEAD.foot)}</p>
             </div>
           </section>
 
@@ -606,52 +607,52 @@ export function StudioHome({
                 {P.phases.map((ph, i) => (
                   <li key={ph.h}>
                     <span className="n">{i + 1}</span>
-                    <h3>{ph.h}</h3>
-                    <p>{ph.p}</p>
+                    <h3>{tx(ph.h)}</h3>
+                    <p>{tx(ph.p)}</p>
                     <span className="out">
-                      Ends with<b>{ph.out}</b>
+                      {tx("Ends with")}<b>{tx(ph.out)}</b>
                     </span>
                   </li>
                 ))}
               </ol>
 
               <div className="proc-g">
-                <div className="status" aria-label="Sample status page">
+                <div className="status" aria-label={tx("Sample status page")}>
                   <div className="top">
-                    <b>{P.status.title}</b>
-                    <span>{P.status.tag}</span>
+                    <b>{tx(P.status.title)}</b>
+                    <span>{tx(P.status.tag)}</span>
                   </div>
                   {P.status.lines.map((l) => (
                     <div className={l.state ? `sline ${l.state}` : "sline"} key={l.t}>
                       <i aria-hidden="true" />
                       <span className="t">
-                        {l.t}
-                        <small>{l.s}</small>
+                        {tx(l.t)}
+                        <small>{tx(l.s)}</small>
                       </span>
-                      <span className="s">{l.label}</span>
+                      <span className="s">{tx(l.label)}</span>
                     </div>
                   ))}
                   <div className="blocker">
-                    <em>Blocker</em>
+                    <em>{tx("Blocker")}</em>
                     <span>
-                      <b>{P.status.blocker.b}</b> {P.status.blocker.t}
+                      <b>{tx(P.status.blocker.b)}</b> {tx(P.status.blocker.t)}
                     </span>
                   </div>
                 </div>
                 <div className="rules">
                   <div className="refund">
-                    <p className="kick">{P.refund.kicker}</p>
-                    <p className="big">{P.refund.big}</p>
-                    <small>{P.refund.small}</small>
+                    <p className="kick">{tx(P.refund.kicker)}</p>
+                    <p className="big">{tx(P.refund.big)}</p>
+                    <small>{tx(P.refund.small)}</small>
                     <p className="refund-limit">
-                      <strong>{P.refund.limit}</strong>
+                      <strong>{tx(P.refund.limit)}</strong>
                     </p>
                   </div>
                   <ul className="terms">
                     {P.terms.map((t) => (
                       <li key={t.b}>
-                        <b>{t.b}</b>
-                        <span>{t.t}</span>
+                        <b>{tx(t.b)}</b>
+                        <span>{tx(t.t)}</span>
                       </li>
                     ))}
                   </ul>
@@ -660,18 +661,18 @@ export function StudioHome({
 
               <div className="intake">
                 <div>
-                  <p className="kick">{P.intake.kicker}</p>
-                  <h3 className="intake-h">{P.intake.title}</h3>
-                  <p className="sm intake-p">{P.intake.text}</p>
+                  <p className="kick">{tx(P.intake.kicker)}</p>
+                  <h3 className="intake-h">{tx(P.intake.title)}</h3>
+                  <p className="sm intake-p">{tx(P.intake.text)}</p>
                   {/* 1.18.0: the questions are a real form now (/order). */}
                   <a className="btn btn-acc btn-sm intake-cta" href={STUDIO_ORDER_HREF}>
-                    {STUDIO_ORDER_COPY.homeCta}
+                    {tx(STUDIO_ORDER_COPY.homeCta)}
                   </a>
                 </div>
                 <div className="intake-r">
                   <ol className="chips">
                     {P.intake.questions.map((q) => (
-                      <li key={q}>{q}</li>
+                      <li key={q}>{tx(q)}</li>
                     ))}
                   </ol>
                   <StudioIntakeForm />
@@ -685,22 +686,22 @@ export function StudioHome({
         <section className="contact" id="contact">
           <div className="wrap contact-in">
             <div>
-              <p className="kick">{C.kicker}</p>
-              <h2 className="disp contact-h">{C.title}</h2>
-              <p className="lede">{C.lede}</p>
+              <p className="kick">{tx(C.kicker)}</p>
+              <h2 className="disp contact-h">{tx(C.title)}</h2>
+              <p className="lede">{tx(C.lede)}</p>
             </div>
             <div className="contact-r">
               <a className="bignum" href={STUDIO_WHATSAPP_URL}>
-                {STUDIO_WHATSAPP_DISPLAY}
+                {tx(STUDIO_WHATSAPP_DISPLAY)}
               </a>
-              <p className="sm">{C.note}</p>
+              <p className="sm">{tx(C.note)}</p>
               <div className="cta-row">
                 <a className="btn btn-acc" href={STUDIO_WHATSAPP_URL}>
-                  {C.primary}
+                  {tx(C.primary)}
                 </a>
                 <StudioCopyNumber />
                 <a className="btn btn-line" href={STUDIO_ORDER_HREF}>
-                  {STUDIO_ORDER_COPY.homeCta}
+                  {tx(STUDIO_ORDER_COPY.homeCta)}
                 </a>
               </div>
             </div>

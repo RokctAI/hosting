@@ -27,6 +27,7 @@ import React from "react";
 import { HOSTING_PAGE_SECTIONS } from "@/components/custom/landing/hosting-page-sections";
 import type { PageSectionMeta } from "@/components/custom/landing/page-sections";
 
+import { tx } from "@/app/lib/i18n/phrases";
 export function HostingFeaturesSection({ id }: { id?: string }) {
   const config = HOSTING_PAGE_SECTIONS.features;
   if (config.items.length === 0) return null;
@@ -36,10 +37,10 @@ export function HostingFeaturesSection({ id }: { id?: string }) {
       <div className="container mx-auto flex max-w-6xl flex-col gap-12 px-4 xl:px-0">
         <div className="flex flex-col items-center gap-5 text-center">
           <h2 className="text-balance text-[32px] font-extrabold leading-[1.1] tracking-tight text-zinc-900 dark:text-white md:text-[48px]">
-            {config.heading}
+            {tx(config.heading)}
           </h2>
           <p className="max-w-2xl text-lg font-medium text-zinc-600 dark:text-zinc-400 md:text-xl">
-            {config.blurb}
+            {tx(config.blurb)}
           </p>
         </div>
 
@@ -51,10 +52,10 @@ export function HostingFeaturesSection({ id }: { id?: string }) {
             >
               <span className="h-1.5 w-10 rounded-full bg-primary" aria-hidden="true" />
               <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
-                {feature.name}
+                {tx(feature.name)}
               </h3>
               <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                {feature.text}
+                {tx(feature.text)}
               </p>
             </div>
           ))}

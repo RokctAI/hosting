@@ -637,7 +637,7 @@ class TestWiring(unittest.TestCase):
 
     def test_manifest_installs_every_new_file(self):
         m = json.loads(read(MANIFEST))
-        self.assertEqual(m["version"], "1.25.1")
+        self.assertEqual(m["version"], "1.28.0")
         pairs = {(i["from"], i["to"]) for i in m["app_type"]["hosting"]["installs"]}
         for path in NEW_FILES:
             rel = os.path.relpath(path, SDK_ROOT).replace(os.sep, "/")
@@ -656,7 +656,7 @@ class TestWiring(unittest.TestCase):
 
     def test_changelog_lists_env_vars_by_name(self):
         log = read(CHANGELOG)
-        self.assertTrue(log.startswith("# Changelog\n\n## 1.25.1\n"))
+        self.assertTrue(log.startswith("# Changelog\n\n## 1.28.0\n"))
         entry = log.split("## 1.18.0", 1)[1].split("\n## ", 1)[0]
         for name in ENV_VARS:
             self.assertIn(name, entry)

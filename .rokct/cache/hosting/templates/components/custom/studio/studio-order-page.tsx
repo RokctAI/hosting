@@ -33,6 +33,7 @@ import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF, STUDIO_ORDER_PROMISE, STUDIO_STAR
 import { StudioOrderForm, type StudioOrderPayOptions } from "./studio-order-form";
 import type { StudioPayReturnPath } from "./studio-pay";
 
+import { tx } from "@/app/lib/i18n/phrases";
 export type StudioOrderReturn = { kind: "paid"; ref: string } | { kind: "cancelled" } | null;
 
 export function StudioOrder({
@@ -69,9 +70,9 @@ export function StudioOrder({
                 <div className="od-forever">
                   <RiInfinityLine size={28} aria-hidden="true" />
                   <div>
-                    <b>{C.foreverTitle}</b>
+                    <b>{tx(C.foreverTitle)}</b>
                     <span>
-                      {C.foreverText} <mark>{C.foreverLimit}</mark>.
+                      {tx(C.foreverText)} <mark>{tx(C.foreverLimit)}</mark>.
                     </span>
                   </div>
                 </div>
@@ -79,8 +80,8 @@ export function StudioOrder({
                 <div className="od-money">
                   <RiShieldCheckLine size={28} aria-hidden="true" />
                   <div>
-                    <b>{C.moneyBackTitle}</b>
-                    <span>{C.moneyBackText}</span>
+                    <b>{tx(C.moneyBackTitle)}</b>
+                    <span>{tx(C.moneyBackText)}</span>
                   </div>
                 </div>
               </div>
@@ -93,11 +94,11 @@ export function StudioOrder({
                   <div className="od-back-in ok">
                     <RiCheckboxCircleLine size={26} aria-hidden="true" />
                     <div>
-                      <b>{C.paidTitle}</b>
+                      <b>{tx(C.paidTitle)}</b>
                       <span>
-                        {C.paidText}
+                        {tx(C.paidText)}
                         {back.ref ? ` Your reference is ${back.ref}.` : ""}{" "}
-                        {back.ref ? <a href={`${STUDIO_STATUS_HREF}?ref=${encodeURIComponent(back.ref)}`}>Order status</a> : null}
+                        {back.ref ? <a href={`${STUDIO_STATUS_HREF}?ref=${encodeURIComponent(back.ref)}`}>{tx("Order status")}</a> : null}
                       </span>
                     </div>
                   </div>
@@ -105,21 +106,21 @@ export function StudioOrder({
                   <div className="od-back-in">
                     <RiCloseCircleLine size={26} aria-hidden="true" />
                     <div>
-                      <b>{C.cancelTitle}</b>
-                      <span>{C.cancelText}</span>
+                      <b>{tx(C.cancelTitle)}</b>
+                      <span>{tx(C.cancelText)}</span>
                     </div>
                   </div>
                 )}
               </div>
             </section>
           ) : null}
-          <section className="od-body" aria-label="Order form">
+          <section className="od-body" aria-label={tx("Order form")}>
             <div className="wrap">
               <StudioOrderForm terms={terms} promise={STUDIO_ORDER_PROMISE} pay={pay} path={path} />
               <p className="sm od-wa">
                 {/* 1.20.8 (Ray, 13:31Z): the order flow is email only, no WhatsApp. */}
-                Files can also go to{" "}
-                <a href={`mailto:${ordersEmail}`}>{ordersEmail}</a>. Read the full <a href="/terms">terms</a>.
+                {tx("Files can also go to")}{" "}
+                <a href={`mailto:${ordersEmail}`}>{tx(ordersEmail)}</a>{tx(". Read the full")}{" "}<a href="/terms">terms</a>.
               </p>
             </div>
           </section>

@@ -761,20 +761,24 @@ export const STUDIO_SHOWCASE_COPY = {
 // hand-drawn sketch to the final screens. Only real work is ever counted:
 // a shelf's count is the cards whose own showcase file names that service.
 // A shelf with nothing real yet says "Coming soon" - never a made-up piece.
-// App case studies have no data field yet, so that shelf is always "Coming
-// soon" until one is added.
+// Ray, 11 Nov: "if we have app why app case study coming soon? merge them
+// and have app case study" - the app shelf counts the cards that show an
+// app (the "app" service), so it is never "Coming soon" while apps exist.
+// Ray, 21 Nov: Brand and Print get their own sections - Brand counts the
+// cards with logo art.
 export interface ShowcaseShelf {
-  key: ShowcaseService | "app-case-study";
+  key: ShowcaseService;
   label: string;
   what: string;
 }
 export const SHOWCASE_SHELVES: readonly ShowcaseShelf[] = [
+  { key: "logo", label: "Brand", what: "Logos and brand identity, shown light and dark." },
   { key: "pitch-deck", label: "Pitch decks", what: "Slides written and designed in the client's brand." },
   { key: "print", label: "Print", what: "Flyers, posters, banners, menus, labels and business cards." },
   { key: "business-plan", label: "Business plans", what: "Plans a bank, funder or investor can read." },
   { key: "social-posts", label: "Social packs", what: "A month of posts, captions and a calendar." },
   { key: "starter-kit", label: "Starter kits", what: "Logo, letterhead, quote and invoice templates." },
-  { key: "app-case-study", label: "App case studies", what: "From the hand-drawn sketch to the final screens." },
+  { key: "app", label: "App case studies", what: "From the hand-drawn sketch to the final screens." },
 ];
 export const SHOWCASE_SHELF_COPY = {
   kicker: "More than websites",
@@ -784,10 +788,10 @@ export const SHOWCASE_SHELF_COPY = {
   see: (n: number) => (n === 1 ? "See 1 project" : `See ${n} projects`),
 } as const;
 
-/** Each shelf with how many real cards name it (app case studies: always 0 for now). */
+/** Each shelf with how many real cards it shows (the same cards its /work filter shows). */
 export function showcaseShelves(entries: ShowcaseEntry[]): (ShowcaseShelf & { count: number })[] {
   return SHOWCASE_SHELVES.map((s) => ({
     ...s,
-    count: s.key === "app-case-study" ? 0 : entries.filter((e) => e.services.includes(s.key as ShowcaseService)).length,
+    count: showcaseFiltered(entries, s.key).length,
   }));
 }

@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.28.0
+
+* feat(portfolio): the app case study shelf counts the cards that show an app, so it
+  is no longer "Coming soon" while apps exist (Ray, 11 Nov). New Brand shelf
+  for logo work; Print keeps its own shelf (Ray, 21 Nov). Each shelf's count
+  is the same cards its /work filter shows.
+
+## 1.26.0
+
+* feat(i18n): landing, order and portal text reads in Afrikaans when the visitor
+  picks AF, through base_sdk 1.66.0's `tx()` and the phrase book in
+  `hosting.json` `af.__phrases`. The Afrikaans is machine-drafted and needs a
+  fluent skim. Floor base_sdk >= 1.66.0.
+
 ## 1.25.1
 
 * style: landing sections rise and fade in as they scroll into view (CSS

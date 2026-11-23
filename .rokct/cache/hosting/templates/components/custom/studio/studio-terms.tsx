@@ -27,6 +27,7 @@ import { StudioCurrencyProvider, StudioHeader } from "./studio-client";
 import { StudioFooter } from "./studio-home";
 import { STUDIO_ORDER_COPY, STUDIO_ORDER_HREF, studioOrderTerms } from "./studio-order";
 
+import { tx } from "@/app/lib/i18n/phrases";
 export const STUDIO_TERMS_HREF = "/terms";
 
 export function StudioTerms({ fontClassName, ordersEmail }: { fontClassName: string; ordersEmail: string }) {
@@ -37,20 +38,20 @@ export function StudioTerms({ fontClassName, ordersEmail }: { fontClassName: str
         <StudioHeader base="/" current={STUDIO_TERMS_HREF} />
         <main className="tp">
           <div className="wrap">
-            <p className="kick">{C.termsKicker}</p>
-            <h1 className="disp od-h1">{C.termsTitle}</h1>
-            <p className="lede">{C.termsNote}</p>
+            <p className="kick">{tx(C.termsKicker)}</p>
+            <h1 className="disp od-h1">{tx(C.termsTitle)}</h1>
+            <p className="lede">{tx(C.termsNote)}</p>
             <ol className="terms od-terms">
               {studioOrderTerms(ordersEmail).map((t) => (
                 <li key={t.b}>
-                  <b>{t.b}</b>
-                  <span>{t.t}</span>
+                  <b>{tx(t.b)}</b>
+                  <span>{tx(t.t)}</span>
                 </li>
               ))}
             </ol>
             <p className="sm">
               <a className="btn btn-acc btn-sm" href={STUDIO_ORDER_HREF}>
-                {C.homeCta}
+                {tx(C.homeCta)}
               </a>
             </p>
           </div>
