@@ -18,5 +18,10 @@
       "branch": "main",
       "phone": "marketing/tour/store/05-polaris_home.png"
     }
+  ],
+  "features": [
+    "Live loan calculator with full cost shown",
+    "Four-step online application with uploads",
+    "Contract signed in the browser"
   ]
 }
