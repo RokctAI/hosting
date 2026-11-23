@@ -22,5 +22,10 @@
       "branch": "main",
       "phone": "marketing/tour/store/07-courses.png"
     }
+  ],
+  "features": [
+    "Students read in English or Afrikaans",
+    "Lessons in two teaching styles",
+    "Tutor picker matched to how a student learns"
   ]
 }
