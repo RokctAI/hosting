@@ -10,5 +10,10 @@
     "desktop": "latest/desktop-light.webp",
     "phone": "latest/phone-light.webp"
   },
-  "logo_back": null
+  "logo_back": null,
+  "features": [
+    "One-page site for five industrial services",
+    "Sector pages for mining, farming and government",
+    "Site enquiry form straight to the owner"
+  ]
 }
