@@ -18,5 +18,10 @@
       "branch": "main",
       "phone": "marketing/tour/store/05-sticks_team.png"
     }
+  ],
+  "features": [
+    "Live feed of what each AI employee is doing",
+    "Approval flow before anything is sent",
+    "App downloads for Android and Windows"
   ]
 }
