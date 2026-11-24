@@ -1,0 +1,316 @@
+{
+  "version": "2026.48",
+  "date": "2026-11-24",
+  "previous": null,
+  "changes": [
+    "Added Juvo Platforms",
+    "Added Rokct",
+    "Added Cortex",
+    "Added Tloumoka",
+    "Added Polaris",
+    "Added South River",
+    "Added Sticks",
+    "Added Supacharge",
+    "Added Rokct Telecom"
+  ],
+  "notes": [],
+  "items": [
+    {
+      "repo": "RokctAI/Juvo-platforms",
+      "hash": "a496f7513b9c68223f11bf62917f58693e727c83e594612b1706774336d2765a",
+      "since": "2026.48",
+      "card": {
+        "name": "Juvo Platforms",
+        "kind": "Delivery platform",
+        "tagline": "Your own delivery platform. Three apps. One brand. Yours.",
+        "url": "https://platform.juvo.app",
+        "repo": "RokctAI/Juvo-platforms",
+        "rank": 8,
+        "shots": {
+          "branch": "site-shots",
+          "desktop": "latest/desktop-dark.webp",
+          "phone": "latest/phone-dark.webp"
+        },
+        "logo_back": null,
+        "apps": [
+          {
+            "name": "Juvo Customer",
+            "repo": "RokctAI/paas_customer",
+            "branch": "main",
+            "phone": "marketing/tour/store/05-marketplace_home.png"
+          },
+          {
+            "name": "Juvo Manager",
+            "repo": "RokctAI/paas_manager",
+            "branch": "main",
+            "phone": "marketing/tour/store/05-pos_scan.png"
+          },
+          {
+            "name": "Juvo Driver",
+            "repo": "RokctAI/paas_driver",
+            "branch": "main",
+            "phone": "marketing/tour/store/05-driver_home.png"
+          }
+        ],
+        "features": [
+          "Three branded apps from one codebase",
+          "Multi-store marketplace with driver payouts",
+          "Shop owners manage their store from a phone"
+        ]
+      },
+      "pictures": {
+        "app-0": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__juvo-platforms-app-0.png",
+        "app-1": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__juvo-platforms-app-1.png",
+        "app-2": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__juvo-platforms-app-2.png",
+        "desktop": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__juvo-platforms-desktop.webp",
+        "phone": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__juvo-platforms-phone.webp"
+      }
+    },
+    {
+      "repo": "RokctAI/RokctAI_frontend",
+      "hash": "ff8fdc713246645c3aedfe23f3457c6b5ba3fd2f6af6ab9f93737ac50aa8ba70",
+      "since": "2026.48",
+      "card": {
+        "name": "Rokct",
+        "kind": "AI business platform",
+        "tagline": "Everything is a chat away.",
+        "url": "https://rokct.ai",
+        "repo": "RokctAI/RokctAI_frontend",
+        "rank": 9,
+        "shots": {
+          "branch": "site-shots",
+          "desktop": "latest/desktop-light.webp",
+          "phone": "latest/phone-light.webp"
+        },
+        "logo_back": "rokct"
+      },
+      "pictures": {
+        "desktop": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__rokctai_frontend-desktop.webp",
+        "phone": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__rokctai_frontend-phone.webp"
+      }
+    },
+    {
+      "repo": "RokctAI/hosting",
+      "hash": "53a88ee095bbb4129e5f9afb6d4a657479eda6d7be9a411e9488a6f51f8ed3d7",
+      "since": "2026.48",
+      "card": {
+        "name": "Cortex",
+        "kind": "Our own work",
+        "tagline": "Our own site, made the way we make yours.",
+        "url": "https://hosting-beta-one.vercel.app",
+        "repo": "RokctAI/hosting",
+        "rank": 5,
+        "shots": {
+          "branch": "site-shots",
+          "desktop": "latest/desktop-dark.webp",
+          "phone": "latest/phone-dark.webp"
+        },
+        "logo_back": "rokct",
+        "features": [
+          "Brief taken on WhatsApp in ten questions",
+          "Prices in rand, shown in the visitor's currency",
+          "Logo that folds from CORTEXAGENCY.co to CORTEX"
+        ]
+      },
+      "pictures": {
+        "desktop": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__hosting-desktop.webp",
+        "phone": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__hosting-phone.webp"
+      }
+    },
+    {
+      "repo": "RokctAI/nextjs",
+      "hash": "95e0711ca549e73d53a1f8a8bdcfaa09b4923b886c363bbc681a6f90a8a5f97d",
+      "since": "2026.48",
+      "card": {
+        "name": "Tloumoka",
+        "kind": "Industrial supplier",
+        "tagline": "Built for the people who keep industry moving.",
+        "url": "https://nextjs-rho-three-87.vercel.app",
+        "repo": "RokctAI/nextjs",
+        "rank": 8,
+        "shots": {
+          "branch": "site-shots",
+          "desktop": "latest/desktop-light.webp",
+          "phone": "latest/phone-light.webp"
+        },
+        "logo_back": null,
+        "features": [
+          "One-page site for five industrial services",
+          "Sector pages for mining, farming and government",
+          "Site enquiry form straight to the owner"
+        ]
+      },
+      "pictures": {
+        "desktop": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__nextjs-desktop.webp",
+        "phone": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__nextjs-phone.webp"
+      }
+    },
+    {
+      "repo": "RokctAI/polaris-web",
+      "hash": "523ace7084fdbed1aea1a28b6da626ac7197bd34c4c59369080f83645f714095",
+      "since": "2026.48",
+      "card": {
+        "name": "Polaris",
+        "kind": "Lender",
+        "tagline": "The full cost, on the page before anyone applies.",
+        "url": "https://polaris-web-nu.vercel.app",
+        "repo": "RokctAI/polaris-web",
+        "rank": 8,
+        "shots": {
+          "branch": "site-shots",
+          "desktop": "latest/desktop-dark.webp",
+          "phone": "latest/phone-dark.webp"
+        },
+        "logo_back": null,
+        "apps": [
+          {
+            "name": "Polaris",
+            "repo": "RokctAI/polaris",
+            "branch": "main",
+            "phone": "marketing/tour/store/05-polaris_home.png"
+          }
+        ],
+        "features": [
+          "Live loan calculator with full cost shown",
+          "Four-step online application with uploads",
+          "Contract signed in the browser"
+        ]
+      },
+      "pictures": {
+        "app-0": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__polaris-web-app-0.png",
+        "desktop": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__polaris-web-desktop.webp",
+        "phone": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__polaris-web-phone.webp"
+      }
+    },
+    {
+      "repo": "RokctAI/southriver-web",
+      "hash": "1c477d065907879bbf2a551a001e00e970431eeba6dc26dbe8b3d5dc0806a941",
+      "since": "2026.48",
+      "card": {
+        "name": "South River",
+        "kind": "Bottled water",
+        "tagline": "Your brand on every bottle.",
+        "url": "https://southriver-web.vercel.app",
+        "repo": "RokctAI/southriver-web",
+        "rank": 7,
+        "shots": {
+          "branch": "site-shots",
+          "desktop": "latest/desktop-light.webp",
+          "phone": "latest/phone-light.webp"
+        },
+        "logo_back": null,
+        "features": [
+          "Step-by-step ordering from logo to case",
+          "Price slider with bulk pricing",
+          "WhatsApp ordering built in"
+        ]
+      },
+      "pictures": {
+        "desktop": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__southriver-web-desktop.webp",
+        "phone": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__southriver-web-phone.webp"
+      }
+    },
+    {
+      "repo": "RokctAI/sticks-web",
+      "hash": "aa713ddac00f83e4632fb5edbe8770ca9e6c04d02a504ac76395ce5e2c6ac80a",
+      "since": "2026.48",
+      "card": {
+        "name": "Sticks",
+        "kind": "AI employees",
+        "tagline": "A team that asks before it acts.",
+        "url": "https://sticks-web.vercel.app",
+        "repo": "RokctAI/sticks-web",
+        "rank": 9,
+        "shots": {
+          "branch": "site-shots",
+          "desktop": "latest/desktop-light.webp",
+          "phone": "latest/phone-light.webp"
+        },
+        "logo_back": null,
+        "apps": [
+          {
+            "name": "Sticks",
+            "repo": "RokctAI/sticks",
+            "branch": "main",
+            "phone": "marketing/tour/store/05-sticks_team.png"
+          }
+        ],
+        "features": [
+          "Live feed of what each AI employee is doing",
+          "Approval flow before anything is sent",
+          "App downloads for Android and Windows"
+        ]
+      },
+      "pictures": {
+        "app-0": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__sticks-web-app-0.png",
+        "desktop": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__sticks-web-desktop.webp",
+        "phone": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__sticks-web-phone.webp"
+      }
+    },
+    {
+      "repo": "RokctAI/supacharge-web",
+      "hash": "05f233a2ec00dc0e0f360a10f6b83a609e72f6de902fa180ee22fca1dfe837bb",
+      "since": "2026.48",
+      "card": {
+        "name": "Supacharge",
+        "kind": "Learning app",
+        "tagline": "A site that sends learners to the app store in one screen.",
+        "url": "https://supacharge.school",
+        "repo": "RokctAI/supacharge-web",
+        "rank": 9,
+        "shots": {
+          "branch": "site-shots",
+          "desktop": "latest/desktop-light.webp",
+          "phone": "latest/phone-light.webp"
+        },
+        "logo_back": null,
+        "award": {
+          "label": "Selected",
+          "detail": "2026 GSE Digital Startup Accelerator"
+        },
+        "apps": [
+          {
+            "name": "Supacharge",
+            "repo": "RokctAI/supacharge",
+            "branch": "main",
+            "phone": "marketing/tour/store/07-courses.png"
+          }
+        ],
+        "features": [
+          "Students read in English or Afrikaans",
+          "Lessons in two teaching styles",
+          "Tutor picker matched to how a student learns"
+        ]
+      },
+      "pictures": {
+        "app-0": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__supacharge-web-app-0.png",
+        "desktop": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__supacharge-web-desktop.webp",
+        "phone": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__supacharge-web-phone.webp"
+      }
+    },
+    {
+      "repo": "RokctAI/telephony-frontend",
+      "hash": "e650157712990a9239118e637292169ccab3ac6935a10d840401d8cdb61ede79",
+      "since": "2026.48",
+      "card": {
+        "name": "Rokct Telecom",
+        "kind": "Business phone lines",
+        "tagline": "A landline number that rings anywhere.",
+        "url": "https://telephony-frontend.vercel.app",
+        "repo": "RokctAI/telephony-frontend",
+        "rank": 7,
+        "shots": {
+          "branch": "site-shots",
+          "desktop": "latest/desktop-dark.webp",
+          "phone": "latest/phone-dark.webp"
+        },
+        "logo_back": null
+      },
+      "pictures": {
+        "desktop": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__telephony-frontend-desktop.webp",
+        "phone": "https://raw.githubusercontent.com/RokctAI/hosting/portfolio-assets/2026.48/rokctai__telephony-frontend-phone.webp"
+      }
+    }
+  ],
+  "print": []
+}
