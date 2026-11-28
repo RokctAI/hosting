@@ -73,7 +73,7 @@ function payPage(origin: string, read: (k: string) => string, withContact: boole
   }
   const fields = studioPayfastSigned(cfg, {
     amountZar: total,
-    itemName: `CORTEX MEDIA ${service}`,
+    itemName: `CORTEX ${service}`,
     ref,
     name: withContact ? q("name", 120) : "",
     email: withContact ? q("email", 200) : "",
@@ -85,6 +85,6 @@ function payPage(origin: string, read: (k: string) => string, withContact: boole
   });
   if (!fields) return Response.json({ ok: false, code: "card_unavailable", message: STUDIO_PAY_COPY.cardSoon }, { status: 503 });
   const inputs = fields.map(([k, v]) => `<input type="hidden" name="${esc(k)}" value="${esc(v)}">`).join("");
-  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>To PayFast · CORTEX MEDIA</title></head><body style="font:16px/1.5 system-ui,sans-serif;padding:24px"><form id="pf" method="post" action="${esc(cfg.action)}">${inputs}<p>Taking you to PayFast to pay R${total}…</p><button type="submit">Continue to PayFast</button></form><script>document.getElementById("pf").submit()</script></body></html>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>To PayFast · CORTEX</title></head><body style="font:16px/1.5 system-ui,sans-serif;padding:24px"><form id="pf" method="post" action="${esc(cfg.action)}">${inputs}<p>Taking you to PayFast to pay R${total}…</p><button type="submit">Continue to PayFast</button></form><script>document.getElementById("pf").submit()</script></body></html>`;
   return new Response(html, { status: 200, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
 }

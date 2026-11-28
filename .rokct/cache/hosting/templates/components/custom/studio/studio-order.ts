@@ -216,7 +216,7 @@ export const STUDIO_RDAP_COM = "https://rdap.verisign.com/com/v1/domain/";
 /** 1.21.2: the rdap.org bootstrap (redirects to a registry's RDAP when one exists). */
 export const STUDIO_RDAP_BOOTSTRAP = "https://rdap.org/domain/";
 /** rdap.org sits behind a bot filter that refuses a blank user agent. */
-const RDAP_AGENT = "CORTEX MEDIA-order-form/1.0 (domain availability check)";
+const RDAP_AGENT = "CORTEX-order-form/1.0 (domain availability check)";
 
 export type StudioFetch = (url: string, init: { signal: AbortSignal; headers: Record<string, string> }) => Promise<{ status: number }>;
 
@@ -675,5 +675,5 @@ export const STUDIO_STATUS_COPY = {
   honest:
     "This site has no order store behind it yet, so it cannot show your phases here. Until it does, we email you after every phase with the render, its due date and any blocker, quoting your reference.",
   bad: "That reference doesn't look right. Check it against your order email: it looks like CX-XXXX-XXXX.",
-  good: (ref: string) => `${ref} is a valid CORTEX MEDIA reference.`,
+  good: (ref: string) => `${ref} is a valid CORTEX reference.`,
 } as const;

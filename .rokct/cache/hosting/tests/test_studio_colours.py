@@ -182,7 +182,7 @@ class TestPayStepV2(unittest.TestCase):
 
     def test_card_looks_like_a_card(self):
         form = read(FORM)
-        for s in ('className="pay-cc"', "pay-cc-chip", ">CORTEX MEDIA<", "•••• •••• •••• ••••", "{P.cardBrands}", "P.cardButton(", 'className="pay-refbox"'):
+        for s in ('className="pay-cc"', "pay-cc-chip", ">CORTEX<", "•••• •••• •••• ••••", "{P.cardBrands}", "P.cardButton(", 'className="pay-refbox"'):
             self.assertIn(s, form)
         css = read(CSS)
         self.assertIn("aspect-ratio:1.586", css)

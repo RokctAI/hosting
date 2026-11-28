@@ -71,10 +71,10 @@ class TestStartupsPage(unittest.TestCase):
 
     def test_has_its_own_metadata(self):
         page = read(STARTUPS_PAGE)
-        self.assertIn('title: { absolute: "Startups and SMMEs · CORTEX MEDIA" }', page)
+        self.assertIn('title: { absolute: "Startups and SMMEs · CORTEX" }', page)
 
     def test_order_page_is_unchanged_and_still_default(self):
-        self.assertIn('"Order · CORTEX MEDIA"', read(ORDER_PAGE))
+        self.assertIn('"Order · CORTEX"', read(ORDER_PAGE))
         self.assertNotIn("path=", read(ORDER_PAGE))
 
     def test_startup_hero_has_no_hard_coded_price(self):
@@ -107,7 +107,7 @@ class TestMenus(unittest.TestCase):
         manifest = json.loads(read(os.path.join(SDK_ROOT, "manifest.json")))
         pairs = {(i["from"], i["to"]) for i in manifest["app_type"]["hosting"]["installs"]}
         self.assertIn(("templates/app/startups/page.tsx", "app/startups/page.tsx"), pairs)
-        self.assertEqual(manifest["version"], "1.28.0")
+        self.assertEqual(manifest["version"], "1.29.0")
 
 
 class TestSharedPageHero(unittest.TestCase):

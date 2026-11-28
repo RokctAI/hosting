@@ -30,8 +30,8 @@ import { studioCleanRef, studioIsOrderRef } from "@/components/custom/studio/stu
 import { studioPayfastConfig } from "@/components/custom/studio/studio-payfast";
 
 export const metadata: Metadata = {
-  title: { absolute: "Order · CORTEX MEDIA" },
-  description: "Order from CORTEX MEDIA, with forever hosting: five short steps, your logo and photos. We send your brief back to confirm, and your first render within 24 hours of it.",
+  title: { absolute: "Order · CORTEX" },
+  description: "Order from CORTEX, with forever hosting: five short steps, your logo and photos. We send your brief back to confirm, and your first render within 24 hours of it.",
 };
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

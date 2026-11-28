@@ -336,7 +336,7 @@ function Qr({ svg, label, caption }: { svg: string; label: string; caption: stri
  * The payment step shown once the order is sent: bank transfer and card.
  * 1.21.4 (Ray, "make it look nicer. that card payment be a card"): an
  * amount summary on top, then two option cards side by side (stacked on a
- * phone). "Pay by card" is drawn as a bank card (chip, CORTEX MEDIA wordmark,
+ * phone). "Pay by card" is drawn as a bank card (chip, CORTEX wordmark,
  * masked number, Visa · Mastercard, the amount) with its pay button and a
  * "Scan to pay by card" QR; "Bank transfer (EFT)" leads with PayShap when
  * set, then the CX reference and each bank detail with its own copy button,
@@ -374,7 +374,7 @@ export function StudioPayStep({ refCode, total, card, pay, info = NO_PAY_INFO }:
           <div className="pay-cc" aria-hidden="true">
             <div className="pay-cc-top">
               <span className="pay-cc-chip" />
-              <b className="pay-cc-mark">{tx("CORTEX MEDIA")}</b>
+              <b className="pay-cc-mark">{tx("CORTEX")}</b>
             </div>
             <span className="pay-cc-num num">•••• •••• •••• ••••</span>
             <div className="pay-cc-foot">

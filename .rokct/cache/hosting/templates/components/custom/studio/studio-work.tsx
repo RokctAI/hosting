@@ -38,6 +38,7 @@ import { StudioShowcaseCount, StudioShowcaseGrid, StudioShowcaseScope, StudioSho
 import { SHOWCASE_PAGE_HREF, SHOWCASE_SHELF_COPY, STUDIO_SHOWCASE_COPY, showcaseShelves, type ShowcaseEntry } from "./studio-showcase";
 
 import { tx } from "@/app/lib/i18n/phrases";
+import { PORTFOLIO_COPY, PORTFOLIO_HREF } from "./studio-portfolio";
 export function StudioWork({
   fontClassName,
   sites,
@@ -63,6 +64,10 @@ export function StudioWork({
                   <div className="wk-head-r">
                     <p className="lede">{tx(P.lede)}</p>
                     <StudioShowcaseCount className="fine num" initial={sites.length} />
+                    {/* 1.27.0: the versioned tender portfolio and its PDF. */}
+                    <a className="btn btn-line btn-sm" href={PORTFOLIO_HREF}>
+                      {tx(PORTFOLIO_COPY.workLink)}
+                    </a>
                   </div>
                 </div>
               </div>

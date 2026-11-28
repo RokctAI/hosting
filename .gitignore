@@ -152,6 +152,8 @@ next-env.d.ts
 /app/opengraph-image.tsx
 /app/order/page.tsx
 /app/page.tsx
+/app/portfolio/page.tsx
+/app/portfolio/print/page.tsx
 /app/services/base/gateway-constants.ts
 /app/services/base/index.ts
 /app/services/base/platform-gateway.ts
@@ -285,6 +287,10 @@ next-env.d.ts
 /components/custom/studio/studio-pay-qr.ts
 /components/custom/studio/studio-pay.ts
 /components/custom/studio/studio-payfast.ts
+/components/custom/studio/studio-portfolio-load.ts
+/components/custom/studio/studio-portfolio-page.tsx
+/components/custom/studio/studio-portfolio.css
+/components/custom/studio/studio-portfolio.ts
 /components/custom/studio/studio-rates.ts
 /components/custom/studio/studio-shades.ts
 /components/custom/studio/studio-shots.ts

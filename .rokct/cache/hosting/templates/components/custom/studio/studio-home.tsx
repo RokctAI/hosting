@@ -301,7 +301,7 @@ function DesignCase({ c }: { c: StudioDesignCase }) {
           </span>
         </p>
         <p className="dz-cta">
-          <a className="btn btn-acc btn-sm" href={studioWhatsApp(`Hi CORTEX MEDIA, I'd like three options for my site, like the ${c.tab} brief.`)}>
+          <a className="btn btn-acc btn-sm" href={studioWhatsApp(`Hi CORTEX, I'd like three options for my site, like the ${c.tab} brief.`)}>
             <WhatsAppGlyph />
             {tx("Start a brief like this")}
           </a>
@@ -376,7 +376,7 @@ export function StudioFooter({ current }: { current?: string } = {}) {
       <div className="wrap ft-in">
         <div>
           <span className="mark">
-            {tx("CORTEX MEDIA")}
+            {tx("CORTEX")}
             <i aria-hidden="true" />
           </span>
           <p className="sm">{tx(STUDIO_FOOTER.about)}</p>
@@ -393,7 +393,7 @@ export function StudioFooter({ current }: { current?: string } = {}) {
           <span className="motto">{tx(STUDIO_FOOTER.motto)}</span>
           {/* 1.21.2 (Ray): one plain line on the rate; no currency toggle. */}
           <StudioRateLine />
-          {/* 1.20.7 (Ray): the site's own footer is `© <year> CORTEX MEDIA`, with
+          {/* 1.20.7 (Ray): the site's own footer is `© <year> CORTEX`, with
               no maker credit (that one stays on client sites). */}
           <span className="fine">
             <span>

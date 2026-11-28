@@ -202,14 +202,18 @@ export function StudioHeader({ base = "", current }: { base?: string; current?: 
   return (
     <header className={`${scrolled ? "hd on" : "hd"}${folded ? " folded" : ""}`}>
       <div className="wrap hd-in">
-        <a className="mark" href="/" aria-label={tx("CORTEX MEDIA, home")}>
+        <a className="mark" href="/" aria-label={tx("CORTEX, home")}>
           {/* 1.24.0 (Ray, 2026-11-20): the Supacharge fold (base_sdk's
-              BrandStemWordmark). CORTEX MEDIA at load; 1500ms after mount
-              " MEDIA" slides into CORTEX (500ms ease-in-out, grid 1fr to 0fr),
+              BrandStemWordmark). 1.27.0 (Ray 2026-11-21): CORTEXAGENCY.co at
+              load, ".co" the size of the dot; 1500ms after mount "AGENCY.co"
+              slides into CORTEX (500ms ease-in-out, grid 1fr to 0fr),
               then the oxblood dot shows. */}
           {tx("CORTEX")}
           <span className="mark-fold" aria-hidden={folded}>
-            <span> {tx("MEDIA")}</span>
+            <span>
+              <span className="mark-agency">AGENCY</span>
+              <small className="mark-tld">.co</small>
+            </span>
           </span>
           <i aria-hidden="true" />
         </a>

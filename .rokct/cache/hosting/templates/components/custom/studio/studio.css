@@ -1241,6 +1241,9 @@ html:has(.st){scroll-behavior:auto}
 /* 1.24.0: header mark fold, as base_sdk's BrandStemWordmark: " MEDIA" slides into CORTEX, then the dot shows. */
 .st .hd .mark .mark-fold{display:inline-grid;grid-template-columns:1fr;overflow:hidden;white-space:pre;transition:grid-template-columns .5s ease-in-out}
 .st .hd .mark .mark-fold>span{min-width:0}
+.st .hd .mark .mark-fold{margin-left:-6px}
+.st .hd .mark .mark-agency{color:var(--acc)}
+.st .hd .mark .mark-tld{font-size:.42em;letter-spacing:0;color:var(--ink-3)}
 .st .hd.folded .mark .mark-fold{grid-template-columns:0fr}
 .st .hd .mark i{opacity:0;transition:opacity .25s ease .5s}
 .st .hd.folded .mark i{opacity:1}

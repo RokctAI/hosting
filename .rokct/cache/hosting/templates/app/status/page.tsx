@@ -24,8 +24,8 @@ import { studioFontClassName } from "@/components/custom/studio/studio-fonts";
 import { StudioStatus } from "@/components/custom/studio/studio-status";
 
 export const metadata: Metadata = {
-  title: { absolute: "Order status · CORTEX MEDIA" },
-  description: "Check a CORTEX MEDIA order by its reference.",
+  title: { absolute: "Order status · CORTEX" },
+  description: "Check a CORTEX order by its reference.",
   robots: { index: false },
 };
 

@@ -172,6 +172,8 @@ interface ShowcaseCommon {
   award: ShowcaseAward | null;
   /** 1.20.5: the card's apps, in file order; [] when it has none. */
   apps: ShowcaseApp[];
+  /** 1.27.0: what THIS client's work does beyond what every client gets (up to 6 lines); [] when none. */
+  features: string[];
   /** The site this page is served from (no out-link on its card); set by markOwnSite. */
   own?: boolean;
 }
@@ -365,6 +367,20 @@ export function showcaseFileRepo(fileName: string): string | null {
  * climbs out of the branch, a file name that does not match its repo, or
  * (1.14.0) a logo-only card with no logo art.
  */
+/** The most feature lines one card carries (1.27.0). */
+export const SHOWCASE_MAX_FEATURES = 6;
+
+/** A card's `features` (1.27.0): one-line strings up to 60 characters, at most 6; anything else is dropped. */
+export function showcaseFeatures(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  const out: string[] = [];
+  for (const x of v) {
+    const t = text(x, 60);
+    if (t && out.length < SHOWCASE_MAX_FEATURES) out.push(t);
+  }
+  return out;
+}
+
 export function parseShowcaseEntry(raw: unknown, fileName?: string): ShowcaseEntry | null {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const o = raw as Record<string, unknown>;
@@ -408,7 +424,8 @@ export function parseShowcaseEntry(raw: unknown, fileName?: string): ShowcaseEnt
     k === "logo" ? withLogo && art : k === "app" ? apps.length > 0 : declared.includes(k),
   );
   const award = showcaseAward(o.award);
-  const common = { repo, name, kind, tagline, rank, services, logoBack, logo, award, apps };
+  const features = showcaseFeatures(o.features);
+  const common = { repo, name, kind, tagline, rank, services, logoBack, logo, award, apps, features };
   if (!website) {
     if (!art) return null;
     return { ...common, website: false, url };
@@ -479,7 +496,7 @@ export function buildShowcase(files: { name: string; text: string }[]): Showcase
 export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
   {
     repo: "RokctAI/hosting",
-    name: "CORTEX MEDIA",
+    name: "CORTEX",
     kind: "Our own work",
     tagline: "Our own site, made the way we make yours.",
     url: "https://hosting-beta-one.vercel.app",
@@ -490,6 +507,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     logo: null,
     award: null,
     apps: [],
+    features: [],
     services: ["website", "logo"],
     website: true,
   },
@@ -506,6 +524,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     logo: null,
     award: null,
     apps: [],
+    features: [],
     services: ["website"],
     website: true,
   },
@@ -522,6 +541,7 @@ export const STUDIO_SHOWCASE_FALLBACK: ShowcaseSite[] = [
     logo: null,
     award: null,
     apps: [],
+    features: [],
     services: ["website"],
     website: true,
   },
@@ -746,11 +766,11 @@ export const STUDIO_SHOWCASE_COPY = {
   page: {
     // 1.14.0: the header's "Portfolio" (STUDIO_NAV) opens this page.
     title: "Portfolio",
-    kicker: "CORTEX MEDIA · Portfolio",
+    kicker: "CORTEX · Portfolio",
     heading: "Everything we have made, best first.",
     lede: "Every site is live on the web, shown as it renders on a phone and a desktop. Pick a service to see only that work: a site we also drew the logo for turns over to show it.",
     count: (n: number) => (n === 1 ? "1 project" : `${n} projects`),
-    back: "Back to CORTEX MEDIA",
+    back: "Back to CORTEX",
     cta: "Want yours here? Message us on WhatsApp",
   },
 };

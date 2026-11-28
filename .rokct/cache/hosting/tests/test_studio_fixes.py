@@ -88,7 +88,7 @@ def webp_size(path):
 class TestLogoGoesHome(unittest.TestCase):
     def test_logo_links_to_the_root(self):
         header = read(HEADER)
-        self.assertIn('<a className="mark" href="/" aria-label="CORTEX MEDIA, home">', header)
+        self.assertIn('<a className="mark" href="/" aria-label="CORTEX, home">', header)
         self.assertNotIn('"#top"', header)
         self.assertNotIn("/#top", header)
 
