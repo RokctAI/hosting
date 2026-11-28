@@ -25,7 +25,7 @@
 // module that is not on disk is a compile error, and the registry checks the
 // default export structurally when it loads this module.
 //
-// `icon` (1.21.3): the CORTEX MEDIA mark, a "C" in the wordmark's face (Big
+// `icon` (1.21.3): the CORTEX mark, a "C" in the wordmark's face (Big
 // Shoulders Display 800, paper on ink) with the wordmark's square, at
 // public/studio/brand/c-mark.png (512px, so it doubles as the Apple
 // touch icon; c-mark.svg beside it is the source). Before 1.21.3 there
@@ -56,12 +56,12 @@ export interface HostingSiteMetadata {
 }
 
 const HOSTING_SITE_METADATA: HostingSiteMetadata = {
-  siteName: "CORTEX MEDIA",
-  title: "CORTEX MEDIA — website deployments, managed databases, NVMe storage",
+  siteName: "CORTEX",
+  title: "CORTEX — website deployments, managed databases, NVMe storage",
   tagline: "Website deployments, managed databases and NVMe storage on one plan",
   description:
-    "Hosting plans from CORTEX MEDIA: Basic, Pro and Enterprise, billed monthly or yearly in USD, with 1 to 100 website deployments, 5 to 200 managed databases, 10GB to 500GB of NVMe storage and a 14-day trial on every plan.",
-  keywords: ["hosting", "website deployment", "managed databases", "NVMe storage", "CORTEX MEDIA"],
+    "Hosting plans from CORTEX: Basic, Pro and Enterprise, billed monthly or yearly in USD, with 1 to 100 website deployments, 5 to 200 managed databases, 10GB to 500GB of NVMe storage and a 14-day trial on every plan.",
+  keywords: ["hosting", "website deployment", "managed databases", "NVMe storage", "CORTEX"],
   icon: "/studio/brand/c-mark.png",
   locale: "en_ZA",
 };

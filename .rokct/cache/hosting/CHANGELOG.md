@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.29.0
+
+* feat(portfolio): CORTEX tender portfolio (Ray 2026-11-21). `/portfolio`
+  shows what every client gets once (sign-in, weekly updates, English and
+  Afrikaans, light and dark, hosting, install), then websites, apps, brand
+  and print in separate sections, from the shell's `portfolio/current.json`.
+  `/portfolio/print` is its A4 twin, which shared-workflows
+  `portfolio-weekly.yml` prints to the version PDF. The snapshot is written
+  weekly and only when a card or picture changed; each version freezes its
+  pictures. Without a snapshot the page shows the current cards, unversioned.
+  `/work`'s head links to it. Showcase cards gain optional `features`
+  (up to 6 lines), curated in each site's own repo. Afrikaans is
+  machine-drafted and needs a fluent skim.
+
 ## 1.28.0
 
 * feat(portfolio): the app case study shelf counts the cards that show an app, so it

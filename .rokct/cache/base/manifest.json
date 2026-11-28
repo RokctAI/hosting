@@ -1,6 +1,8 @@
 {
   "name": "base_sdk",
-  "version": "1.68.0",
+  "version": "1.70.0",
+  "_comment_version_1_70_0": "1.69.0 -> 1.70.0: the Cortex Media credit link defaults to https://cortexagency.co (Ray, 2026-11-21). NEXT_PUBLIC_CORTEX_MEDIA_URL still overrides it. Nothing to install.",
+  "_comment_version_1_69_0": "1.68.0 -> 1.69.0: the footer credit maker is CORTEX, not Cortex Media (Ray 2026-11-21: \"There is no cortex media\"). Nothing to install.",
   "_comment_version_1_67_0": "1.66.0 -> 1.67.0: shared scroll entrance on every landing (Ray, 2026-11-22). New app/styles/rokct-rise.css, imported by app/landing/page.tsx: section content rises and fades in on scroll (CSS scroll timeline, reduced motion respected). Skipped where a home SDK already animates (Sticks, Supacharge, Juvo, Cortex Media, Polaris); opt out with class rk-no-rise.",
   "_comment_version_1_64_0": "1.63.0 -> 1.64.0: EN | AF language toggle in the header, desktop bar and phone menu (Ray, 2026-11-20). components/custom/language-toggle.tsx writes the rk-lang cookie, sets <html lang> and refreshes. It draws only in a host whose app/lib/i18n exports currentLocale (RokctAI_frontend with the language switch); older hosts are unchanged.",
   "_comment_version_1_63_0": "1.62.0 -> 1.63.0: shared npm versions (Ray, 2026-11-20: Next.js should use one version everywhere, like Dart's base SDK). New top-level \"versions\" map: the installer (The-Rokct-Protocol sdk_installer_base.py) sets each listed version on any package a shell already lists, and never adds a package. Taken from RokctAI_frontend main. Bump a version here, not with Dependabot in each shell.",

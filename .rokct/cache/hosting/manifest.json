@@ -1,6 +1,7 @@
 {
   "name": "hosting_sdk",
-  "version": "1.28.0",
+  "version": "1.29.0",
+  "_comment_version_1_29_0": "1.29.0: CORTEX tender portfolio (Ray 2026-11-21): /portfolio and its A4 twin /portfolio/print, read from the shell's portfolio/ snapshot that shared-workflows portfolio-weekly.yml writes weekly and only on change, versioned, with a PDF; shared features shown once; websites, apps, brand and print in separate sections; showcase cards gain optional `features`. /work links to it. Nothing to install by hand.",
   "_comment_version_1_25_1": "1.25.1: landing sections rise and fade in as they scroll into view (CSS scroll-driven, no JS, off under reduced motion; Ray 2026-11-20 motion pass). Nothing to install.",
   "installs": [
     {
@@ -272,6 +273,30 @@
         {
           "from": "templates/components/custom/cortex-auth",
           "to": "components/custom/cortex-auth"
+        },
+        {
+          "from": "templates/app/portfolio/page.tsx",
+          "to": "app/portfolio/page.tsx"
+        },
+        {
+          "from": "templates/app/portfolio/print/page.tsx",
+          "to": "app/portfolio/print/page.tsx"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-portfolio.ts",
+          "to": "components/custom/studio/studio-portfolio.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-portfolio-load.ts",
+          "to": "components/custom/studio/studio-portfolio-load.ts"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-portfolio-page.tsx",
+          "to": "components/custom/studio/studio-portfolio-page.tsx"
+        },
+        {
+          "from": "templates/components/custom/studio/studio-portfolio.css",
+          "to": "components/custom/studio/studio-portfolio.css"
         }
       ],
       "dependencies": {

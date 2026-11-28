@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.70.0
+
+* The Cortex Media credit link now defaults to https://cortexagency.co (Ray, 2026-11-21). `NEXT_PUBLIC_CORTEX_MEDIA_URL` still overrides it.
+
+## 1.69.0
+
+* fix(brand): every client site's footer credit reads `Built with ♥ by CORTEX` (Ray, 2026-11-21: "There is no cortex media"). `SITE_CREDIT_MAKER` is `CORTEX`.
+
 ## 1.68.0
 
 * feat(seo): every composed site serves /llms.txt (what the site is, for AI
